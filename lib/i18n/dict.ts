@@ -1,0 +1,722 @@
+export type Lang = "kz" | "ru";
+
+export type Dict = Record<string, string>;
+
+const kz: Dict = {
+  // ───── nav ─────
+  "nav.design": "Дизайн",
+  "nav.catalog": "Каталог",
+  "nav.showrooms": "Шоурумдер",
+  "nav.journal": "Журнал",
+  "nav.location": "Алматы · ҚЗ",
+  "nav.myroom": "Менің бөлмем",
+  "nav.brand_sub": "Үйдегі жайлылық орталығы · 2026 жылдан",
+
+  // ───── hero ─────
+  "hero.kicker": "◇ I том — кілт бұрылған сәттен бастап",
+  "hero.h1.1": "Кірмес бұрын",
+  "hero.h1.2": "бөлмелерді жиһазда.",
+  "hero.lede":
+    "Otaū — пәтеріңіздің интерьерін өзі жобалайтын жиһаз марктплейсі. Жоспарыңызды жүктеңіз немесе ЖК-ні таңдаңыз — 84 верификацияланған қазақстандық шоурумнан нақты, қоймадағы заттармен толтырамыз.",
+  "hero.cta.design": "Пәтерімді жобалау",
+  "hero.cta.browse": "Каталогты ашу",
+  "hero.quick.label": "◇ Жылдам бастау",
+  "hero.quick.title": "ЖК-ні таңдаңыз.",
+  "hero.quick.lede":
+    "Алматы мен Астананың 47 ЖК-сі жоспарларымен қоса жүктеулі.",
+  "hero.quick.or": "Немесе",
+  "hero.quick.upload": "өз жоспарыңды жүкте ↗",
+  "hero.plans": "{n} жоспар",
+  "stat.pieces_in_stock": "қоймадағы зат",
+  "stat.verified_sellers": "расталған сатушы",
+  "stat.zhk_premapped": "ЖК жоспарлы",
+
+  // ───── catalog ─────
+  "catalog.crumb": "Каталог / Барлық санаттар",
+  "catalog.h1.main": "Жиһаз —",
+  "catalog.h1.italic": "сіз әлі кірмеген бөлмелер үшін.",
+  "catalog.results": "{n} нәтиже · {m} сатушы",
+  "catalog.search.placeholder": "Атау, сатушы, материал бойынша іздеу…",
+  "catalog.sort": "Реттеу",
+  "catalog.filter.category": "Санат",
+  "catalog.filter.style": "Стиль",
+  "catalog.filter.seller": "Сатушы",
+  "catalog.sort.curated": "Іріктелген · Осы апта",
+  "catalog.sort.price-asc": "Баға · Төмен → Жоғары",
+  "catalog.sort.price-desc": "Баға · Жоғары → Төмен",
+  "catalog.sort.new": "Жаңасы алдымен",
+  "catalog.empty.title": "Сәйкес келетіні әзірге жоқ.",
+  "catalog.empty.lede": "Сүзгіні алып тастап немесе басқа сөзбен іздеп көріңіз.",
+  "catalog.cta.title": "Оларды пәтеріңізде көріңіз",
+  "catalog.cta.sub": "ЖК Esentai · 2 бөл · жүктелді",
+  "catalog.try_in_room": "◇ Бөлмеде көру",
+  "catalog.clear_search": "Іздеуді тазалау",
+  "catalog.loading": "Жүктелуде…",
+  "catalog.label.results_only": "{n} нәтиже",
+
+  // ───── categories ─────
+  "category.sofa": "Дивандар",
+  "category.chair": "Орындықтар",
+  "category.table": "Үстелдер",
+  "category.lamp": "Шамдар",
+  "category.storage": "Сақтау",
+
+  // ───── styles ─────
+  "style.scandinavian": "Скандинавиялық",
+  "style.minimalist": "Минимализм",
+  "style.minimal": "Минималистік",
+  "style.loft": "Лофт",
+  "style.classic": "Заманауи классика",
+  "style.japanese": "Жапон",
+  "style.japandi": "Жапанди",
+  "style.contemporary": "Заманауи",
+  "style.modern": "Заманауи модерн",
+
+  // ───── tags ─────
+  "tag.editors_pick": "Редактордың таңдауы",
+  "tag.new": "Жаңа",
+  "tag.low_stock": "Қоры аз",
+  "tag.house_edition": "Үй коллекциясы",
+
+  // ───── product ─────
+  "product.crumb_root": "Каталог",
+  "product.sku": "SKU OT-{id} · {seller} қоймасында",
+  "product.installment": "немесе айына {price} · Kaspi RED 12 ай",
+  "product.compare": "Салыстыру",
+  "product.finish": "Бітіру · {name}",
+  "product.variants": "{n} нұсқа",
+  "product.add": "Менің бөлмеме қосу",
+  "product.remove": "Менің бөлмемнен алу",
+  "product.specs.width": "Ені",
+  "product.specs.depth": "Тереңдігі",
+  "product.specs.height": "Биіктігі",
+  "product.specs.material": "Материал",
+  "product.specs.style": "Стиль",
+  "product.specs.sellers": "Сатушылар",
+  "product.seller.verified": "Расталған · ★ 4.92 (318)",
+  "product.seller.location": "Шоурум · Алматы · жеткізу 7–10 күн",
+  "product.see_room": "Бұл затты дайын бөлмеде көру ↓",
+  "product.more": "+12 тағы",
+  "product.viewer.hint": "◇ Айналдыру үшін сүйреңіз",
+  "product.viewer.scale": "масштаб · 1 м",
+  "product.three_60": "◯ 360°",
+  "product.save": "Сақтау",
+  "product.dim.short": "{w} × {d} см",
+
+  // ───── journal ─────
+  "journal.crumb": "Журнал / Барлық сандар",
+  "journal.crumb_root": "Журнал",
+  "journal.h1.main": "Журнал —",
+  "journal.h1.italic": "Алматыдан кеп жатқан жазбалар.",
+  "journal.lede":
+    "Интерьер туралы редакциялық жазбалар: трендтер, шеберлер, пәтерлердің практикасы. Бір аптада бір нөмір.",
+  "journal.issue.label": "Бұл апта",
+  "journal.issue.vol": "vol. 01",
+  "journal.issue.sub": "{n} мақала",
+  "journal.featured": "Бас тақырып",
+  "journal.read": "{n} мин оқу",
+  "journal.read_cta": "Оқу",
+  "journal.by": "Авторы — {name}",
+  "journal.figure": "Сурет · редакция",
+  "journal.body_coming": "Толық мәтін келесі шығарылымда жалғасады.",
+  "journal.more": "Тағы оқу",
+  "journal.see_all": "Барлығын көру",
+  "journal.cat.notes": "Жазбалар",
+  "journal.cat.trend": "Тренд",
+  "journal.cat.profile": "Шебер",
+  "journal.cat.guide": "Гид",
+  "journal.cat.house": "Үй коллекциясы",
+  "journal.cat.essay": "Эссе",
+
+  // Articles — titles + ledes (only translated for the listing/detail copy)
+  "journal.article.esentai-64.title":
+    "ЖК Esentai-дағы 64 м² пәтердің сізден сұрайтыны",
+  "journal.article.esentai-64.lede":
+    "Біз жобалаған пәтерлердің 80% — 58–72 м² — жаңа алматылық стандарт. Жоспар диваннан, үстелден, шамнан нені сұрайды?",
+  "journal.article.esentai-64.body.0":
+    "ЖК Esentai-нің 2-бөлмелі бастапқы жоспары — мейірімді жәшік. Қонақ бөлмесінің ені 4.8 м, тереңдігі 5.1 м, бір терезе шығысқа қарайды. Ас үй басында, жатын бөлмелер бір жақта. Жоспар тек бір нәрсені талап етеді: ені 240 см-нен аспайтын диван таңдау.",
+  "journal.article.esentai-64.body.1":
+    "Біз 18 пәтерді өлшедік. 18 жоспар, бір пішін, бір шығыс терезесі. Жоспар ұзын, аласа силуэтті жақсы көреді — ұзын қабырғаға тіреп қойылған 220–240 см диван, терезеге қараған жұмсақ кресло, өткелге кедергі жасамайтын журналдық үстел.",
+  "journal.article.esentai-64.body.2":
+    "Esentai шынайы жері: ас үй мен қонақ бөлмесі арасындағы өткел. Сіз отырған жерде тамақтанасыз. Кітап оқыған жерде қонақ күтесіз. Орындық та болатын орындықты, кешірім сұрамайтын үстелді қарастырыңыз.",
+  "journal.article.esentai-64.body.3":
+    "Бюджеттің үстінде сақтайтын: диван, кілем, еденге қойылатын шам. Бюджеттің астында сақтайтын: керек деп ойлайтын барлық консольдер.",
+
+  "journal.article.boucle-moment.title":
+    "Неге Алматы кенеттен букле сатып алып жатыр",
+  "journal.article.boucle-moment.lede":
+    "Кілегей түсті іліктер, жұмсақ иық, дымқыл балалар мен төгілген шарап үшін кешірімді мата. Екі шоурум — неге loveseat қайтып келді?",
+  "journal.article.boucle-moment.body.0":
+    "Forma KZ 2026-да 144 букле loveseat жіберіп жатыр. Сәуірге дейін ғана. Бұл олардың бүкіл 2024 жылғы көрсеткішіне тең.",
+  "journal.article.boucle-moment.body.1":
+    "Букле кілегей түсті болып көрінеді, бірақ ол тас, мүк, тіпті балшық түсінде де болады. Іліктердің жарықпен әсерлесуі күн бойы өзгеріп тұрады, сондықтан ол кешкі жарыққа қараған бөлмелерде жиі кездеседі.",
+  "journal.article.boucle-moment.body.2":
+    "Күтім — кілт. Аптасына бір рет щеткамен шаңсорыңыз. Дақты сумен және ыдыс жуғыш сабынмен тазалаңыз, ешқашан еріткішпен емес. Іліктер ілінуі мүмкін — тырнағы бар мысық дос болмайды. Бұл ешкімді тоқтатпайды.",
+
+  "journal.article.qara-profile.title":
+    "Qara Studio — кітап дүкенінің үстіндегі бөлме",
+  "journal.article.qara-profile.lede":
+    "Шыбық, қағаз бау, қолмен пішілген емен. Бір орындықты бір апта жасап, оны солай ұстайтын Алматының ең тыныш шеберханасының ішінде.",
+
+  "journal.article.winter-light.title":
+    "Ұзақ қазақстандық қысқа арналған жарық",
+  "journal.article.winter-light.lede":
+    "Алты ай боз аспан қонақ бөлмесін жоспарлау тәсілін өзгертеді. Қабаттар, кельвин және шамды қайда қою керек туралы практикалық нұсқаулық.",
+
+  "journal.article.house-edition-vol1.title": "Үй коллекциясы · I том",
+  "journal.article.house-edition-vol1.lede":
+    "240 см дивандар. 120 см орындықтар. Біз 47 ЖК-ні өлшеп, сай келетін заттарды жобаладық. Жасаған таңдауларымыз туралы оқыңыз.",
+
+  "journal.article.softer-modular.title": "Жұмсақтау модульдік диванға аргумент",
+  "journal.article.softer-modular.lede":
+    "Қатты қаңқалар кеңселерге арналған. Қонақтарыңыз ұйықтап қалғысы келетін диван — сатып алу керек диван.",
+
+  "journal.article.kazakh-textiles.title": "Қазақ тоқымалары, заманауи кеңістіктер",
+  "journal.article.kazakh-textiles.lede":
+    "Киіз киіз үйден көшіп, лофтыларда пайда болуда — Алматының үш пәтерінен баяндалатын кішкене мұра жаңғыруы туралы ұзын материал.",
+
+  // ───── showrooms ─────
+  "showrooms.crumb": "Шоурумдер / Барлығы",
+  "showrooms.h1.main": "Шоурумдер —",
+  "showrooms.h1.italic": "досыңызды жіберетін орындар.",
+  "showrooms.lede":
+    "Otaū жұмыс істейтін барлық саушылар тірі шеберханалар. Әр шоурумда — тарихы, маманы, төл материалы бар. Барыңыз, отырыңыз, ұстаңыз.",
+  "showrooms.stats.label": "Расталған сатушы",
+  "showrooms.stats.sub": "каталогта {n} зат",
+  "showrooms.founded": "Негізі қаланған",
+  "showrooms.meta.rating": "Рейтинг",
+  "showrooms.meta.reviews": "{n} пікір",
+  "showrooms.meta.pieces": "Зат саны",
+  "showrooms.meta.in_catalog": "Каталогта",
+  "showrooms.meta.address": "Мекенжай",
+  "showrooms.cta.see": "Барлығын көру ({n})",
+  "showrooms.cta.visit": "Шоурумға бару",
+  // showroom prose
+  "showroom.mebel-astana.tagline": "Зығыр, емен, аласа силуэттер",
+  "showroom.mebel-astana.story":
+    "Сегіз жыл бойы Астананың жаңа құрылыстарына арналған тысау жұмысы. Бельгиялық зығыр, орыс емені, асықпай жинау. Екі ағайынды, төрт тігінші, қала шетіндегі бір ағаш цехы.",
+  "showroom.qara-studio.tagline": "Қолмен тоқылған, күл ағашынан, тыныш ұлттық",
+  "showroom.qara-studio.story":
+    "Кітап дүкенінің үстіндегі шеберхана. Шыбық, қағаз бау, қолмен пішілген ақ емен. Күту мерзімі әдейі ұзақ — Qara бір орындықты жасайды, жөнелтеді, келесісін бастайды.",
+  "showroom.forma-kz.tagline": "Жез, букле, жұмсақ модернизм",
+  "showroom.forma-kz.story":
+    "Forma алдымен жарық шеберханасы болды — Алматыдағы бұрынғы гаражда қолмен айналдырылған жез. Кейіннен дивандар келді. Олардың шамдары осы каталогтың Otaū шоурум фотоларының көбін жарықтандырады.",
+  "showroom.karaganda-loft.tagline": "Қолмен өңделген тері, цилиндрлі болат",
+  "showroom.karaganda-loft.story":
+    "Ердің шеберханасы ретінде басталып, орындықтарды тапты. Конъяк түсті тері, толық дәнді. Сенбіде барсаңыз — верстакта әрқашан жартылай жасалған қаңқа, пеште әлсіз кофе.",
+  "showroom.otau-x-mebel.tagline": "Біз білетін бөлмелерге арналған заттар",
+  "showroom.otau-x-mebel.story":
+    "Otaū-нің төл сериясы. 47 ЖК бөлмелерін өлшеп, сай заттарды жобалаймыз — ауданы 24 м² қонақ бөлмесіне арналған 240 см диван, ауданы 6.1 м² дәлізге арналған 120 см орындық.",
+
+  // ───── AR prompt ─────
+  "ar.chip": "◇ AR-да көру",
+  "ar.inline.title": "Нақты бөлмеңізде көріңіз",
+  "ar.inline.sub": "Телефонмен сканерлеу · iOS, Android",
+  "ar.modal.kicker": "Mobile · AR режимі",
+  "ar.modal.title": "Бұл затты өз бөлмеңізде көріңіз.",
+  "ar.modal.scan_label": "Телефонмен сканерлеңіз",
+  "ar.modal.lede":
+    "QR-кодты сканерлеңіз — Otaū қосымшасы осы затты камераңыздан көрсетеді. Еденге орналастырып, айналасында жүріңіз.",
+  "ar.modal.step1": "Телефон камерасын ашыңыз",
+  "ar.modal.step2": "QR-кодты сканерлеңіз",
+  "ar.modal.step3": "Затты еденге орналастырыңыз",
+  "ar.modal.note": "iOS 15+ және Android 12+ нұсқаларында жұмыс істейді",
+  "ar.modal.close": "Жабу",
+  "ar.preview.floor_locked": "AR · еден бекітілді",
+
+  // ───── wizard ─────
+  "wizard.skip": "Өткізіп жіберу — таңқалдырыңыз",
+  "wizard.back": "← Артқа",
+  "wizard.continue": "Жалғастыру",
+  "wizard.design_my_room": "Бөлмемді жобалау",
+  "wizard.back_home": "Басты бетке қайту",
+
+  // step 1
+  "step1.kicker": "Қадам 01 — Көлем",
+  "step1.title": "Нені жиһаздаймыз?",
+  "step1.subtitle":
+    "Екеуі де жарайды — Otaū тапсырыс көлеміне қарай бейімделеді.",
+  "step1.option": "Нұсқа",
+  "step1.selected": "Таңдалды",
+  "step1.apt.title": "Барлық пәтерді",
+  "step1.apt.lede":
+    "Кілт жаңа ғана қолға тиді (немесе тие жатыр). Барлық бөлмені жиһаздау.",
+  "step1.apt.hint":
+    "Алматы мен Астанадағы 47 ЖК-нің жоспарларын автоматты жүктейміз.",
+  "step1.room.title": "Бір ғана бөлме",
+  "step1.room.lede": "Қалғаны бар — бір кеңістікті жаңартқым келеді.",
+  "step1.room.hint": "Қонақ бөлмесі, жатын бөлме, ас үй, дәліз. Сіз таңдайсыз.",
+
+  // step 2
+  "step2.kicker.apt": "Қадам 02 — Қайда",
+  "step2.kicker.room": "Қадам 02 — Қай бөлме",
+  "step2.title.apt": "Қай пәтер?",
+  "step2.title.room": "Қай бөлме, көлемі қандай?",
+  "step2.subtitle.apt":
+    "ЖК-ні таңдаңыз — жоспар автоматты жүктеледі. Немесе өз жоспарыңызды жүктеңіз.",
+  "step2.subtitle.room":
+    "Бөлмені таңдап, шаршы метрді көрсетіңіз. Дәл осы өлшемге сай орналастырамыз.",
+  "step2.upload": "↗ Өз жоспарымды жүктеу (PDF немесе сурет)",
+  "step2.area": "Ауданы",
+  "step2.avg": "орт. {n} м²",
+  "step2.plans": "{city} · {n} жоспар жүктелген",
+
+  "city.Almaty": "Алматы",
+  "city.Astana": "Астана",
+  "city.Karaganda": "Қарағанды",
+
+  "room.living": "Қонақ бөлмесі",
+  "room.bedroom": "Жатын бөлме",
+  "room.kitchen": "Ас үй",
+  "room.hall": "Дәліз",
+  "room.workspace": "Жұмыс орны",
+  "room.bathroom": "Жуынатын бөлме",
+
+  // step 3
+  "step3.kicker": "Қадам 03 — Көңіл-күй",
+  "step3.title": "Үй сезімі қалай?",
+  "step3.subtitle":
+    "Бір немесе екі стиль таңдаңыз. Екеуін араластырсаңыз — өз тілі шығады: Скандинав + Жапон бөлек дүние.",
+  "step3.counter": "{n}/2 таңдалды",
+  "style.scandinavian.hint": "Зығыр · емен · көмескі жарық",
+  "style.minimalist.hint": "Тыныш · бос кеңістік",
+  "style.minimal.hint": "Тыныш · бос кеңістік",
+  "style.loft.hint": "Болат · тері · кірпіш",
+  "style.classic.hint": "Букле · жаңғақ · жез",
+  "style.japanese.hint": "Қағаз · күл ағашы · тәртіп",
+  "style.japandi.hint": "Қағаз · күл ағашы · тыныштық",
+  "style.contemporary.hint": "Жұмсақ · модульдік · заманауи",
+  "style.modern.hint": "Жұмсақ · модульдік · заманауи",
+
+  // step 4
+  "step4.kicker": "Қадам 04 — Бюджет",
+  "step4.title": "Шамамен қанша?",
+  "step4.subtitle":
+    "Otaū бөлмені бюджет шегінде толтырады — сапалырақ заттар, азырақ заттар, не екеуі бірге.",
+  "step4.target": "Мақсат",
+  "step4.approx": "≈ {n} зат, бөлмеге лайық сапа",
+
+  // reveal
+  "reveal.designing": "Бөлмеңіз жобаланып жатыр",
+  "reveal.fallback": "Жарықпен тыныстайтын бөлме.",
+  "reveal.title.one": "{style} стильдегі бөлме.",
+  "reveal.title.two": "{style} стильдегі, {style2} нотасы бар бөлме.",
+  "reveal.stage.0": "Жоспарды оқып жатырмыз…",
+  "reveal.stage.1": "84 сатушыдан қоймадағы заттарды жинаудамыз…",
+  "reveal.stage.2": "Пропорцияларды реттеудеміз…",
+  "reveal.stage.3": "Бөлмені жарықпен толтырудамыз…",
+  "reveal.stage.4": "Рендерді аяқтаудамыз…",
+  "reveal.stat.pieces": "зат",
+  "reveal.stat.sellers": "сатушы",
+  "reveal.stat.budget": "бюджет",
+  "reveal.stat.space": "кеңістік",
+  "reveal.space.auto": "АВТО",
+  "reveal.space.upload": "ЖҮКТЕЛДІ",
+
+  // studio
+  "studio.myroom": "Менің бөлмем",
+  "studio.draft": "Жоба · авто-сақтау 14:22",
+  "studio.share": "Бөлісу",
+  "studio.export": "PDF экспорт",
+  "studio.send": "Сатушыға жіберу →",
+  "studio.plan_label": "◇ Пәтер жоспары",
+  "studio.floor": "14-қабат — A1",
+  "studio.rooms_label": "Бөлмелер",
+  "studio.total_label": "Жалпы сома",
+  "studio.items_sellers": "{items} зат · {sellers} сатушы",
+  "studio.budget_label": "Бюджет",
+  "studio.viz_label": "Қонақ бөлмесі — визуализация · v3",
+  "studio.viz_title": "Кеш жарығымен тыныстайтын бөлме.",
+  "studio.time.Day": "Күн",
+  "studio.time.Dusk": "Іңір",
+  "studio.time.Night": "Түн",
+  "studio.toolbar.rerender": "Қайта рендер",
+  "studio.toolbar.angle": "Жаңа бұрыш",
+  "studio.toolbar.move": "Жылжыту",
+  "studio.toolbar.plan": "Жоғарыдан көру",
+  "studio.toolbar.ar": "AR-да көру",
+  "studio.in_render": "◇ Осы рендерде",
+  "studio.in_render_title": "{n} зат · {style}",
+  "studio.curated": "Іріктелген",
+  "studio.swap": "Ауыстыру",
+  "studio.remove_item": "Алып тастау",
+  "studio.add_all": "Барлық {n} затты сұрауға қосу — {price}",
+  "studio.sla": "Сатушылар 4 сағатта жауап береді · жеткізу 7–14 күн",
+  "studio.viz_meta_rend": "РЕНД · {time} · {n} нүкте",
+  "studio.viz_meta_dims": "4096 × 2304 · v3 / 6 · 21.4 м²",
+  "studio.items_count": "{n} зат",
+  "studio.area_m2": "{n} м²",
+
+  "studio.zhk.esentai": "ЖК Esentai Park · 2 бөл · 64 м²",
+  "studio.zhk.expo": "ЖК Expo Boulevard · 3 бөл · 78 м²",
+  "studio.zhk.sezim": "ЖК Sezim Qala · 1 бөл · 48 м²",
+  "studio.zhk.highvill": "ЖК Highvill Astana · 2 бөл · 71 м²",
+  "studio.default_space": "Қонақ бөлмесі · 21.4 м²",
+
+  // floor plan svg
+  "fp.living_label": "ҚОНАҚ · 21.4 м²",
+  "fp.bedroom_label": "ЖАТЫН · 14.2 м²",
+  "fp.kitchen_label": "АС ҮЙ · 9.8 м²",
+};
+
+const ru: Dict = {
+  // ───── nav ─────
+  "nav.design": "Дизайн",
+  "nav.catalog": "Каталог",
+  "nav.showrooms": "Шоурумы",
+  "nav.journal": "Журнал",
+  "nav.location": "Алматы · KZ",
+  "nav.myroom": "Моя комната",
+  "nav.brand_sub": "Центр домашнего уюта · с 2026",
+
+  // ───── hero ─────
+  "hero.kicker": "◇ Том 01 — Дом мебели для повёрнутого ключа",
+  "hero.h1.1": "Не представляй - смотри.",
+  "hero.h1.2": "",
+  "hero.lede":
+    "Otaū — мебельный маркетплейс, который сам обставляет вашу квартиру. Загрузите планировку или выберите ЖК — наполним реальной, в наличии, мебелью из 84 проверенных казахстанских шоурумов.",
+  "hero.cta.design": "Создать мою расстановку",
+  "hero.cta.browse": "Открыть каталог",
+  "hero.quick.label": "◇ Быстрый старт",
+  "hero.quick.title": "Выберите ЖК.",
+  "hero.quick.lede":
+    "47 ЖК Алматы и Астаны с уже загруженными планировками.",
+  "hero.quick.or": "Или",
+  "hero.quick.upload": "загрузить свой план ↗",
+  "hero.plans": "{n} планов",
+  "stat.pieces_in_stock": "вещей в наличии",
+  "stat.verified_sellers": "проверенных продавцов",
+  "stat.zhk_premapped": "ЖК с планами",
+
+  // ───── catalog ─────
+  "catalog.crumb": "Каталог / Все категории",
+  "catalog.h1.main": "Мебель —",
+  "catalog.h1.italic": "для комнат, в которые вы ещё не вошли.",
+  "catalog.results": "{n} результатов · {m} продавцов",
+  "catalog.search.placeholder": "Поиск по названию, продавцу, материалу…",
+  "catalog.sort": "Сортировка",
+  "catalog.filter.category": "Категория",
+  "catalog.filter.style": "Стиль",
+  "catalog.filter.seller": "Продавец",
+  "catalog.sort.curated": "Подборка · На этой неделе",
+  "catalog.sort.price-asc": "Цена · По возрастанию",
+  "catalog.sort.price-desc": "Цена · По убыванию",
+  "catalog.sort.new": "Сначала новые",
+  "catalog.empty.title": "Пока ничего не подошло.",
+  "catalog.empty.lede": "Снимите фильтр или попробуйте другое слово.",
+  "catalog.cta.title": "Посмотреть в вашей квартире",
+  "catalog.cta.sub": "ЖК Esentai · 2-комн · загружено",
+  "catalog.try_in_room": "◇ Примерить в комнате",
+  "catalog.clear_search": "Очистить поиск",
+  "catalog.loading": "Загрузка…",
+  "catalog.label.results_only": "{n} результатов",
+
+  // ───── categories ─────
+  "category.sofa": "Диваны",
+  "category.chair": "Стулья и кресла",
+  "category.table": "Столы",
+  "category.lamp": "Светильники",
+  "category.storage": "Хранение",
+
+  // ───── styles ─────
+  "style.scandinavian": "Скандинавский",
+  "style.minimalist": "Минимализм",
+  "style.minimal": "Минимализм",
+  "style.loft": "Лофт",
+  "style.classic": "Современная классика",
+  "style.japanese": "Японский",
+  "style.japandi": "Джапанди",
+  "style.contemporary": "Современный",
+  "style.modern": "Современный модерн",
+
+  // ───── tags ─────
+  "tag.editors_pick": "Выбор редакции",
+  "tag.new": "Новинка",
+  "tag.low_stock": "Заканчивается",
+  "tag.house_edition": "Коллекция Otaū",
+
+  // ───── product ─────
+  "product.crumb_root": "Каталог",
+  "product.sku": "SKU OT-{id} · в наличии у {seller}",
+  "product.installment": "или {price} / мес · Kaspi RED 12 мес",
+  "product.compare": "Сравнить",
+  "product.finish": "Отделка · {name}",
+  "product.variants": "{n} вариантов",
+  "product.add": "Добавить в Мою комнату",
+  "product.remove": "Удалить из Моей комнаты",
+  "product.specs.width": "Ширина",
+  "product.specs.depth": "Глубина",
+  "product.specs.height": "Высота",
+  "product.specs.material": "Материал",
+  "product.specs.style": "Стиль",
+  "product.specs.sellers": "Продавцы",
+  "product.seller.verified": "Проверен · ★ 4.92 (318)",
+  "product.seller.location": "Шоурум · Алматы · доставка 7–10 дней",
+  "product.see_room": "Посмотреть в дизайне комнаты ↓",
+  "product.more": "+12 ещё",
+  "product.viewer.hint": "◇ Тяните, чтобы повернуть",
+  "product.viewer.scale": "масштаб · 1 м",
+  "product.three_60": "◯ 360°",
+  "product.save": "Сохранить",
+  "product.dim.short": "{w} × {d} см",
+
+  // ───── journal ─────
+  "journal.crumb": "Журнал / Все выпуски",
+  "journal.crumb_root": "Журнал",
+  "journal.h1.main": "Журнал —",
+  "journal.h1.italic": "заметки из Алматы.",
+  "journal.lede":
+    "Редакционные заметки об интерьере: тренды, мастера, практика жилых пространств. Один выпуск в неделю.",
+  "journal.issue.label": "Эта неделя",
+  "journal.issue.vol": "vol. 01",
+  "journal.issue.sub": "{n} статей",
+  "journal.featured": "Главная",
+  "journal.read": "{n} мин чтения",
+  "journal.read_cta": "Читать",
+  "journal.by": "Автор — {name}",
+  "journal.figure": "Фото · редакция",
+  "journal.body_coming": "Полный текст в следующем выпуске.",
+  "journal.more": "Ещё читать",
+  "journal.see_all": "Все выпуски",
+  "journal.cat.notes": "Заметки",
+  "journal.cat.trend": "Тренд",
+  "journal.cat.profile": "Мастер",
+  "journal.cat.guide": "Гид",
+  "journal.cat.house": "Коллекция Otaū",
+  "journal.cat.essay": "Эссе",
+
+  "journal.article.esentai-64.title":
+    "Чего просит от вас 64 м² в ЖК Esentai",
+  "journal.article.esentai-64.lede":
+    "80% квартир, которые мы проектируем, попадают в диапазон 58–72 м² — новый алматинский стандарт. Что план хочет от вашего дивана, стола и света.",
+  "journal.article.esentai-64.body.0":
+    "Стандартный план двушки ЖК Esentai — мягкая коробка. Ширина гостиной 4.8 м, глубина 5.1 м, одно окно на восток. Кухня во главе, спальни тихо в стороне. Единственное, чего план жёстко требует — выбрать диван короче 240 см.",
+  "journal.article.esentai-64.body.1":
+    "Мы измерили 18 таких квартир. Восемнадцать планов, та же форма, то же восточное окно. План любит длинный, низкий силуэт — диван 220–240 см вдоль длинной стены, мягкое кресло к окну, журнальный столик, не перекрывающий коридор, который всегда хочется пересекать.",
+  "journal.article.esentai-64.body.2":
+    "Где Esentai честен: переход кухня—гостиная. Вы будете есть там, где сидите. Принимать гостей — там, где читаете. Запланируйте скамью, которая ещё и сиденье, стол, который не извиняется за своё присутствие.",
+  "journal.article.esentai-64.body.3":
+    "Что держать выше бюджетной линии: диван, ковёр, торшер. Что — ниже: каждая консоль, которая кажется необходимой.",
+
+  "journal.article.boucle-moment.title":
+    "Почему все в Алматы вдруг покупают букле",
+  "journal.article.boucle-moment.lede":
+    "Кремовые петли, мягкие плечи, ткань, прощающая мокрого ребёнка и пролитый бокал вина. Два шоурума объясняют, почему loveseat вернулся.",
+  "journal.article.boucle-moment.body.0":
+    "Forma KZ отгрузила 144 loveseat из букле в 2026 году. До апреля. Это примерно весь 2024-й.",
+  "journal.article.boucle-moment.body.1":
+    "Букле читается кремовым — пока не читается. Его можно заказать в камне, в моховом, даже в глиняном. Петлистая фактура ловит свет по-разному каждый час, поэтому ткань чаще оказывается в комнатах, обращённых к закату.",
+  "journal.article.boucle-moment.body.2":
+    "Уход — подводный камень. Пылесос с щёткой раз в неделю. Локальная чистка водой и средством для посуды, ни в коем случае не растворителем. Петли цепляются — кот с когтями не друг. Никого это не останавливает.",
+
+  "journal.article.qara-profile.title":
+    "Qara Studio — комната над книжным магазином",
+  "journal.article.qara-profile.lede":
+    "Ротанг, бумажный шнур, дуб, шлифованный вручную. Внутри самой тихой мастерской Алматы, где один стул делают неделю и им это нравится.",
+
+  "journal.article.winter-light.title":
+    "Свет для долгой казахстанской зимы",
+  "journal.article.winter-light.lede":
+    "Полгода серого неба меняет планирование гостиной. Практический разбор слоёв, температуры света и куда вообще ставить торшер.",
+
+  "journal.article.house-edition-vol1.title": "Коллекция Otaū · Том I",
+  "journal.article.house-edition-vol1.lede":
+    "Диваны по 240 см. Скамьи по 120 см. Мы обмерили 47 ЖК и спроектировали вещи, которые в них помещаются. Записки о решениях.",
+
+  "journal.article.softer-modular.title":
+    "В защиту более мягкого модульного дивана",
+  "journal.article.softer-modular.lede":
+    "Жёсткие каркасы — для офисов. Диван, на котором ваши гости хотят заснуть — это диван, который стоит купить.",
+
+  "journal.article.kazakh-textiles.title":
+    "Казахские текстиля, современные пространства",
+  "journal.article.kazakh-textiles.lede":
+    "Войлок уходит из юрт и появляется в лофтах — большой материал о небольшом возрождении наследия, рассказанный через три алматинские квартиры.",
+
+  // ───── showrooms ─────
+  "showrooms.crumb": "Шоурумы / Все",
+  "showrooms.h1.main": "Шоурумы —",
+  "showrooms.h1.italic": "куда мы посылаем своих друзей.",
+  "showrooms.lede":
+    "Все партнеры Otaū — реальные магазины и мебельные мастерские. Посетите наших партнеров - зайдите, посидите, потрогайте.",
+  "showrooms.stats.label": "Проверенных продавцов",
+  "showrooms.stats.sub": "в каталоге {n} вещей",
+  "showrooms.founded": "Год основания",
+  "showrooms.meta.rating": "Рейтинг",
+  "showrooms.meta.reviews": "{n} отзывов",
+  "showrooms.meta.pieces": "Кол-во вещей",
+  "showrooms.meta.in_catalog": "В каталоге",
+  "showrooms.meta.address": "Адрес",
+  "showrooms.cta.see": "Смотреть все ({n})",
+  "showrooms.cta.visit": "Зайти в шоурум",
+  // showroom prose
+  "showroom.mebel-astana.tagline": "Лён, дуб, низкие силуэты",
+  "showroom.mebel-astana.story":
+    "Восемь лет обивочной работы для новостроек Астаны. Бельгийский лён, русский дуб, неспешная сборка. Два брата, четыре швеи, столярка на окраине города.",
+  "showroom.qara-studio.tagline": "Плетено вручную, из ясеня, по-местному тихо",
+  "showroom.qara-studio.story":
+    "Мастерская над книжным магазином. Ротанг, бумажный шнур, белый дуб ручной формовки. Срок ожидания специально длинный — Qara делает один стул, отправляет, начинает следующий.",
+  "showroom.forma-kz.tagline": "Латунь, букле, мягкий модернизм",
+  "showroom.forma-kz.story":
+    "Forma начиналась со световой мастерской — латунь, выкрученная вручную в переделанном гараже в Алматы. Потом пришли диваны. Их лампы освещают большинство фотографий шоурумов в этом каталоге.",
+  "showroom.karaganda-loft.tagline": "Кожа ручной выделки, трубчатая сталь",
+  "showroom.karaganda-loft.story":
+    "Начали как шорная мастерская, нашли стулья. Коньячная кожа полного крома. Заходите в субботу — на верстаке всегда полусобранный каркас и слабый кофе на печке.",
+  "showroom.otau-x-mebel.tagline": "Вещи, спроектированные для комнат, которые мы знаем",
+  "showroom.otau-x-mebel.story":
+    "Собственная линия Otaū. Мы обмеряем комнаты 47 ЖК и проектируем вещи, которые в них помещаются — диваны 240 см для гостиных в 24 м², скамьи 120 см для прихожих 6.1 м².",
+
+  // ───── AR prompt ─────
+  "ar.chip": "◇ Примерить в AR",
+  "ar.inline.title": "Посмотреть в вашей реальной комнате",
+  "ar.inline.sub": "Сканировать с телефона · iOS, Android",
+  "ar.modal.kicker": "Mobile · режим AR",
+  "ar.modal.title": "Поставьте этот предмет в свою комнату.",
+  "ar.modal.scan_label": "Сканируйте с телефона",
+  "ar.modal.lede":
+    "Отсканируйте QR-код — приложение Otaū покажет эту вещь через камеру. Поставьте на пол, обойдите вокруг.",
+  "ar.modal.step1": "Откройте камеру телефона",
+  "ar.modal.step2": "Наведите на QR-код",
+  "ar.modal.step3": "Поставьте предмет на пол",
+  "ar.modal.note": "Работает на iOS 15+ и Android 12+",
+  "ar.modal.close": "Закрыть",
+  "ar.preview.floor_locked": "AR · пол зафиксирован",
+
+  // ───── wizard ─────
+  "wizard.skip": "Пропустить — удивите меня",
+  "wizard.back": "← Назад",
+  "wizard.continue": "Продолжить",
+  "wizard.design_my_room": "Обставить комнату",
+  "wizard.back_home": "На главную",
+
+  // step 1
+  "step1.kicker": "Шаг 01 — Объём",
+  "step1.title": "Что обставляем?",
+  "step1.subtitle":
+    "Любой вариант — Otaū подстроит дизайн под размер задачи.",
+  "step1.option": "Вариант",
+  "step1.selected": "Выбрано",
+  "step1.apt.title": "Всю квартиру",
+  "step1.apt.lede":
+    "Только что получил ключи (или вот-вот). Обставить каждую комнату.",
+  "step1.apt.hint":
+    "Подгрузим планировки 47 ЖК Алматы и Астаны автоматически.",
+  "step1.room.title": "Одну комнату",
+  "step1.room.lede":
+    "Всё остальное уже есть — хочу обновить один интерьер.",
+  "step1.room.hint": "Гостиная, спальня, кухня, прихожая. Выбор за вами.",
+
+  // step 2
+  "step2.kicker.apt": "Шаг 02 — Где",
+  "step2.kicker.room": "Шаг 02 — Какая комната",
+  "step2.title.apt": "Какая квартира?",
+  "step2.title.room": "Какая комната и сколько в ней метров?",
+  "step2.subtitle.apt":
+    "Выберите ЖК — планировка подгрузится сама. Или загрузите свою.",
+  "step2.subtitle.room":
+    "Выберите комнату и укажите квадраты. Разложим точно под эту площадь.",
+  "step2.upload": "↗ Загрузить свой план (PDF или изображение)",
+  "step2.area": "Площадь",
+  "step2.avg": "≈ {n} м²",
+  "step2.plans": "{city} · {n} планов загружено",
+
+  "city.Almaty": "Алматы",
+  "city.Astana": "Астана",
+  "city.Karaganda": "Караганда",
+
+  "room.living": "Гостиная",
+  "room.bedroom": "Спальня",
+  "room.kitchen": "Кухня",
+  "room.hall": "Прихожая",
+  "room.workspace": "Рабочая зона",
+  "room.bathroom": "Ванная",
+
+  // step 3
+  "step3.kicker": "Шаг 03 — Настроение",
+  "step3.title": "Что для вас «дом»?",
+  "step3.subtitle":
+    "Выберите один или два стиля. Сочетание двух даёт свой язык — Скандинавский + Японский — самостоятельная вещь.",
+  "step3.counter": "{n}/2 выбрано",
+  "style.scandinavian.hint": "Лён · дуб · мягкий свет",
+  "style.minimalist.hint": "Тишина · воздух",
+  "style.minimal.hint": "Тишина · воздух",
+  "style.loft.hint": "Сталь · кожа · кирпич",
+  "style.classic.hint": "Букле · орех · латунь",
+  "style.japanese.hint": "Бумага · ясень · порядок",
+  "style.japandi.hint": "Бумага · ясень · покой",
+  "style.contemporary.hint": "Мягкость · модульность · сегодня",
+  "style.modern.hint": "Мягкость · модульность · сегодня",
+
+  // step 4
+  "step4.kicker": "Шаг 04 — Бюджет",
+  "step4.title": "Сколько примерно?",
+  "step4.subtitle":
+    "Otaū наполнит комнату в рамках бюджета — лучше вещами, меньшим количеством или и тем и другим.",
+  "step4.target": "Цель",
+  "step4.approx": "≈ {n} вещей, для жилого качества",
+
+  // reveal
+  "reveal.designing": "Проектируем вашу комнату",
+  "reveal.fallback": "Комната, которая дышит светом.",
+  "reveal.title.one": "Комната в стиле {style}.",
+  "reveal.title.two": "Комната в стиле {style}, с нотками {style2}.",
+  "reveal.stage.0": "Читаем планировку…",
+  "reveal.stage.1": "Собираем вещи в наличии у 84 продавцов…",
+  "reveal.stage.2": "Подбираем пропорции…",
+  "reveal.stage.3": "Освещаем комнату…",
+  "reveal.stage.4": "Завершаем рендер…",
+  "reveal.stat.pieces": "вещей",
+  "reveal.stat.sellers": "продавцов",
+  "reveal.stat.budget": "бюджет",
+  "reveal.stat.space": "пространство",
+  "reveal.space.auto": "АВТО",
+  "reveal.space.upload": "ЗАГРУЖЕНО",
+
+  // studio
+  "studio.myroom": "Моя комната",
+  "studio.draft": "Черновик · автосохр. 14:22",
+  "studio.share": "Поделиться",
+  "studio.export": "Экспорт PDF",
+  "studio.send": "Отправить продавцу →",
+  "studio.plan_label": "◇ План квартиры",
+  "studio.floor": "14-й этаж — A1",
+  "studio.rooms_label": "Комнаты",
+  "studio.total_label": "Текущий итог",
+  "studio.items_sellers": "{items} вещей · {sellers} продавцов",
+  "studio.budget_label": "Бюджет",
+  "studio.viz_label": "Гостиная — визуализация · v3",
+  "studio.viz_title": "Комната, что дышит закатным светом.",
+  "studio.time.Day": "День",
+  "studio.time.Dusk": "Сумерки",
+  "studio.time.Night": "Ночь",
+  "studio.toolbar.rerender": "Перерендер",
+  "studio.toolbar.angle": "Новый ракурс",
+  "studio.toolbar.move": "Переместить",
+  "studio.toolbar.plan": "Вид сверху",
+  "studio.toolbar.ar": "Примерить в AR",
+  "studio.in_render": "◇ В этом рендере",
+  "studio.in_render_title": "{n} вещей · {style}",
+  "studio.curated": "Подборка",
+  "studio.swap": "Заменить",
+  "studio.remove_item": "Убрать",
+  "studio.add_all": "Добавить все {n} в запрос — {price}",
+  "studio.sla": "Продавцы отвечают за 4 ч · доставка 7–14 дней",
+  "studio.viz_meta_rend": "РЕНД · {time} · {n} точек",
+  "studio.viz_meta_dims": "4096 × 2304 · v3 / 6 · 21.4 м²",
+  "studio.items_count": "{n} вещей",
+  "studio.area_m2": "{n} м²",
+
+  "studio.zhk.esentai": "ЖК Esentai Park · 2-комн · 64 м²",
+  "studio.zhk.expo": "ЖК Expo Boulevard · 3-комн · 78 м²",
+  "studio.zhk.sezim": "ЖК Sezim Qala · 1-комн · 48 м²",
+  "studio.zhk.highvill": "ЖК Highvill Astana · 2-комн · 71 м²",
+  "studio.default_space": "Гостиная · 21.4 м²",
+
+  // floor plan svg
+  "fp.living_label": "ГОСТИНАЯ · 21.4 м²",
+  "fp.bedroom_label": "СПАЛЬНЯ · 14.2 м²",
+  "fp.kitchen_label": "КУХНЯ · 9.8 м²",
+};
+
+
+export const dict: Record<Lang, Dict> = { kz, ru };
