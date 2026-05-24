@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { Search, X } from "lucide-react";
@@ -200,24 +200,6 @@ export function FilterBar({ resultCount }: { resultCount: number }) {
             alignItems: "center",
           }}
         >
-          <AnimatePresence>
-            {activeChips.map((c) => (
-              <motion.button
-                layout
-                key={c.id}
-                initial={{ opacity: 0, scale: 0.85 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.85 }}
-                transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
-                onClick={c.onRemove}
-                className="chip solid"
-                style={{ cursor: "pointer", fontSize: 11 }}
-              >
-                {c.label} <span style={{ marginLeft: 4 }}>×</span>
-              </motion.button>
-            ))}
-          </AnimatePresence>
-
           <ChipMenu
             label={t("catalog.filter.category")}
             options={Object.entries(CATEGORY_LABELS).map(([value, label]) => ({
@@ -242,6 +224,24 @@ export function FilterBar({ resultCount }: { resultCount: number }) {
             selected={sellers}
             onToggle={(v) => toggleInList("seller", sellers, v)}
           />
+
+          <AnimatePresence>
+            {activeChips.map((c) => (
+              <motion.button
+                layout
+                key={c.id}
+                initial={{ opacity: 0, scale: 0.85 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.85 }}
+                transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
+                onClick={c.onRemove}
+                className="chip solid"
+                style={{ cursor: "pointer", fontSize: 11 }}
+              >
+                {c.label} <span style={{ marginLeft: 4 }}>×</span>
+              </motion.button>
+            ))}
+          </AnimatePresence>
         </div>
 
         {/* Sort */}
@@ -288,84 +288,98 @@ function ChipMenu({
   selected: string[];
   onToggle: (v: string) => void;
 }) {
+  const [open, setOpen] = useState(false);
+  const rootRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const onPointerDown = (e: PointerEvent) => {
+      if (!rootRef.current?.contains(e.target as Node)) setOpen(false);
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+    document.addEventListener("pointerdown", onPointerDown);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("pointerdown", onPointerDown);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [open]);
+
   return (
-    <details
-      style={{ position: "relative" }}
-      onToggle={(e) => {
-        if ((e.target as HTMLDetailsElement).open) {
-          document
-            .querySelectorAll<HTMLDetailsElement>("details[data-chipmenu]")
-            .forEach((d) => {
-              if (d !== e.target) d.open = false;
-            });
-        }
-      }}
-      data-chipmenu
-    >
-      <summary
+    <div ref={rootRef} style={{ position: "relative" }}>
+      <button
+        type="button"
         className="chip"
-        style={{ cursor: "pointer", listStyle: "none", userSelect: "none" }}
+        onClick={() => setOpen((v) => !v)}
+        aria-expanded={open}
+        aria-haspopup="listbox"
+        style={{ cursor: "pointer", userSelect: "none" }}
       >
         {label} <span>+</span>
-      </summary>
-      <div
-        style={{
-          position: "absolute",
-          top: "calc(100% + 6px)",
-          left: 0,
-          background: "var(--color-paper)",
-          border: "1px solid var(--color-hair)",
-          padding: 8,
-          minWidth: 220,
-          boxShadow: "var(--shadow-card)",
-          zIndex: 5,
-          display: "flex",
-          flexDirection: "column",
-          gap: 2,
-          maxHeight: 360,
-          overflowY: "auto",
-        }}
-      >
-        {options.map((o) => {
-          const active = selected.includes(o.value);
-          return (
-            <button
-              key={o.value}
-              onClick={() => onToggle(o.value)}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                padding: "8px 12px",
-                background: active ? "var(--color-cream)" : "transparent",
-                border: 0,
-                fontFamily: "inherit",
-                fontSize: 13,
-                color: "var(--color-ink)",
-                cursor: "pointer",
-                textAlign: "left",
-              }}
-            >
-              {o.label}
-              <span
+      </button>
+      {open && (
+        <div
+          role="listbox"
+          style={{
+            position: "absolute",
+            top: "calc(100% + 6px)",
+            left: 0,
+            background: "var(--color-paper)",
+            border: "1px solid var(--color-hair)",
+            padding: 8,
+            minWidth: 220,
+            boxShadow: "var(--shadow-card)",
+            zIndex: 5,
+            display: "flex",
+            flexDirection: "column",
+            gap: 2,
+            maxHeight: 360,
+            overflowY: "auto",
+          }}
+        >
+          {options.map((o) => {
+            const active = selected.includes(o.value);
+            return (
+              <button
+                key={o.value}
+                onClick={() => onToggle(o.value)}
                 style={{
-                  width: 14,
-                  height: 14,
-                  border: "1px solid var(--color-ink)",
-                  background: active ? "var(--color-ink)" : "transparent",
-                  display: "inline-flex",
+                  display: "flex",
                   alignItems: "center",
-                  justifyContent: "center",
-                  color: "var(--color-paper)",
-                  fontSize: 10,
+                  justifyContent: "space-between",
+                  padding: "8px 12px",
+                  background: active ? "var(--color-cream)" : "transparent",
+                  border: 0,
+                  fontFamily: "inherit",
+                  fontSize: 13,
+                  color: "var(--color-ink)",
+                  cursor: "pointer",
+                  textAlign: "left",
                 }}
               >
-                {active ? "✓" : ""}
-              </span>
-            </button>
-          );
-        })}
-      </div>
-    </details>
+                {o.label}
+                <span
+                  style={{
+                    width: 14,
+                    height: 14,
+                    border: "1px solid var(--color-ink)",
+                    background: active ? "var(--color-ink)" : "transparent",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    color: "var(--color-paper)",
+                    fontSize: 10,
+                  }}
+                >
+                  {active ? "✓" : ""}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </div>
   );
 }

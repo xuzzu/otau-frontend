@@ -1,3 +1,5 @@
+import { getCurrentUserId } from "./identity";
+
 export class ApiError extends Error {
   readonly status: number;
   readonly path: string;
@@ -15,6 +17,8 @@ export class ApiError extends Error {
 function buildHeaders(extra: HeadersInit | undefined): Headers {
   const h = new Headers({ Accept: "application/json" });
   if (extra) new Headers(extra).forEach((v, k) => h.set(k, v));
+  const uid = getCurrentUserId();
+  if (uid && !h.has("X-User-Id")) h.set("X-User-Id", uid);
   return h;
 }
 

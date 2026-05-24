@@ -3,6 +3,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { useState, type ReactNode } from "react";
+import { IdentitySync } from "./IdentitySync";
 
 export function QueryProvider({ children }: { children: ReactNode }) {
   const [client] = useState(
@@ -19,6 +20,7 @@ export function QueryProvider({ children }: { children: ReactNode }) {
   );
   return (
     <QueryClientProvider client={client}>
+      <IdentitySync />
       {children}
       {process.env.NODE_ENV !== "production" ? (
         <ReactQueryDevtools initialIsOpen={false} />
