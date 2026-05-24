@@ -21,6 +21,8 @@ export const qk = {
   generationRoomItemsByType: (genId: string, roomType: string) =>
     ["generation-room-items", genId, roomType] as const,
   me: ["me"] as const,
+  cart: ["cart"] as const,
+  myLikes: ["my-likes"] as const,
   journal: (params: Record<string, unknown> = {}) => ["journal", params] as const,
   journalArticle: (slug: string) => ["journal-article", slug] as const,
 } as const;

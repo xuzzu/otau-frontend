@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useT, type Lang } from "@/lib/i18n";
 import { cn } from "@/lib/cn";
+import { UserMenu } from "./UserMenu";
 
 export function TopNav({ inverse = false }: { inverse?: boolean }) {
   const { t, lang, setLang } = useT();
@@ -92,35 +93,9 @@ export function TopNav({ inverse = false }: { inverse?: boolean }) {
           <span style={{ opacity: lang === "ru" ? 1 : 0.4 }}>RU</span>
         </button>
         <span style={{ color: sub }}>·</span>
-        <Link
-          href="/design"
-          style={{
-            color: fg,
-            display: "flex",
-            alignItems: "center",
-            gap: 8,
-            textDecoration: "none",
-          }}
-        >
-          <Bag inverse={inverse} /> {t("nav.myroom")}
-        </Link>
+        <UserMenu inverse={inverse} />
       </div>
     </header>
-  );
-}
-
-function Bag({ inverse }: { inverse?: boolean }) {
-  const c = inverse ? "#FBF8F2" : "#1A1612";
-  return (
-    <svg width="14" height="16" viewBox="0 0 14 16" fill="none" aria-hidden>
-      <path d="M1 5 H13 L12 15 H2 Z" stroke={c} strokeWidth="1" fill="none" />
-      <path
-        d="M4.5 5 V3.5 a2.5 2.5 0 0 1 5 0 V5"
-        stroke={c}
-        strokeWidth="1"
-        fill="none"
-      />
-    </svg>
   );
 }
 

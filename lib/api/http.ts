@@ -12,23 +12,9 @@ export class ApiError extends Error {
   }
 }
 
-const SESSION_COOKIE = "otau_session";
-
-function readSessionCookie(): string | null {
-  if (typeof document === "undefined") return null;
-  const m = document.cookie.match(new RegExp(`(?:^|; )${SESSION_COOKIE}=([^;]+)`));
-  return m ? decodeURIComponent(m[1]!) : null;
-}
-
 function buildHeaders(extra: HeadersInit | undefined): Headers {
   const h = new Headers({ Accept: "application/json" });
-  if (extra) {
-    new Headers(extra).forEach((v, k) => h.set(k, v));
-  }
-  const session = readSessionCookie();
-  if (session && !h.has("X-Otau-Session")) {
-    h.set("X-Otau-Session", session);
-  }
+  if (extra) new Headers(extra).forEach((v, k) => h.set(k, v));
   return h;
 }
 
@@ -41,6 +27,7 @@ export async function apiFetch<T>(
   const res = await fetch(url, {
     ...init,
     headers: buildHeaders(init?.headers),
+    credentials: "include",
   });
   if (!res.ok) {
     const body = await res.text().catch(() => "");

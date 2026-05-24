@@ -1,9 +1,14 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import * as catalog from "@/lib/api/catalog";
 import * as core from "@/lib/api/core";
-import type { ApiError } from "@/lib/api/http";
+import { ApiError } from "@/lib/api/http";
+import type {
+  Like,
+  SessionUpgradeBody,
+  SessionVerifyBody,
+} from "@/lib/api/types";
 import { qk } from "./queryKeys";
 
 export { qk } from "./queryKeys";
@@ -83,7 +88,7 @@ export const useApartmentPlansBySlug = (slug: string | null | undefined) =>
     enabled: !!slug,
   });
 
-// --- Core ---
+// --- Core: me ---
 
 export function useMe() {
   return useQuery({
@@ -92,6 +97,122 @@ export function useMe() {
     retry: (failureCount, error) => {
       if ((error as ApiError)?.status === 401) return false;
       return failureCount < 1;
+    },
+  });
+}
+
+// --- Core: cart ---
+
+export const useMyCart = () =>
+  useQuery({
+    queryKey: qk.cart,
+    queryFn: core.getMyCart,
+    retry: (n, e) => (e as ApiError)?.status === 401 ? false : n < 1,
+  });
+
+export function useAddToCart() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (body: Parameters<typeof core.addCartItem>[0]) =>
+      core.addCartItem(body),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: qk.cart });
+    },
+  });
+}
+
+export function useRemoveCartItem() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (item_id: string) => core.removeCartItem(item_id),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: qk.cart });
+    },
+  });
+}
+
+// --- Core: likes ---
+
+export const useMyLikes = () =>
+  useQuery({
+    queryKey: qk.myLikes,
+    queryFn: core.listMyLikes,
+    retry: (n, e) => (e as ApiError)?.status === 401 ? false : n < 1,
+  });
+
+type ToggleLikeVars = {
+  target_kind: Like["target_kind"];
+  target_id: string;
+  currentlyLiked: boolean;
+};
+
+export function useToggleLike() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ target_kind, target_id, currentlyLiked }: ToggleLikeVars) => {
+      if (currentlyLiked) {
+        await core.removeLike(target_kind, target_id);
+        return { added: false as const, target_kind, target_id };
+      }
+      const created = await core.addLike(target_kind, target_id);
+      return { added: true as const, like: created };
+    },
+    onMutate: async ({ target_kind, target_id, currentlyLiked }) => {
+      await qc.cancelQueries({ queryKey: qk.myLikes });
+      const previous = qc.getQueryData<Like[]>(qk.myLikes) ?? [];
+      const next = currentlyLiked
+        ? previous.filter(
+            (l) => !(l.target_kind === target_kind && l.target_id === target_id),
+          )
+        : [
+            ...previous,
+            {
+              id: `optimistic-${target_id}`,
+              user_id: "me",
+              target_kind,
+              target_id,
+              created_at: new Date().toISOString(),
+            } satisfies Like,
+          ];
+      qc.setQueryData(qk.myLikes, next);
+      return { previous };
+    },
+    onError: (_e, _v, ctx) => {
+      if (ctx?.previous) qc.setQueryData(qk.myLikes, ctx.previous);
+    },
+    onSettled: () => {
+      qc.invalidateQueries({ queryKey: qk.myLikes });
+    },
+  });
+}
+
+// --- Core: sessions / auth ---
+
+export const useSessionsUpgrade = () =>
+  useMutation({
+    mutationFn: (body: SessionUpgradeBody) => core.sessionsUpgrade(body),
+  });
+
+export function useSessionsVerify() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (body: SessionVerifyBody) => core.sessionsVerify(body),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: qk.me });
+      qc.invalidateQueries({ queryKey: qk.cart });
+      qc.invalidateQueries({ queryKey: qk.myLikes });
+    },
+  });
+}
+
+export function useLogout() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: () => core.sessionsLogout(),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: qk.me });
+      qc.invalidateQueries({ queryKey: qk.cart });
+      qc.invalidateQueries({ queryKey: qk.myLikes });
     },
   });
 }

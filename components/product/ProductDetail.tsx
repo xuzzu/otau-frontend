@@ -13,7 +13,9 @@ import { pickText } from "@/lib/i18n/text";
 import { T } from "@/lib/format";
 import {
   useItems,
+  useMyLikes,
   usePartners,
+  useToggleLike,
   useCategoryLabel,
   useRoomTypeLabel,
   useStyleLabel,
@@ -299,7 +301,8 @@ export function ProductDetail({ product }: { product: Item }) {
             </div>
           )}
 
-          <div style={{ marginTop: 26, display: "flex", gap: 10 }}>
+          <LikeRow productId={product.id} t={t} />
+          <div style={{ marginTop: 16, display: "flex", gap: 10 }}>
             <button
               onClick={() => (inRoom ? remove(product.id) : add(product.id))}
               className={inRoom ? "btn ghost" : "btn"}
@@ -307,13 +310,6 @@ export function ProductDetail({ product }: { product: Item }) {
             >
               {inRoom ? t("product.remove") : t("product.add")}
               <span className="arrow">→</span>
-            </button>
-            <button
-              className="btn ghost"
-              style={{ padding: "18px" }}
-              aria-label={t("product.save")}
-            >
-              <Heart />
             </button>
           </div>
 
@@ -417,14 +413,54 @@ function Cube3DIcon() {
   );
 }
 
-function Heart() {
+function LikeRow({
+  productId,
+  t,
+}: {
+  productId: string;
+  t: (k: string, params?: Record<string, string | number>) => string;
+}) {
+  const likes = useMyLikes();
+  const toggle = useToggleLike();
+  const isLiked = !!likes.data?.some(
+    (l) => l.target_kind === "item" && l.target_id === productId,
+  );
+  return (
+    <button
+      type="button"
+      onClick={() =>
+        toggle.mutate({
+          target_kind: "item",
+          target_id: productId,
+          currentlyLiked: isLiked,
+        })
+      }
+      className="btn ghost"
+      style={{
+        marginTop: 22,
+        padding: "12px 16px",
+        display: "inline-flex",
+        alignItems: "center",
+        gap: 10,
+        alignSelf: "flex-start",
+      }}
+      aria-pressed={isLiked}
+      aria-label={isLiked ? t("product.liked") : t("product.like")}
+    >
+      <Heart filled={isLiked} />
+      <span>{isLiked ? t("product.liked") : t("product.like")}</span>
+    </button>
+  );
+}
+
+function Heart({ filled = false }: { filled?: boolean }) {
   return (
     <svg width="18" height="16" viewBox="0 0 18 16" fill="none" aria-hidden>
       <path
         d="M9 14 C 3 10, 1 7, 1 4.5 a 3.5 3.5 0 0 1 7 0 a 3.5 3.5 0 0 1 7 0 C 15 7, 13 10, 9 14 Z"
         stroke="#1A1612"
         strokeWidth="1"
-        fill="none"
+        fill={filled ? "#1A1612" : "none"}
       />
     </svg>
   );

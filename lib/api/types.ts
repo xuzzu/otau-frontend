@@ -252,14 +252,38 @@ export type CreateGenerationBody = {
 
 // --- Core (subset used by frontend) ---
 
+export type UserType = "guest" | "client" | "internal";
+export type UserStatus = "anonymous" | "active" | "suspended" | "deleted";
+
 export type User = {
   id: string;
-  phone_e164: string | null;
+  type: UserType;
+  status: UserStatus;
+  phone: string | null;
   email: string | null;
   display_name: string | null;
-  status: string;
+  locale: string;
+  email_verified_at: string | null;
+  phone_verified_at: string | null;
+  last_active_at: string | null;
   created_at: string;
   updated_at: string;
+};
+
+export type CredentialKind = "email_otp" | "sms_otp";
+
+export type SessionUpgradeBody = {
+  kind: CredentialKind;
+  identifier: string;
+};
+
+export type SessionVerifyBody = SessionUpgradeBody & {
+  code: string;
+};
+
+export type OtpStartedOut = {
+  sent_to: string;
+  dev_code: string | null;
 };
 
 export type CartItem = {

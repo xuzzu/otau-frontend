@@ -54,4 +54,55 @@ describe("core client", () => {
     expect(qs.get("category")).toBe("trend");
     expect(qs.get("limit")).toBe("5");
   });
+
+  test("sessionsUpgrade POSTs kind + identifier to /sessions/upgrade", async () => {
+    await core.sessionsUpgrade({
+      kind: "email_otp",
+      identifier: "x@y.com",
+    });
+    const [url, init] = fetchMock.mock.calls[0]!;
+    expect(url).toBe(`${BASES.core}/sessions/upgrade`);
+    expect(init.method).toBe("POST");
+    expect(JSON.parse(init.body as string)).toEqual({
+      kind: "email_otp",
+      identifier: "x@y.com",
+    });
+  });
+
+  test("sessionsVerify POSTs kind + identifier + code", async () => {
+    await core.sessionsVerify({
+      kind: "sms_otp",
+      identifier: "+77001234567",
+      code: "042837",
+    });
+    const [url, init] = fetchMock.mock.calls[0]!;
+    expect(url).toBe(`${BASES.core}/sessions/verify`);
+    expect(init.method).toBe("POST");
+    expect(JSON.parse(init.body as string)).toEqual({
+      kind: "sms_otp",
+      identifier: "+77001234567",
+      code: "042837",
+    });
+  });
+
+  test("sessionsLogout POSTs and resolves null on 204", async () => {
+    fetchMock.mockImplementationOnce(
+      async () => new Response(null, { status: 204 }),
+    );
+    const out = await core.sessionsLogout();
+    const [url, init] = fetchMock.mock.calls[0]!;
+    expect(url).toBe(`${BASES.core}/sessions/logout`);
+    expect(init.method).toBe("POST");
+    expect(out).toBeNull();
+  });
+
+  test("sessionsExtend POSTs to /sessions/extend", async () => {
+    fetchMock.mockImplementationOnce(
+      async () => new Response(null, { status: 204 }),
+    );
+    await core.sessionsExtend();
+    const [url, init] = fetchMock.mock.calls[0]!;
+    expect(url).toBe(`${BASES.core}/sessions/extend`);
+    expect(init.method).toBe("POST");
+  });
 });

@@ -8,11 +8,6 @@ describe("apiFetch", () => {
   beforeEach(() => {
     fetchMock = vi.fn();
     global.fetch = fetchMock as typeof fetch;
-    // Clear cookies
-    document.cookie.split("; ").forEach((c) => {
-      const k = c.split("=")[0];
-      if (k) document.cookie = `${k}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/`;
-    });
   });
   afterEach(() => {
     global.fetch = realFetch;
@@ -45,25 +40,13 @@ describe("apiFetch", () => {
     expect(headers.get("Accept")).toBe("application/json");
   });
 
-  test("forwards otau_session cookie as X-Otau-Session header", async () => {
-    document.cookie = "otau_session=abc123; path=/";
+  test("sets credentials: 'include' so cross-origin httponly cookies are sent", async () => {
     fetchMock.mockResolvedValueOnce(new Response("{}", { status: 200 }));
 
     await apiFetch("http://api.test", "/me");
 
     const [, init] = fetchMock.mock.calls[0]!;
-    const headers = init.headers as Headers;
-    expect(headers.get("X-Otau-Session")).toBe("abc123");
-  });
-
-  test("omits session header when cookie not set", async () => {
-    fetchMock.mockResolvedValueOnce(new Response("{}", { status: 200 }));
-
-    await apiFetch("http://api.test", "/me");
-
-    const [, init] = fetchMock.mock.calls[0]!;
-    const headers = init.headers as Headers;
-    expect(headers.get("X-Otau-Session")).toBeNull();
+    expect(init.credentials).toBe("include");
   });
 
   test("throws ApiError with status + body on non-2xx", async () => {
