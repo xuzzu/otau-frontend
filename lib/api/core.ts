@@ -61,6 +61,13 @@ export const removeCartItem = (item_id: string) =>
     method: "DELETE",
   });
 
+export const updateCartItem = (item_id: string, quantity: number) =>
+  apiFetch<CartItem>(B, `/me/cart/items/${encodeURIComponent(item_id)}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ quantity }),
+  });
+
 // --- Likes ---
 
 export const listMyLikes = () => apiFetch<Like[]>(B, `/me/likes`);
