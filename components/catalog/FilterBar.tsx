@@ -5,13 +5,13 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { Search, X } from "lucide-react";
 import {
-  CATEGORY_LABELS,
-  STYLE_LABELS,
-  type Category,
-  type Style,
+  CURATED_STYLE_LABELS,
+  CURATED_STYLE_SLUGS,
+  prettyTaxonomyLabel,
 } from "@/lib/products";
-import { usePartners } from "@/lib/hooks";
-import { useT } from "@/lib/i18n";
+import { usePartners, useTaxonomy } from "@/lib/hooks";
+import { useLocale, useT } from "@/lib/i18n";
+import { pickText } from "@/lib/i18n/text";
 
 const SORT_KEYS = ["curated", "price-asc", "price-desc", "new"] as const;
 
@@ -19,14 +19,15 @@ export function FilterBar({ resultCount }: { resultCount: number }) {
   const router = useRouter();
   const sp = useSearchParams();
   const { t } = useT();
+  const locale = useLocale();
 
   const partnersQ = usePartners();
   const partners = partnersQ.data ?? [];
+  const { indexed } = useTaxonomy();
 
   const q = sp.get("q") ?? "";
-  const categories = (sp.get("category")?.split(",").filter(Boolean) ??
-    []) as Category[];
-  const styles = (sp.get("style")?.split(",").filter(Boolean) ?? []) as Style[];
+  const categories = sp.get("category")?.split(",").filter(Boolean) ?? [];
+  const styles = sp.get("style")?.split(",").filter(Boolean) ?? [];
   const sellers = sp.get("seller")?.split(",").filter(Boolean) ?? [];
   const sort = sp.get("sort") ?? "curated";
 
@@ -36,6 +37,31 @@ export function FilterBar({ resultCount }: { resultCount: number }) {
     return out;
   }, [partners]);
 
+  const categoryOptions = useMemo(() => {
+    if (!indexed) return [] as { value: string; label: string }[];
+    return Object.values(indexed.categories)
+      .map((c) => ({
+        value: c.slug,
+        label: prettyTaxonomyLabel(pickText(c.name, locale), c.slug),
+      }))
+      .sort((a, b) => a.label.localeCompare(b.label));
+  }, [indexed, locale]);
+
+  const styleOptions = useMemo(() => {
+    if (!indexed) return [] as { value: string; label: string }[];
+    const have = new Set(Object.values(indexed.styles).map((s) => s.slug));
+    return CURATED_STYLE_SLUGS.filter((s) => have.has(s)).map((s) => ({
+      value: s,
+      label: CURATED_STYLE_LABELS[s],
+    }));
+  }, [indexed]);
+
+  const categoryLabelBySlug = useMemo(() => {
+    const out: Record<string, string> = {};
+    for (const o of categoryOptions) out[o.value] = o.label;
+    return out;
+  }, [categoryOptions]);
+
   const setParam = useCallback(
     (key: string, value: string | null) => {
       const next = new URLSearchParams(sp.toString());
@@ -43,7 +69,7 @@ export function FilterBar({ resultCount }: { resultCount: number }) {
       else next.set(key, value);
       router.replace(`/catalog?${next.toString()}`, { scroll: false });
     },
-    [sp, router]
+    [sp, router],
   );
 
   const toggleInList = useCallback(
@@ -53,38 +79,55 @@ export function FilterBar({ resultCount }: { resultCount: number }) {
       else set.add(value);
       setParam(key, set.size ? Array.from(set).join(",") : null);
     },
-    [setParam]
+    [setParam],
   );
 
   const activeChips = useMemo(() => {
-    const out: { id: string; label: string; onRemove: () => void }[] = [];
-    categories.forEach((c) =>
+    const out: {
+      id: string;
+      label: string;
+      onRemove: () => void;
+      dimmed: boolean;
+    }[] = [];
+    categories.forEach((c, i) =>
       out.push({
         id: `cat-${c}`,
-        label: `${t("catalog.filter.category")} · ${CATEGORY_LABELS[c] ?? c}`,
+        label: `${t("catalog.filter.category")} · ${categoryLabelBySlug[c] ?? c}`,
         onRemove: () => toggleInList("category", categories, c),
-      })
+        dimmed: i > 0,
+      }),
     );
-    styles.forEach((s) =>
+    styles.forEach((s, i) =>
       out.push({
         id: `style-${s}`,
-        label: `${t("catalog.filter.style")} · ${STYLE_LABELS[s] ?? s}`,
+        label: `${t("catalog.filter.style")} · ${
+          CURATED_STYLE_LABELS[s as keyof typeof CURATED_STYLE_LABELS] ?? s
+        }`,
         onRemove: () => toggleInList("style", styles, s),
-      })
+        dimmed: i > 0,
+      }),
     );
-    sellers.forEach((s) =>
+    sellers.forEach((s, i) =>
       out.push({
         id: `seller-${s}`,
         label: `${t("catalog.filter.seller")} · ${partnerNameBySlug[s] ?? s}`,
         onRemove: () => toggleInList("seller", sellers, s),
-      })
+        dimmed: i > 0,
+      }),
     );
     return out;
-  }, [categories, styles, sellers, partnerNameBySlug, toggleInList, t]);
+  }, [
+    categories,
+    styles,
+    sellers,
+    partnerNameBySlug,
+    categoryLabelBySlug,
+    toggleInList,
+    t,
+  ]);
 
   return (
     <div>
-      {/* Header band */}
       <div
         style={{
           padding: "28px 56px 16px",
@@ -107,17 +150,10 @@ export function FilterBar({ resultCount }: { resultCount: number }) {
               fontWeight: 400,
             }}
           >
-            {t("catalog.h1.main")}{" "}
-            <span className="it">{t("catalog.h1.italic")}</span>
+            {t("catalog.h1.main")} <span className="it">{t("catalog.h1.italic")}</span>
           </h2>
         </div>
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 24,
-          }}
-        >
+        <div style={{ display: "flex", alignItems: "center", gap: 24 }}>
           <motion.span
             key={resultCount}
             initial={{ opacity: 0.4 }}
@@ -129,7 +165,6 @@ export function FilterBar({ resultCount }: { resultCount: number }) {
         </div>
       </div>
 
-      {/* Sticky filter bar */}
       <div
         style={{
           margin: "0 56px",
@@ -143,7 +178,6 @@ export function FilterBar({ resultCount }: { resultCount: number }) {
           flexWrap: "wrap",
         }}
       >
-        {/* Search */}
         <label
           style={{
             display: "flex",
@@ -190,7 +224,6 @@ export function FilterBar({ resultCount }: { resultCount: number }) {
           )}
         </label>
 
-        {/* Category & Style add-chips */}
         <div
           style={{
             display: "flex",
@@ -202,19 +235,13 @@ export function FilterBar({ resultCount }: { resultCount: number }) {
         >
           <ChipMenu
             label={t("catalog.filter.category")}
-            options={Object.entries(CATEGORY_LABELS).map(([value, label]) => ({
-              value,
-              label,
-            }))}
+            options={categoryOptions}
             selected={categories}
             onToggle={(v) => toggleInList("category", categories, v)}
           />
           <ChipMenu
             label={t("catalog.filter.style")}
-            options={Object.entries(STYLE_LABELS).map(([value, label]) => ({
-              value,
-              label,
-            }))}
+            options={styleOptions}
             selected={styles}
             onToggle={(v) => toggleInList("style", styles, v)}
           />
@@ -231,12 +258,15 @@ export function FilterBar({ resultCount }: { resultCount: number }) {
                 layout
                 key={c.id}
                 initial={{ opacity: 0, scale: 0.85 }}
-                animate={{ opacity: 1, scale: 1 }}
+                animate={{ opacity: c.dimmed ? 0.55 : 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.85 }}
                 transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
                 onClick={c.onRemove}
                 className="chip solid"
                 style={{ cursor: "pointer", fontSize: 11 }}
+                title={
+                  c.dimmed ? "Only the first filter in this group applies" : undefined
+                }
               >
                 {c.label} <span style={{ marginLeft: 4 }}>×</span>
               </motion.button>
@@ -244,14 +274,7 @@ export function FilterBar({ resultCount }: { resultCount: number }) {
           </AnimatePresence>
         </div>
 
-        {/* Sort */}
-        <div
-          style={{
-            display: "flex",
-            gap: 12,
-            alignItems: "center",
-          }}
-        >
+        <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
           <span className="label">{t("catalog.sort")}</span>
           <select
             value={sort}

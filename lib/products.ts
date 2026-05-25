@@ -1,8 +1,9 @@
-// Type aliases + static labelling tables for the catalog UI.
+// Type aliases + procedural-model keys used by the catalog UI.
 //
-// The backend now ships full Item objects under "@/lib/api/types"; this
-// file keeps the dataset-level taxonomy labels the UI still uses for
-// chip menus until those are sourced from the live /categories endpoint.
+// Categories and Styles are now sourced from the live /categories and
+// /styles taxonomy endpoints, not from a closed enum here. The previous
+// closed unions (with snake-case keys) drove a slug mismatch bug
+// against the backend's hyphenated slugs.
 
 import type { Item, ItemSummary } from "./api/types";
 
@@ -22,57 +23,22 @@ export type ModelKey =
   | "bench"
   | "console";
 
-// The 17 subcategories that exist in the seeded dataset.
-export type Category =
-  | "armchair"
-  | "bar_stool"
-  | "bed"
-  | "coffee_table"
-  | "desk"
-  | "dining_chair"
-  | "dining_table"
-  | "dresser"
-  | "floor_lamp"
-  | "nightstand"
-  | "office_chair"
-  | "shelving_unit"
-  | "sofa_corner"
-  | "sofa_straight"
-  | "tv_console"
-  | "vanity"
-  | "wardrobe";
+// Curated styles the frontend chooses to expose in the filter UI.
+// All other style rows in the catalog DB are tag-hints from the old
+// migration and stay hidden until the data is cleaned up.
+export const CURATED_STYLE_SLUGS = [
+  "scandinavian",
+  "modern",
+  "loft",
+  "classic",
+  "minimal",
+  "japandi",
+] as const;
+export type CuratedStyleSlug = (typeof CURATED_STYLE_SLUGS)[number];
+// Back-compat alias for the design wizard, which only ever uses curated styles.
+export type Style = CuratedStyleSlug;
 
-export const CATEGORY_LABELS: Record<Category, string> = {
-  armchair: "Armchairs",
-  bar_stool: "Bar stools",
-  bed: "Beds",
-  coffee_table: "Coffee tables",
-  desk: "Desks",
-  dining_chair: "Dining chairs",
-  dining_table: "Dining tables",
-  dresser: "Dressers",
-  floor_lamp: "Floor lamps",
-  nightstand: "Nightstands",
-  office_chair: "Office chairs",
-  shelving_unit: "Shelving",
-  sofa_corner: "Sofas — corner",
-  sofa_straight: "Sofas — straight",
-  tv_console: "TV consoles",
-  vanity: "Vanities",
-  wardrobe: "Wardrobes",
-};
-
-// The six top-level styles in the seeded dataset (the freeform `tag_hints`
-// remain available for advanced filtering later).
-export type Style =
-  | "scandinavian"
-  | "modern"
-  | "loft"
-  | "classic"
-  | "minimal"
-  | "japandi";
-
-export const STYLE_LABELS: Record<Style, string> = {
+export const CURATED_STYLE_LABELS: Record<CuratedStyleSlug, string> = {
   scandinavian: "Scandinavian",
   modern: "Modern",
   loft: "Loft",
@@ -85,10 +51,19 @@ export type SortKey = "curated" | "price-asc" | "price-desc" | "new";
 
 export type FilterState = {
   q?: string;
-  category?: Category[];
-  style?: Style[];
-  seller?: string[];      // partner slugs
-  room?: string[];        // Living | Bedroom | Kitchen | Workspace
+  category?: string[];
+  style?: string[];
+  seller?: string[];
+  room?: string[];
   priceMax?: number;
   sort?: SortKey;
 };
+
+// Title-cases a backend slug like "coffee-table" or "coffee_table" into
+// "Coffee Table" for chip labels until the DB ships nice display names.
+export function prettyTaxonomyLabel(rawName: string, slug: string): string {
+  const candidate = rawName || slug;
+  return candidate
+    .replace(/[_-]+/g, " ")
+    .replace(/\b\w/g, (c) => c.toUpperCase());
+}
