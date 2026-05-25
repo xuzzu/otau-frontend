@@ -44,6 +44,9 @@ const kz: Dict = {
 
   "product.like": "Сақтау",
   "product.liked": "Сақталды",
+  "product.add_to_cart": "Себетке қосу",
+  "product.in_cart_view": "Себетте — қарау",
+  "product.unavailable": "Қолжетімсіз",
 
   // ───── hero ─────
   "hero.kicker": "◇ I том — кілт бұрылған сәттен бастап",
@@ -434,6 +437,9 @@ const ru: Dict = {
 
   "product.like": "Сохранить",
   "product.liked": "Сохранено",
+  "product.add_to_cart": "Добавить в корзину",
+  "product.in_cart_view": "В корзине — открыть",
+  "product.unavailable": "Недоступно",
 
   // ───── hero ─────
   "hero.kicker": "◇ Том 01 — Дом мебели для повёрнутого ключа",

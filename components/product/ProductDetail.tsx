@@ -7,19 +7,20 @@ import { ProductHero3D } from "./ProductHero3D";
 import { Product3DViewerModal } from "./Product3DViewerModal";
 import { Photo } from "@/components/ui/Photo";
 import { TryInARTrigger } from "@/components/ar/TryInAR";
-import { useMyRoom } from "@/lib/store";
 import { useT, useLocale } from "@/lib/i18n";
 import { pickText } from "@/lib/i18n/text";
 import { T } from "@/lib/format";
 import {
+  useAddToCart,
+  useCategoryLabel,
   useItems,
+  useMyCart,
   useMyLikes,
   usePartners,
-  useToggleLike,
-  useCategoryLabel,
   useRoomTypeLabel,
   useStyleLabel,
   useTaxonomy,
+  useToggleLike,
 } from "@/lib/hooks";
 import { resolveCatalogAsset } from "@/lib/api/env";
 import type { Item, ItemImage } from "@/lib/api/types";
@@ -37,9 +38,6 @@ function pickHero(images: ItemImage[]): ItemImage | null {
 export function ProductDetail({ product }: { product: Item }) {
   const { t } = useT();
   const locale = useLocale();
-  const inRoom = useMyRoom((s) => s.has(product.id));
-  const add = useMyRoom((s) => s.add);
-  const remove = useMyRoom((s) => s.remove);
 
   const hero = pickHero(product.images);
   const heroUrl = resolveCatalogAsset(hero?.url);
@@ -303,14 +301,11 @@ export function ProductDetail({ product }: { product: Item }) {
 
           <LikeRow productId={product.id} t={t} />
           <div style={{ marginTop: 16, display: "flex", gap: 10 }}>
-            <button
-              onClick={() => (inRoom ? remove(product.id) : add(product.id))}
-              className={inRoom ? "btn ghost" : "btn"}
-              style={{ flex: 1, justifyContent: "center", padding: "18px" }}
-            >
-              {inRoom ? t("product.remove") : t("product.add")}
-              <span className="arrow">→</span>
-            </button>
+            <AddToCartButton
+              itemId={product.id}
+              variantId={defaultVariant?.id ?? null}
+              t={t}
+            />
           </div>
 
           <div style={{ marginTop: 16 }}>
@@ -463,5 +458,63 @@ function Heart({ filled = false }: { filled?: boolean }) {
         fill={filled ? "#1A1612" : "none"}
       />
     </svg>
+  );
+}
+
+function AddToCartButton({
+  itemId,
+  variantId,
+  t,
+}: {
+  itemId: string;
+  variantId: string | null;
+  t: (k: string, params?: Record<string, string | number>) => string;
+}) {
+  const cart = useMyCart();
+  const add = useAddToCart();
+  const inCart = !!cart.data?.items.some((it) => it.item_id === itemId);
+
+  if (!variantId) {
+    return (
+      <button
+        className="btn ghost"
+        disabled
+        style={{ flex: 1, justifyContent: "center", padding: "18px" }}
+      >
+        {t("product.unavailable")}
+      </button>
+    );
+  }
+
+  if (inCart) {
+    return (
+      <Link
+        href="/cart"
+        className="btn ghost"
+        style={{
+          flex: 1,
+          justifyContent: "center",
+          padding: "18px",
+          textDecoration: "none",
+        }}
+      >
+        {t("product.in_cart_view")}
+        <span className="arrow">→</span>
+      </Link>
+    );
+  }
+
+  return (
+    <button
+      onClick={() =>
+        add.mutate({ variant_id: variantId, item_id: itemId, quantity: 1 })
+      }
+      disabled={add.isPending}
+      className="btn"
+      style={{ flex: 1, justifyContent: "center", padding: "18px" }}
+    >
+      {t("product.add_to_cart")}
+      <span className="arrow">→</span>
+    </button>
   );
 }
