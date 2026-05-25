@@ -145,10 +145,10 @@ export function ProductDetail({ product }: { product: Item }) {
           {product.images.length > 0 && (
             <div
               style={{
-                display: "grid",
-                gridTemplateColumns: `repeat(${product.images.length + (modelAssetUrl ? 1 : 0)}, 1fr)`,
+                display: "flex",
                 gap: 10,
-                height: 86,
+                flexWrap: "nowrap",
+                overflowX: "auto",
               }}
             >
               {product.images.map((c) => {
@@ -159,6 +159,8 @@ export function ProductDetail({ product }: { product: Item }) {
                     onClick={() => setActiveImage(url)}
                     style={{
                       position: "relative",
+                      flex: "0 0 96px",
+                      aspectRatio: "4 / 3",
                       outline:
                         activeImage === url
                           ? "2px solid var(--color-clay)"
@@ -180,6 +182,8 @@ export function ProductDetail({ product }: { product: Item }) {
                   onClick={() => setViewer3DOpen(true)}
                   style={{
                     position: "relative",
+                    flex: "0 0 96px",
+                    aspectRatio: "4 / 3",
                     border: "1px solid var(--color-hair)",
                     background:
                       "radial-gradient(ellipse at 50% 60%, #FBF8F2 0%, #F4EFE6 70%, #E8DFD0 100%)",
