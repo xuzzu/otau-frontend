@@ -4,12 +4,15 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useT } from "@/lib/i18n";
-import { useLogout, useMe, useMyCart } from "@/lib/hooks";
+import { useLogout, useMe, useMyCart, useMyLikes } from "@/lib/hooks";
 
 export function UserMenu({ inverse = false }: { inverse?: boolean }) {
   const { t } = useT();
   const me = useMe();
   const cart = useMyCart();
+  const likes = useMyLikes();
+  const likeCount =
+    likes.data?.filter((l) => l.target_kind === "item").length ?? 0;
   const logout = useLogout();
   const router = useRouter();
   const pathname = usePathname();
@@ -32,6 +35,39 @@ export function UserMenu({ inverse = false }: { inverse?: boolean }) {
 
   return (
     <div ref={ref} style={{ display: "flex", alignItems: "center", gap: 14 }}>
+      <Link
+        href="/likes"
+        style={{
+          color: fg,
+          textDecoration: "none",
+          display: "flex",
+          alignItems: "center",
+          gap: 6,
+          position: "relative",
+        }}
+        aria-label="Liked items"
+        title="Liked items"
+      >
+        <HeartNav inverse={inverse} />
+        {likeCount > 0 && (
+          <span
+            className="mono"
+            style={{
+              fontSize: 10,
+              background: "var(--color-clay)",
+              color: "var(--color-paper)",
+              padding: "1px 6px",
+              borderRadius: 999,
+              minWidth: 16,
+              textAlign: "center",
+              lineHeight: 1.4,
+            }}
+          >
+            {likeCount}
+          </span>
+        )}
+      </Link>
+
       <Link
         href="/cart"
         style={{
@@ -140,6 +176,20 @@ export function UserMenu({ inverse = false }: { inverse?: boolean }) {
         </Link>
       )}
     </div>
+  );
+}
+
+function HeartNav({ inverse }: { inverse?: boolean }) {
+  const c = inverse ? "#FBF8F2" : "#1A1612";
+  return (
+    <svg width="16" height="14" viewBox="0 0 18 16" fill="none" aria-hidden>
+      <path
+        d="M9 14 C 3 10, 1 7, 1 4.5 a 3.5 3.5 0 0 1 7 0 a 3.5 3.5 0 0 1 7 0 C 15 7, 13 10, 9 14 Z"
+        stroke={c}
+        strokeWidth="1"
+        fill="none"
+      />
+    </svg>
   );
 }
 
