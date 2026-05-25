@@ -90,7 +90,7 @@ export function ProductDetail({ product }: { product: Item }) {
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: "minmax(0, 1fr) 460px",
+          gridTemplateColumns: "minmax(0, 1fr) minmax(380px, 460px)",
           gap: 40,
           padding: "24px 56px",
           alignItems: "stretch",
