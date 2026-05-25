@@ -5,6 +5,7 @@ import * as catalog from "@/lib/api/catalog";
 import * as core from "@/lib/api/core";
 import { ApiError } from "@/lib/api/http";
 import type {
+  Cart,
   Like,
   SessionUpgradeBody,
   SessionVerifyBody,
@@ -128,6 +129,31 @@ export function useRemoveCartItem() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: qk.cart });
     },
+  });
+}
+
+export function useUpdateCartItem() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ item_id, quantity }: { item_id: string; quantity: number }) =>
+      core.updateCartItem(item_id, quantity),
+    onMutate: async ({ item_id, quantity }) => {
+      await qc.cancelQueries({ queryKey: qk.cart });
+      const previous = qc.getQueryData<Cart>(qk.cart);
+      if (previous) {
+        qc.setQueryData<Cart>(qk.cart, {
+          ...previous,
+          items: previous.items.map((it) =>
+            it.id === item_id ? { ...it, quantity } : it,
+          ),
+        });
+      }
+      return { previous };
+    },
+    onError: (_e, _v, ctx) => {
+      if (ctx?.previous) qc.setQueryData(qk.cart, ctx.previous);
+    },
+    onSettled: () => qc.invalidateQueries({ queryKey: qk.cart }),
   });
 }
 
