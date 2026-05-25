@@ -123,12 +123,18 @@ export function ProductDetail({ product }: { product: Item }) {
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, ease }}
-            style={{ position: "relative", height: 620 }}
+            style={{
+              position: "relative",
+              width: "100%",
+              aspectRatio: "4 / 3",
+              background: "var(--color-cream)",
+            }}
           >
             {activeImage ? (
               <Photo
                 src={activeImage}
                 label={product.name}
+                fit="contain"
                 style={{ position: "absolute", inset: 0 }}
               />
             ) : (
