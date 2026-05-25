@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { Photo } from "@/components/ui/Photo";
@@ -19,6 +19,7 @@ import type {
   ItemSummary,
 } from "@/lib/api/types";
 import { SceneViewport } from "./SceneViewport";
+import { joinHotspotsToItems } from "@/lib/studio/joinHotspots";
 
 type RoomBox = {
   key: RoomKey;
@@ -62,6 +63,8 @@ export function StudioCanvas() {
   const [hiddenIds, setHiddenIds] = useState<Set<string>>(new Set());
   const [lightingIdx, setLightingIdx] = useState(0);
   const [conceptOpen, setConceptOpen] = useState(false);
+  const [activeId, setActiveId] = useState<string | null>(null);
+  const rowRefsRef = useRef(new Map<string, HTMLDivElement>());
   const addMyRoom = useMyRoom((s) => s.add);
 
   const active: RoomKey =
@@ -102,9 +105,19 @@ export function StudioCanvas() {
     setHiddenIds(new Set());
   }, [active]);
 
+  useEffect(() => {
+    setActiveId(null);
+  }, [active]);
+
   const visibleItems = useMemo(
     () => items.filter((it) => !hiddenIds.has(it.id)),
     [items, hiddenIds]
+  );
+
+  const hotspots = activeGenRoom?.hotspots ?? [];
+  const rows = useMemo(
+    () => joinHotspotsToItems(visibleItems, hotspots, hiddenIds),
+    [visibleItems, hotspots, hiddenIds],
   );
 
   const partnersQ = usePartners();
@@ -131,15 +144,28 @@ export function StudioCanvas() {
   );
   const isApartment = scope === "apartment";
 
-  const handleRemove = (id: string) =>
+  const handleRemove = (id: string) => {
     setHiddenIds((prev) => {
       const next = new Set(prev);
       next.add(id);
       return next;
     });
+    if (activeId === id) setActiveId(null);
+  };
   const handleRestoreAll = () => setHiddenIds(new Set());
   const handleAddAllToMyRoom = () => {
     visibleItems.forEach((it) => addMyRoom(it.id));
+  };
+
+  const handleActivate = (itemId: string) => {
+    setActiveId(itemId);
+    const el = rowRefsRef.current.get(itemId);
+    if (el) el.scrollIntoView({ block: "center", behavior: "smooth" });
+  };
+
+  const handleHoverEnter = (itemId: string) => setActiveId(itemId);
+  const handleHoverLeave = (_itemId: string) => {
+    // intentionally sticky: don't clear on hover-leave
   };
 
   return (
@@ -355,11 +381,11 @@ export function StudioCanvas() {
 
           <SceneViewport
             genRoom={activeGenRoom}
-            rows={[]}
-            activeId={null}
-            onActivate={() => {}}
-            onHoverEnter={() => {}}
-            onHoverLeave={() => {}}
+            rows={rows}
+            activeId={activeId}
+            onActivate={handleActivate}
+            onHoverEnter={handleHoverEnter}
+            onHoverLeave={handleHoverLeave}
           />
 
           <div
@@ -483,13 +509,20 @@ export function StudioCanvas() {
                 )}
               </div>
             ) : (
-              visibleItems.map((p, i) => (
+              rows.map((r) => (
                 <StudioProductItem
-                  key={p.id}
-                  n={i + 1}
-                  item={p}
-                  partnerName={partnerById.get(p.partner_id) ?? ""}
-                  onRemove={() => handleRemove(p.id)}
+                  key={r.item.id}
+                  n={r.n}
+                  item={r.item}
+                  partnerName={partnerById.get(r.item.partner_id) ?? ""}
+                  active={activeId === r.item.id}
+                  onActivate={() => setActiveId(r.item.id)}
+                  onHoverEnter={() => setActiveId(r.item.id)}
+                  rowRef={(el) => {
+                    if (el) rowRefsRef.current.set(r.item.id, el);
+                    else rowRefsRef.current.delete(r.item.id);
+                  }}
+                  onRemove={() => handleRemove(r.item.id)}
                   onReplace={() =>
                     alert("Replace — pick another candidate for this piece. Not wired yet.")
                   }
@@ -603,26 +636,38 @@ function StudioProductItem({
   n,
   item,
   partnerName,
+  active,
+  rowRef,
+  onActivate,
+  onHoverEnter,
   onRemove,
   onReplace,
 }: {
   n: number;
   item: ItemSummary;
   partnerName: string;
+  active?: boolean;
+  rowRef?: (el: HTMLDivElement | null) => void;
+  onActivate?: () => void;
+  onHoverEnter?: () => void;
   onRemove?: () => void;
   onReplace?: () => void;
 }) {
   return (
     <div
+      ref={rowRef}
+      onClick={onActivate}
+      onMouseEnter={onHoverEnter}
       className="studio-product-item"
       style={{
         display: "flex",
         gap: 14,
         padding: "16px 20px",
         borderBottom: "1px solid var(--color-hair)",
-        background: "transparent",
-        borderLeft: "2px solid transparent",
+        background: active ? "rgba(181,83,46,.05)" : "transparent",
+        borderLeft: `2px solid ${active ? "var(--color-clay)" : "transparent"}`,
         transition: "background .2s, border-left-color .2s",
+        cursor: "pointer",
       }}
     >
       <Link
@@ -680,7 +725,10 @@ function StudioProductItem({
       >
         {onReplace && (
           <button
-            onClick={onReplace}
+            onClick={(e) => {
+              e.stopPropagation();
+              onReplace();
+            }}
             className="mono"
             title="Replace with another candidate"
             style={{
@@ -699,7 +747,10 @@ function StudioProductItem({
         )}
         {onRemove && (
           <button
-            onClick={onRemove}
+            onClick={(e) => {
+              e.stopPropagation();
+              onRemove();
+            }}
             className="mono"
             title="Remove from this room"
             style={{
