@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { TopNav } from "@/components/nav/TopNav";
 import { useLogout, useMe } from "@/lib/hooks";
@@ -55,6 +56,57 @@ export default function AccountPage() {
         >
           {t("account.title")}
         </h1>
+        <div
+          style={{
+            display: "flex",
+            gap: 22,
+            marginTop: 18,
+            paddingBottom: 12,
+            borderBottom: "1px solid var(--color-hair)",
+          }}
+        >
+          <span
+            className="mono"
+            style={{
+              fontSize: 11,
+              letterSpacing: "0.12em",
+              textTransform: "uppercase",
+              color: "var(--color-ink)",
+              borderBottom: "1px solid var(--color-ink)",
+              paddingBottom: 6,
+            }}
+          >
+            {t("account.tab.account")}
+          </span>
+          <Link
+            href="/likes"
+            className="mono"
+            style={{
+              fontSize: 11,
+              letterSpacing: "0.12em",
+              textTransform: "uppercase",
+              color: "var(--color-taupe)",
+              textDecoration: "none",
+              paddingBottom: 6,
+            }}
+          >
+            {t("account.tab.liked")}
+          </Link>
+          <Link
+            href="/cart"
+            className="mono"
+            style={{
+              fontSize: 11,
+              letterSpacing: "0.12em",
+              textTransform: "uppercase",
+              color: "var(--color-taupe)",
+              textDecoration: "none",
+              paddingBottom: 6,
+            }}
+          >
+            {t("account.tab.cart")}
+          </Link>
+        </div>
         <div
           style={{
             marginTop: 32,
