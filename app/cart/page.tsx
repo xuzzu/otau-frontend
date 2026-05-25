@@ -23,11 +23,15 @@ export default function CartPage() {
     return m;
   }, [detailsQ.data]);
 
+  const priceFor = (item_id: string, fallback: number) => {
+    const live = detailById.get(item_id)?.default_price;
+    return live != null ? live : fallback;
+  };
   const subtotal = items.reduce(
-    (sum, it) => sum + (it.unit_price ?? 0) * it.quantity,
+    (sum, it) => sum + priceFor(it.item_id, it.price_snapshot ?? 0) * it.quantity,
     0,
   );
-  const currency = items[0]?.currency ?? "KZT";
+  const currency = items[0]?.currency_snapshot ?? "KZT";
 
   return (
     <main style={{ minHeight: "100vh", background: "var(--color-cream)" }}>
@@ -94,7 +98,7 @@ export default function CartPage() {
                         {detail?.name ?? it.item_id}
                       </Link>
                       <div className="label" style={{ marginTop: 4 }}>
-                        {T(it.unit_price)} {it.currency}
+                        {T(priceFor(it.item_id, it.price_snapshot ?? 0))} {it.currency_snapshot}
                       </div>
                     </div>
                     <QtyStepper
@@ -110,7 +114,7 @@ export default function CartPage() {
                       }
                     />
                     <div className="num" style={{ fontSize: 15, whiteSpace: "nowrap" }}>
-                      {T(it.unit_price * it.quantity)}
+                      {T(priceFor(it.item_id, it.price_snapshot ?? 0) * it.quantity)}
                     </div>
                     <button
                       onClick={() => remove.mutate(it.id)}

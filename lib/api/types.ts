@@ -288,23 +288,19 @@ export type OtpStartedOut = {
 
 export type CartItem = {
   id: string;
-  cart_id: string;
   variant_id: string;
   item_id: string;
-  shop_id: string | null;
+  shop_id: string;
   quantity: number;
-  unit_price: number;
-  currency: string;
-  created_at: string;
+  price_snapshot: number;
+  currency_snapshot: string;
+  added_at: string;
 };
 
 export type Cart = {
   id: string;
   user_id: string;
-  status: string;
   items: CartItem[];
-  total: number;
-  currency: string;
   created_at: string;
   updated_at: string;
 };

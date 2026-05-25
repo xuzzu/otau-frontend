@@ -17,22 +17,18 @@ function wrapperOf(client: QueryClient) {
 const seed: Cart = {
   id: "C1",
   user_id: "u",
-  status: "active",
   items: [
     {
       id: "CI1",
-      cart_id: "C1",
       variant_id: "V1",
       item_id: "I1",
-      shop_id: null,
+      shop_id: "S1",
       quantity: 1,
-      unit_price: 100,
-      currency: "KZT",
-      created_at: "2026-05-25T00:00:00Z",
+      price_snapshot: 100,
+      currency_snapshot: "KZT",
+      added_at: "2026-05-25T00:00:00Z",
     },
   ],
-  total: 100,
-  currency: "KZT",
   created_at: "2026-05-25T00:00:00Z",
   updated_at: "2026-05-25T00:00:00Z",
 };

@@ -47,7 +47,7 @@ export const getMyCart = () => apiFetch<Cart>(B, `/me/cart`);
 export const addCartItem = (body: {
   variant_id: string;
   item_id: string;
-  shop_id?: string | null;
+  shop_id: string;
   quantity?: number;
 }) =>
   apiFetch<CartItem>(B, `/me/cart/items`, {

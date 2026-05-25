@@ -18,6 +18,7 @@ import {
   useMyLikes,
   usePartners,
   useRoomTypeLabel,
+  useShops,
   useStyleLabel,
   useTaxonomy,
   useToggleLike,
@@ -272,6 +273,7 @@ export function ProductDetail({ product }: { product: Item }) {
             <AddToCartButton
               itemId={product.id}
               variantId={defaultVariant?.id ?? null}
+              partnerId={product.partner_id}
               t={t}
             />
           </div>
@@ -434,17 +436,21 @@ function Heart({ filled = false }: { filled?: boolean }) {
 function AddToCartButton({
   itemId,
   variantId,
+  partnerId,
   t,
 }: {
   itemId: string;
   variantId: string | null;
+  partnerId: string;
   t: (k: string, params?: Record<string, string | number>) => string;
 }) {
   const cart = useMyCart();
   const add = useAddToCart();
+  const shopsQ = useShops();
+  const shopId = shopsQ.data?.find((s) => s.partner_id === partnerId)?.id ?? null;
   const inCart = !!cart.data?.items.some((it) => it.item_id === itemId);
 
-  if (!variantId) {
+  if (!variantId || !shopId) {
     return (
       <button
         className="btn ghost"
@@ -477,7 +483,12 @@ function AddToCartButton({
   return (
     <button
       onClick={() =>
-        add.mutate({ variant_id: variantId, item_id: itemId, quantity: 1 })
+        add.mutate({
+          variant_id: variantId,
+          item_id: itemId,
+          shop_id: shopId,
+          quantity: 1,
+        })
       }
       disabled={add.isPending}
       className="btn"
