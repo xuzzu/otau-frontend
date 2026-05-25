@@ -7,9 +7,11 @@ import { qk } from "./queryKeys";
 import type { Cart } from "@/lib/api/types";
 
 function wrapperOf(client: QueryClient) {
-  return ({ children }: { children: ReactNode }) => (
+  const Wrapper = ({ children }: { children: ReactNode }) => (
     <QueryClientProvider client={client}>{children}</QueryClientProvider>
   );
+  Wrapper.displayName = "TestQueryWrapper";
+  return Wrapper;
 }
 
 const seed: Cart = {
