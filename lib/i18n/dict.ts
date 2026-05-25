@@ -51,6 +51,15 @@ const kz: Dict = {
   "similar.style": "Осы стильде",
   "similar.room": "Осы бөлмеге",
 
+  "likes.title": "Сақталғандар",
+  "likes.count": "{n} зат",
+  "likes.empty.lede": "Әзірге ештеңе сақталмаған.",
+  "likes.empty.cta": "Каталогты ашу",
+
+  "account.tab.account": "Аккаунт",
+  "account.tab.liked": "Сақталғандар",
+  "account.tab.cart": "Себет",
+
   // ───── hero ─────
   "hero.kicker": "◇ I том — кілт бұрылған сәттен бастап",
   "hero.h1.1": "Кірмес бұрын",
@@ -446,6 +455,15 @@ const ru: Dict = {
 
   "similar.style": "В таком же стиле",
   "similar.room": "Для этой комнаты",
+
+  "likes.title": "Избранное",
+  "likes.count": "{n} предметов",
+  "likes.empty.lede": "Пока ничего не сохранено.",
+  "likes.empty.cta": "Открыть каталог",
+
+  "account.tab.account": "Аккаунт",
+  "account.tab.liked": "Избранное",
+  "account.tab.cart": "Корзина",
 
   // ───── hero ─────
   "hero.kicker": "◇ Том 01 — Дом мебели для повёрнутого ключа",
