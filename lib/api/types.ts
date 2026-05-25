@@ -199,6 +199,23 @@ export type RoomStatus =
   | "done"
   | "failed";
 
+export type HotspotPoint = { x: number; y: number };
+
+export type HotspotBbox = {
+  x1: number;
+  y1: number;
+  x2: number;
+  y2: number;
+};
+
+export type Hotspot = {
+  item_id: string;
+  label: string;
+  point: HotspotPoint;
+  bbox: HotspotBbox;
+  confidence: number | null;
+};
+
 export type GenerationRoom = {
   id: string;
   generation_id: string;
@@ -213,6 +230,10 @@ export type GenerationRoom = {
   camera_pose: Record<string, unknown>;
   retry_count: number;
   error: string | null;
+  hotspots: Hotspot[];
+  hotspot_error: string | null;
+  image_width: number | null;
+  image_height: number | null;
   started_at: string | null;
   completed_at: string | null;
   created_at: string;
