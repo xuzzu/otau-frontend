@@ -9,9 +9,18 @@ type Props = {
   style?: CSSProperties;
   className?: string;
   rounded?: boolean;
+  fit?: "cover" | "contain";
 };
 
-export function Photo({ src, alt, label, style, className, rounded }: Props) {
+export function Photo({
+  src,
+  alt,
+  label,
+  style,
+  className,
+  rounded,
+  fit = "cover",
+}: Props) {
   const [err, setErr] = useState(false);
   return (
     <div
@@ -25,6 +34,13 @@ export function Photo({ src, alt, label, style, className, rounded }: Props) {
           alt={alt ?? ""}
           onError={() => setErr(true)}
           loading="lazy"
+          style={{
+            position: "absolute",
+            inset: 0,
+            width: "100%",
+            height: "100%",
+            objectFit: fit,
+          }}
         />
       ) : (
         <div className="stripes" style={{ position: "absolute", inset: 0 }}>
