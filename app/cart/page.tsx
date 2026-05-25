@@ -3,7 +3,7 @@
 import { useMemo } from "react";
 import Link from "next/link";
 import { TopNav } from "@/components/nav/TopNav";
-import { useItems, useMyCart, useRemoveCartItem } from "@/lib/hooks";
+import { useItems, useMyCart, useRemoveCartItem, useUpdateCartItem } from "@/lib/hooks";
 import { resolveCatalogAsset } from "@/lib/api/env";
 import { useT } from "@/lib/i18n";
 import { T } from "@/lib/format";
@@ -13,6 +13,7 @@ export default function CartPage() {
   const { t } = useT();
   const cart = useMyCart();
   const remove = useRemoveCartItem();
+  const update = useUpdateCartItem();
   const items = cart.data?.items ?? [];
   const itemIds = useMemo(() => items.map((i) => i.item_id), [items]);
   const detailsQ = useItems(itemIds.length ? { id: itemIds, limit: 100 } : { limit: 0 });
@@ -63,7 +64,7 @@ export default function CartPage() {
                     key={it.id}
                     style={{
                       display: "grid",
-                      gridTemplateColumns: "80px 1fr auto auto",
+                      gridTemplateColumns: "80px 1fr auto auto auto",
                       gap: 16,
                       alignItems: "center",
                       padding: "14px 0",
@@ -88,19 +89,27 @@ export default function CartPage() {
                     <div>
                       <Link
                         href={detail ? `/catalog/${detail.slug}` : "#"}
-                        style={{
-                          textDecoration: "none",
-                          color: "inherit",
-                          fontSize: 16,
-                        }}
+                        style={{ textDecoration: "none", color: "inherit", fontSize: 16 }}
                       >
                         {detail?.name ?? it.item_id}
                       </Link>
                       <div className="label" style={{ marginTop: 4 }}>
-                        {t("cart.qty")}: {it.quantity}
+                        {T(it.unit_price)} {it.currency}
                       </div>
                     </div>
-                    <div className="num" style={{ fontSize: 15 }}>
+                    <QtyStepper
+                      value={it.quantity}
+                      pending={update.isPending || remove.isPending}
+                      onDec={() =>
+                        it.quantity <= 1
+                          ? remove.mutate(it.id)
+                          : update.mutate({ item_id: it.id, quantity: it.quantity - 1 })
+                      }
+                      onInc={() =>
+                        update.mutate({ item_id: it.id, quantity: it.quantity + 1 })
+                      }
+                    />
+                    <div className="num" style={{ fontSize: 15, whiteSpace: "nowrap" }}>
                       {T(it.unit_price * it.quantity)}
                     </div>
                     <button
@@ -157,5 +166,53 @@ export default function CartPage() {
         )}
       </section>
     </main>
+  );
+}
+
+function QtyStepper({
+  value,
+  pending,
+  onDec,
+  onInc,
+}: {
+  value: number;
+  pending: boolean;
+  onDec: () => void;
+  onInc: () => void;
+}) {
+  const btn: React.CSSProperties = {
+    width: 28,
+    height: 28,
+    border: "1px solid var(--color-hair)",
+    background: "transparent",
+    cursor: pending ? "wait" : "pointer",
+    fontFamily: "var(--font-mono)",
+    fontSize: 13,
+    color: "var(--color-ink)",
+    lineHeight: 1,
+  };
+  return (
+    <div
+      style={{ display: "inline-flex", alignItems: "center", gap: 0 }}
+      aria-label="Quantity"
+    >
+      <button type="button" onClick={onDec} disabled={pending} style={btn} aria-label="Decrease">
+        −
+      </button>
+      <span
+        className="num"
+        style={{
+          minWidth: 32,
+          textAlign: "center",
+          fontSize: 14,
+          padding: "0 8px",
+        }}
+      >
+        {value}
+      </span>
+      <button type="button" onClick={onInc} disabled={pending} style={btn} aria-label="Increase">
+        +
+      </button>
+    </div>
   );
 }
