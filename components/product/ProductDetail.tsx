@@ -13,7 +13,6 @@ import { T } from "@/lib/format";
 import {
   useAddToCart,
   useCategoryLabel,
-  useItems,
   useMyCart,
   useMyLikes,
   usePartners,
@@ -64,20 +63,6 @@ export function ProductDetail({ product }: { product: Item }) {
   );
   const price = defaultVariant?.price ?? 0;
   const description = pickText(product.description, locale);
-
-  // Related items in the same room target
-  const relatedQ = useItems(
-    product.room_target_id
-      ? { room_target_id: product.room_target_id, limit: 6 }
-      : { limit: 0 },
-  );
-  const roomItems = useMemo(
-    () =>
-      (relatedQ.data ?? [])
-        .filter((r) => r.id !== product.id)
-        .slice(0, 4),
-    [relatedQ.data, product.id],
-  );
 
   return (
     <main style={{ background: "var(--color-paper)", minHeight: "100vh" }}>
@@ -215,34 +200,6 @@ export function ProductDetail({ product }: { product: Item }) {
             </div>
           )}
 
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 16,
-              padding: "14px 0",
-              borderTop: "1px solid var(--color-hair)",
-            }}
-          >
-            <div className="label" style={{ flex: 1 }}>
-              {t("product.see_room")}
-              {roomLabel ? ` — ${roomLabel}` : ""}
-            </div>
-            <div style={{ display: "flex", gap: 8 }}>
-              {roomItems.map((p) => (
-                <Link
-                  key={p.id}
-                  href={`/catalog/${p.slug}`}
-                  style={{ width: 90, height: 64, position: "relative" }}
-                >
-                  <Photo
-                    src={resolveCatalogAsset(p.main_image_url) ?? undefined}
-                    style={{ position: "absolute", inset: 0 }}
-                  />
-                </Link>
-              ))}
-            </div>
-          </div>
         </div>
 
         <div style={{ display: "flex", flexDirection: "column", overflow: "hidden" }}>
