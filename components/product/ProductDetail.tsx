@@ -5,6 +5,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { ProductHero3D } from "./ProductHero3D";
 import { Product3DViewerModal } from "./Product3DViewerModal";
+import { SimilarItems } from "./SimilarItems";
 import { Photo } from "@/components/ui/Photo";
 import { TryInARTrigger } from "@/components/ar/TryInAR";
 import { useT, useLocale } from "@/lib/i18n";
@@ -343,6 +344,8 @@ export function ProductDetail({ product }: { product: Item }) {
           </div>
         </div>
       </div>
+
+      <SimilarItems product={product} />
 
       {modelAssetUrl && (
         <Product3DViewerModal
