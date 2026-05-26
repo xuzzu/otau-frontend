@@ -45,8 +45,8 @@ export function UserMenu({ inverse = false }: { inverse?: boolean }) {
           gap: 6,
           position: "relative",
         }}
-        aria-label="Liked items"
-        title="Liked items"
+        aria-label={t("nav.liked")}
+        title={t("nav.liked")}
       >
         <HeartNav inverse={inverse} />
         {likeCount > 0 && (

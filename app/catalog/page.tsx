@@ -6,10 +6,12 @@ import { TopNav } from "@/components/nav/TopNav";
 import { FilterBar } from "@/components/catalog/FilterBar";
 import { CatalogGrid } from "@/components/catalog/CatalogGrid";
 import { useItems, usePartners, useTaxonomy } from "@/lib/hooks";
+import { useT } from "@/lib/i18n";
 import type { SortKey } from "@/lib/products";
 
 function CatalogInner() {
   const sp = useSearchParams();
+  const { t } = useT();
 
   const params = useMemo(() => {
     return {
@@ -58,7 +60,7 @@ function CatalogInner() {
       <FilterBar resultCount={products.length} />
       {itemsQ.isLoading ? (
         <div className="label" style={{ padding: "80px 56px", textAlign: "center" }}>
-          Loading…
+          {t("catalog.loading")}
         </div>
       ) : (
         <CatalogGrid products={products} />
@@ -67,11 +69,20 @@ function CatalogInner() {
   );
 }
 
+function CatalogFallback() {
+  const { t } = useT();
+  return (
+    <div className="label" style={{ padding: 56 }}>
+      {t("catalog.loading")}
+    </div>
+  );
+}
+
 export default function CatalogPage() {
   return (
     <main style={{ minHeight: "100vh", background: "var(--color-cream)" }}>
       <TopNav />
-      <Suspense fallback={<div className="label" style={{ padding: 56 }}>Loading…</div>}>
+      <Suspense fallback={<CatalogFallback />}>
         <CatalogInner />
       </Suspense>
     </main>

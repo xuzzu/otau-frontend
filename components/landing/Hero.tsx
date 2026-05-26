@@ -35,7 +35,7 @@ export function Hero() {
       >
         <Photo
           src={HERO_SRC}
-          label="warm interior scene"
+          label={t("hero.photo_alt")}
           style={{ position: "absolute", inset: 0 }}
         />
       </motion.div>
@@ -75,7 +75,7 @@ export function Hero() {
           pointerEvents: "none",
         }}
       >
-        43.2389° N · 76.8897° E — Almaty / ЖК Esentai Park / vol. 01
+        {t("hero.sidebar")}
       </motion.div>
 
       {/* Editorial copy */}

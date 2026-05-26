@@ -1,28 +1,35 @@
 "use client";
 
 import type { CSSProperties } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { resolveGenerationAsset } from "@/lib/api/env";
+import { useT } from "@/lib/i18n";
 import type { GenerationRoom } from "@/lib/api/types";
 import type { HotspotRow } from "@/lib/studio/joinHotspots";
 import { Hotspot } from "./Hotspot";
 
-function stageLabel(status: string): string {
+const AUTO_SWITCH_MS = 7000;
+const CROSSFADE_MS = 700;
+
+type TFn = (k: string, params?: Record<string, string | number>) => string;
+
+function stageLabel(status: string, t: TFn): string {
   switch (status) {
     case "queued":
-      return "Queued";
+      return t("scene.stage.queued");
     case "concepting":
-      return "Composing the concept…";
+      return t("scene.stage.concepting");
     case "retrieving":
-      return "Selecting pieces from the catalog…";
+      return t("scene.stage.retrieving");
     case "rendering":
-      return "Rendering the scene…";
+      return t("scene.stage.rendering");
     case "hotspotting":
-      return "Mapping interactive points…";
+      return t("scene.stage.hotspotting");
     case "failed":
-      return "Generation failed";
+      return t("scene.stage.failed");
     default:
-      return "Working…";
+      return t("scene.stage.working");
   }
 }
 
@@ -44,6 +51,8 @@ export function SceneViewport({
   onActivate,
   onHoverEnter,
   onHoverLeave,
+  activeImageIndex,
+  onSelectImageIndex,
 }: {
   genRoom: GenerationRoom | null;
   rows: HotspotRow[];
@@ -51,30 +60,84 @@ export function SceneViewport({
   onActivate: (itemId: string) => void;
   onHoverEnter: (itemId: string) => void;
   onHoverLeave: (itemId: string) => void;
+  /** Optional — if provided alongside image_url_2, switches to dual-image mode. */
+  activeImageIndex?: number;
+  onSelectImageIndex?: (index: number) => void;
 }) {
+  const { t } = useT();
   const status = genRoom?.status ?? null;
   const imageUrl = resolveGenerationAsset(genRoom?.image_url);
+  const imageUrl2 = resolveGenerationAsset(genRoom?.image_url_2);
 
-  const aspectRatio: string =
-    genRoom?.image_width && genRoom?.image_height
-      ? `${genRoom.image_width} / ${genRoom.image_height}`
-      : "3 / 2";
+  const hasDual =
+    !!imageUrl &&
+    !!imageUrl2 &&
+    activeImageIndex !== undefined &&
+    onSelectImageIndex !== undefined;
+  const safeActiveIndex = hasDual ? activeImageIndex ?? 0 : 0;
+
+  // Aspect ratio tracks the active image's dims so the box doesn't reflow on
+  // switch even if scene_1 and scene_2 came back with different sizes.
+  const w = safeActiveIndex === 0 ? genRoom?.image_width : genRoom?.image_width_2;
+  const h = safeActiveIndex === 0 ? genRoom?.image_height : genRoom?.image_height_2;
+  const aspectRatio: string = w && h ? `${w} / ${h}` : "3 / 2";
 
   const sceneBox: CSSProperties = { ...SCENE_BOX_BASE, aspectRatio };
 
+  // Pause auto-switch on hover so the user can study one viewpoint without
+  // it changing under them.
+  const [isHovering, setIsHovering] = useState(false);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    if (!hasDual || !onSelectImageIndex) return;
+    if (isHovering) return;
+    timerRef.current = setTimeout(() => {
+      onSelectImageIndex(safeActiveIndex === 0 ? 1 : 0);
+    }, AUTO_SWITCH_MS);
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
+  }, [hasDual, isHovering, safeActiveIndex, onSelectImageIndex]);
+
   if (imageUrl) {
     return (
-      <div style={sceneBox} data-testid="scene-box">
+      <div
+        style={sceneBox}
+        data-testid="scene-box"
+        onMouseEnter={() => setIsHovering(true)}
+        onMouseLeave={() => setIsHovering(false)}
+      >
         <img
           src={imageUrl}
-          alt="Generated scene"
+          alt={t("scene.image_alt")}
           style={{
+            position: "absolute",
+            inset: 0,
             width: "100%",
             height: "100%",
             objectFit: "cover",
             display: "block",
+            opacity: safeActiveIndex === 0 ? 1 : 0,
+            transition: `opacity ${CROSSFADE_MS}ms ease-in-out`,
           }}
         />
+        {imageUrl2 ? (
+          <img
+            src={imageUrl2}
+            alt={t("scene.image_alt")}
+            style={{
+              position: "absolute",
+              inset: 0,
+              width: "100%",
+              height: "100%",
+              objectFit: "cover",
+              display: "block",
+              opacity: safeActiveIndex === 1 ? 1 : 0,
+              transition: `opacity ${CROSSFADE_MS}ms ease-in-out`,
+            }}
+          />
+        ) : null}
         {rows.map((r) =>
           r.hotspot ? (
             <Hotspot
@@ -90,6 +153,14 @@ export function SceneViewport({
             />
           ) : null,
         )}
+        {hasDual && onSelectImageIndex ? (
+          <ImageIndexDots
+            count={2}
+            activeIndex={safeActiveIndex}
+            onSelect={onSelectImageIndex}
+            t={t}
+          />
+        ) : null}
       </div>
     );
   }
@@ -97,7 +168,7 @@ export function SceneViewport({
   if (!genRoom) {
     return (
       <div style={sceneBox} data-testid="scene-box">
-        <div className="label">No scene yet.</div>
+        <div className="label">{t("scene.empty")}</div>
       </div>
     );
   }
@@ -110,10 +181,10 @@ export function SceneViewport({
       >
         <div style={{ textAlign: "center" }}>
           <div className="label" style={{ color: "#c9694a" }}>
-            Generation failed
+            {t("scene.failed_title")}
           </div>
           <div className="mono" style={{ marginTop: 8, fontSize: 11 }}>
-            {(genRoom.error ?? "Unknown error").slice(0, 200)}
+            {(genRoom.error ?? t("common.unknown_error")).slice(0, 200)}
           </div>
         </div>
       </div>
@@ -142,8 +213,58 @@ export function SceneViewport({
           color: "var(--color-taupe)",
         }}
       >
-        {stageLabel(status ?? "queued")}
+        {stageLabel(status ?? "queued", t)}
       </div>
+    </div>
+  );
+}
+
+function ImageIndexDots({
+  count,
+  activeIndex,
+  onSelect,
+  t,
+}: {
+  count: number;
+  activeIndex: number;
+  onSelect: (i: number) => void;
+  t: TFn;
+}) {
+  return (
+    <div
+      style={{
+        position: "absolute",
+        bottom: 16,
+        right: 16,
+        display: "flex",
+        gap: 8,
+        padding: "8px 12px",
+        background: "rgba(0,0,0,0.32)",
+        borderRadius: 999,
+        backdropFilter: "blur(6px)",
+      }}
+      data-testid="scene-image-dots"
+    >
+      {Array.from({ length: count }).map((_, i) => (
+        <button
+          key={i}
+          type="button"
+          onClick={() => onSelect(i)}
+          aria-label={t("scene.angle_aria", { n: i + 1 })}
+          aria-pressed={i === activeIndex}
+          style={{
+            width: 9,
+            height: 9,
+            padding: 0,
+            borderRadius: 999,
+            border: "none",
+            background:
+              i === activeIndex ? "var(--color-paper)" : "rgba(255,255,255,0.45)",
+            cursor: "pointer",
+            transition: "background 200ms ease",
+          }}
+        />
+      ))}
     </div>
   );
 }

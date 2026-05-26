@@ -17,6 +17,7 @@ import {
   useGLTF,
 } from "@react-three/drei";
 import { AnimatePresence, motion } from "framer-motion";
+import { useT } from "@/lib/i18n";
 
 function GLBScene({ url }: { url: string }) {
   const { scene } = useGLTF(url);
@@ -34,6 +35,7 @@ export function Product3DViewerModal({
   url: string;
   label: string;
 }) {
+  const { t } = useT();
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => {
@@ -65,7 +67,7 @@ export function Product3DViewerModal({
           }}
           role="dialog"
           aria-modal="true"
-          aria-label={`3D view of ${label}`}
+          aria-label={t("product.3d.aria", { label })}
         >
           <motion.div
             initial={{ opacity: 0, scale: 0.96 }}
@@ -126,7 +128,7 @@ export function Product3DViewerModal({
 
             <button
               onClick={onClose}
-              aria-label="Close 3D viewer"
+              aria-label={t("product.3d.close")}
               style={{
                 position: "absolute",
                 top: 16,
@@ -158,7 +160,7 @@ export function Product3DViewerModal({
                 opacity: 0.6,
               }}
             >
-              {label} — 3D · drag to rotate, scroll to zoom
+              {label} — 3D · {t("product.3d.hint")}
             </div>
           </motion.div>
         </motion.div>

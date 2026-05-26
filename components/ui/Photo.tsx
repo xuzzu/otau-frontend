@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, CSSProperties } from "react";
+import { useT } from "@/lib/i18n";
 
 type Props = {
   src?: string | null;
@@ -22,6 +23,7 @@ export function Photo({
   fit = "cover",
 }: Props) {
   const [err, setErr] = useState(false);
+  const { t } = useT();
   return (
     <div
       className={`photo ${className ?? ""}`}
@@ -44,7 +46,7 @@ export function Photo({
         />
       ) : (
         <div className="stripes" style={{ position: "absolute", inset: 0 }}>
-          <div className="ph-fallback">{label || alt || "image"}</div>
+          <div className="ph-fallback">{label || alt || t("common.image_alt")}</div>
         </div>
       )}
     </div>

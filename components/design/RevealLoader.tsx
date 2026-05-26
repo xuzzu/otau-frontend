@@ -83,7 +83,7 @@ export function RevealLoader() {
       const firstErr =
         gen.rooms.find((r) => r.error)?.error ??
         gen.error_summary ??
-        "Generation failed";
+        t("scene.stage.failed");
       setError(firstErr);
     }
   }, [gen, router]);
@@ -223,7 +223,7 @@ export function RevealLoader() {
                 textTransform: "uppercase",
               }}
             >
-              Try again
+              {t("common.try_again")}
             </button>
           </div>
         )}

@@ -185,8 +185,8 @@ export function ProductDetail({ product }: { product: Item }) {
                     alignItems: "center",
                     justifyContent: "center",
                   }}
-                  aria-label="Open 3D viewer"
-                  title="3D view"
+                  aria-label={t("product.3d.open")}
+                  title={t("product.3d.label")}
                 >
                   <span
                     style={{
@@ -195,7 +195,7 @@ export function ProductDetail({ product }: { product: Item }) {
                       gap: 6,
                     }}
                   >
-                    <Cube3DIcon /> 3D
+                    <Cube3DIcon /> {t("product.3d.label")}
                   </span>
                 </button>
               )}
@@ -252,7 +252,7 @@ export function ProductDetail({ product }: { product: Item }) {
 
           {product.style_ids.length > 0 && (
             <div style={{ marginTop: 22 }}>
-              <span className="label">Style</span>
+              <span className="label">{t("product.specs.style")}</span>
               <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 8 }}>
                 {product.style_ids.map((sid) => {
                   const label = indexed

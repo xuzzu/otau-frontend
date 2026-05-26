@@ -131,6 +131,7 @@ function SimilarCard({
   product: ItemSummary;
   size: "lg" | "sm";
 }) {
+  const { t } = useT();
   const likes = useMyLikes();
   const toggle = useToggleLike();
   const isLiked = !!likes.data?.some(
@@ -173,7 +174,7 @@ function SimilarCard({
             <button
               type="button"
               aria-pressed={isLiked}
-              aria-label={isLiked ? "Liked" : "Like"}
+              aria-label={isLiked ? t("product.liked") : t("product.like")}
               onClick={() =>
                 toggle.mutate({
                   target_kind: "item",

@@ -264,9 +264,7 @@ export function FilterBar({ resultCount }: { resultCount: number }) {
                 onClick={c.onRemove}
                 className="chip solid"
                 style={{ cursor: "pointer", fontSize: 11 }}
-                title={
-                  c.dimmed ? "Only the first filter in this group applies" : undefined
-                }
+                title={c.dimmed ? t("catalog.filter.only_first") : undefined}
               >
                 {c.label} <span style={{ marginLeft: 4 }}>×</span>
               </motion.button>

@@ -184,6 +184,7 @@ function QtyStepper({
   onDec: () => void;
   onInc: () => void;
 }) {
+  const { t } = useT();
   const btn: React.CSSProperties = {
     width: 28,
     height: 28,
@@ -198,9 +199,9 @@ function QtyStepper({
   return (
     <div
       style={{ display: "inline-flex", alignItems: "center", gap: 0 }}
-      aria-label="Quantity"
+      aria-label={t("cart.qty")}
     >
-      <button type="button" onClick={onDec} disabled={pending} style={btn} aria-label="Decrease">
+      <button type="button" onClick={onDec} disabled={pending} style={btn} aria-label={t("cart.qty.decrease")}>
         −
       </button>
       <span
@@ -214,7 +215,7 @@ function QtyStepper({
       >
         {value}
       </span>
-      <button type="button" onClick={onInc} disabled={pending} style={btn} aria-label="Increase">
+      <button type="button" onClick={onInc} disabled={pending} style={btn} aria-label={t("cart.qty.increase")}>
         +
       </button>
     </div>

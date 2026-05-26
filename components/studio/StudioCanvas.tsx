@@ -64,6 +64,8 @@ export function StudioCanvas() {
   const [lightingIdx, setLightingIdx] = useState(0);
   const [conceptOpen, setConceptOpen] = useState(false);
   const [activeId, setActiveId] = useState<string | null>(null);
+  const [hoverId, setHoverId] = useState<string | null>(null);
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
   const rowRefsRef = useRef(new Map<string, HTMLDivElement>());
   const addMyRoom = useMyRoom((s) => s.add);
 
@@ -107,6 +109,8 @@ export function StudioCanvas() {
 
   useEffect(() => {
     setActiveId(null);
+    setHoverId(null);
+    setActiveImageIndex(0);
   }, [active]);
 
   const visibleItems = useMemo(
@@ -114,7 +118,11 @@ export function StudioCanvas() {
     [items, hiddenIds]
   );
 
-  const hotspots = activeGenRoom?.hotspots ?? [];
+  // Hotspots are per-image — each scene has its own bounding boxes.
+  const hotspots =
+    activeImageIndex === 1
+      ? activeGenRoom?.hotspots_2 ?? []
+      : activeGenRoom?.hotspots ?? [];
   const rows = useMemo(
     () => joinHotspotsToItems(visibleItems, hotspots, hiddenIds),
     [visibleItems, hotspots, hiddenIds],
@@ -132,7 +140,11 @@ export function StudioCanvas() {
     return typeof desc === "string" ? desc : "";
   }, [activeGenRoom]);
 
-  const LIGHTING_OPTIONS = ["Cozy", "Minimal", "Evening"] as const;
+  const LIGHTING_KEYS = [
+    "studio.lighting.cozy",
+    "studio.lighting.minimal",
+    "studio.lighting.evening",
+  ] as const;
 
   const spaceLabel = scope === "apartment"
     ? (spaceId ?? "Apartment").toUpperCase()
@@ -151,6 +163,7 @@ export function StudioCanvas() {
       return next;
     });
     if (activeId === id) setActiveId(null);
+    if (hoverId === id) setHoverId(null);
   };
   const handleRestoreAll = () => setHiddenIds(new Set());
   const handleAddAllToMyRoom = () => {
@@ -163,10 +176,10 @@ export function StudioCanvas() {
     if (el) el.scrollIntoView({ block: "center", behavior: "smooth" });
   };
 
-  const handleHoverEnter = (itemId: string) => setActiveId(itemId);
-  const handleHoverLeave = (_itemId: string) => {
-    // intentionally sticky: don't clear on hover-leave
-  };
+  const handleHoverEnter = (itemId: string) => setHoverId(itemId);
+  const handleHoverLeave = (_itemId: string) => setHoverId(null);
+
+  const highlightedId = hoverId ?? activeId;
 
   return (
     <main
@@ -323,7 +336,7 @@ export function StudioCanvas() {
           {styles.length > 0 && (
             <div>
               <div className="label" style={{ marginBottom: 8 }}>
-                Styles
+                {t("studio.styles_label")}
               </div>
               <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
                 {styles.map((s) => (
@@ -375,17 +388,19 @@ export function StudioCanvas() {
                 color: "var(--color-taupe)",
               }}
             >
-              {activeGenRoom?.status ? activeGenRoom.status.toUpperCase() : "DEMO"}
+              {activeGenRoom?.status ? activeGenRoom.status.toUpperCase() : t("studio.status.demo")}
             </div>
           </div>
 
           <SceneViewport
             genRoom={activeGenRoom}
             rows={rows}
-            activeId={activeId}
+            activeId={highlightedId}
             onActivate={handleActivate}
             onHoverEnter={handleHoverEnter}
             onHoverLeave={handleHoverLeave}
+            activeImageIndex={activeImageIndex}
+            onSelectImageIndex={setActiveImageIndex}
           />
 
           <div
@@ -401,25 +416,25 @@ export function StudioCanvas() {
             <button
               className="btn ghost small"
               onClick={() =>
-                setLightingIdx((i) => (i + 1) % LIGHTING_OPTIONS.length)
+                setLightingIdx((i) => (i + 1) % LIGHTING_KEYS.length)
               }
-              title="Cycle lighting"
+              title={t("studio.tooltip.cycle_lighting")}
             >
-              ☀︎ {LIGHTING_OPTIONS[lightingIdx]}
+              ☀︎ {t(LIGHTING_KEYS[lightingIdx])}
             </button>
             <button
               className="btn ghost small"
               onClick={() => setConceptOpen((v) => !v)}
-              title="View or edit concept"
+              title={t("studio.tooltip.concept")}
             >
-              ✎ Concept
+              {t("studio.btn.concept")}
             </button>
             <button
               className="btn ghost small"
-              onClick={() => alert("Regeneration will rerun the pipeline with the current edits — not wired yet.")}
-              title="Regenerate this room"
+              onClick={() => alert(t("studio.alert.regenerate_pending"))}
+              title={t("studio.tooltip.regenerate")}
             >
-              ↻ Regenerate
+              {t("studio.btn.regenerate")}
             </button>
             <div style={{ flex: 1 }} />
             <span
@@ -431,7 +446,10 @@ export function StudioCanvas() {
                 color: "var(--color-taupe)",
               }}
             >
-              {visibleItems.length} pieces · {hiddenIds.size} removed
+              {t("studio.status.pieces_removed", {
+                pieces: visibleItems.length,
+                removed: hiddenIds.size,
+              })}
             </span>
           </div>
 
@@ -444,7 +462,7 @@ export function StudioCanvas() {
               }}
             >
               <div className="label" style={{ marginBottom: 6 }}>
-                Concept
+                {t("studio.concept_label")}
               </div>
               <div className="serif it" style={{ fontSize: 16, lineHeight: 1.5 }}>
                 {conceptText}
@@ -479,45 +497,43 @@ export function StudioCanvas() {
             </div>
             <button
               className="btn ghost small"
-              onClick={() => alert("Add item picker — not wired yet.")}
-              title="Add a piece to this room"
+              onClick={() => alert(t("studio.alert.add_pending"))}
+              title={t("studio.tooltip.add_item")}
               style={{ padding: "6px 10px" }}
             >
-              + Add
+              {t("studio.btn.add")}
             </button>
           </div>
           <div style={{ flex: 1, overflow: "auto" }}>
             {loadingItems ? (
               <div className="label" style={{ padding: 24 }}>
-                Loading…
+                {t("common.loading")}
               </div>
             ) : visibleItems.length === 0 ? (
               <div className="label" style={{ padding: 24 }}>
                 {hiddenIds.size > 0 ? (
                   <>
-                    All items removed.{" "}
+                    {t("studio.empty.all_removed")}{" "}
                     <button
                       onClick={handleRestoreAll}
                       className="btn ghost small"
                       style={{ marginLeft: 6 }}
                     >
-                      Restore
+                      {t("studio.btn.restore")}
                     </button>
                   </>
                 ) : activeGenRoom?.status === "done" ? (
                   <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                     <span style={{ color: "#c9694a" }}>
-                      Generation finished but no catalog pieces matched this
-                      room.
+                      {t("studio.empty.no_match_title")}
                     </span>
                     <span className="mono" style={{ fontSize: 10 }}>
-                      Check that the catalog vector index is seeded and that
-                      /items/search returns results.
+                      {t("studio.empty.no_match_sub")}
                     </span>
                   </div>
                 ) : activeGenRoom?.status === "failed" ? (
                   <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                    <span style={{ color: "#c9694a" }}>Room generation failed.</span>
+                    <span style={{ color: "#c9694a" }}>{t("studio.empty.room_failed")}</span>
                     {activeGenRoom.error && (
                       <span className="mono" style={{ fontSize: 10 }}>
                         {activeGenRoom.error.slice(0, 200)}
@@ -525,7 +541,7 @@ export function StudioCanvas() {
                     )}
                   </div>
                 ) : (
-                  "No items picked yet — the pipeline is still running."
+                  t("studio.empty.pipeline_running")
                 )}
               </div>
             ) : (
@@ -535,17 +551,16 @@ export function StudioCanvas() {
                   n={r.n}
                   item={r.item}
                   partnerName={partnerById.get(r.item.partner_id) ?? ""}
-                  active={activeId === r.item.id}
+                  active={highlightedId === r.item.id}
                   onActivate={() => setActiveId(r.item.id)}
-                  onHoverEnter={() => setActiveId(r.item.id)}
+                  onHoverEnter={() => setHoverId(r.item.id)}
+                  onHoverLeave={() => setHoverId(null)}
                   rowRef={(el) => {
                     if (el) rowRefsRef.current.set(r.item.id, el);
                     else rowRefsRef.current.delete(r.item.id);
                   }}
                   onRemove={() => handleRemove(r.item.id)}
-                  onReplace={() =>
-                    alert("Replace — pick another candidate for this piece. Not wired yet.")
-                  }
+                  onReplace={() => alert(t("studio.alert.replace_pending"))}
                 />
               ))
             )}
@@ -563,9 +578,9 @@ export function StudioCanvas() {
               <button
                 onClick={handleRestoreAll}
                 className="btn ghost small"
-                title="Bring removed items back"
+                title={t("studio.tooltip.restore")}
               >
-                Restore {hiddenIds.size}
+                {t("studio.btn.restore_n", { n: hiddenIds.size })}
               </button>
             )}
             <div style={{ flex: 1 }} />
@@ -573,9 +588,9 @@ export function StudioCanvas() {
               className="btn small"
               onClick={handleAddAllToMyRoom}
               disabled={visibleItems.length === 0}
-              title="Add all visible items to My Room"
+              title={t("studio.tooltip.add_all")}
             >
-              Add all to my room
+              {t("studio.btn.add_all_room")}
             </button>
           </div>
         </aside>
@@ -602,7 +617,7 @@ function CompactSchematic({
           border: "1px solid var(--color-hair)",
           padding: 8,
         }}
-        aria-label="Apartment floor plan"
+        aria-label={t("studio.plan.aria")}
       >
         <svg
           viewBox={`0 0 ${PLAN_W} ${PLAN_H}`}
@@ -660,6 +675,7 @@ function StudioProductItem({
   rowRef,
   onActivate,
   onHoverEnter,
+  onHoverLeave,
   onRemove,
   onReplace,
 }: {
@@ -670,14 +686,17 @@ function StudioProductItem({
   rowRef?: (el: HTMLDivElement | null) => void;
   onActivate?: () => void;
   onHoverEnter?: () => void;
+  onHoverLeave?: () => void;
   onRemove?: () => void;
   onReplace?: () => void;
 }) {
+  const { t } = useT();
   return (
     <div
       ref={rowRef}
       onClick={onActivate}
       onMouseEnter={onHoverEnter}
+      onMouseLeave={onHoverLeave}
       className="studio-product-item"
       style={{
         display: "flex",
@@ -750,7 +769,7 @@ function StudioProductItem({
               onReplace();
             }}
             className="mono"
-            title="Replace with another candidate"
+            title={t("studio.tooltip.replace")}
             style={{
               background: "transparent",
               border: "1px solid var(--color-hair)",
@@ -762,7 +781,7 @@ function StudioProductItem({
               color: "var(--color-ink)",
             }}
           >
-            ⇄ Replace
+            {t("studio.btn.replace")}
           </button>
         )}
         {onRemove && (
@@ -772,7 +791,7 @@ function StudioProductItem({
               onRemove();
             }}
             className="mono"
-            title="Remove from this room"
+            title={t("studio.tooltip.remove")}
             style={{
               background: "transparent",
               border: "1px solid var(--color-hair)",
@@ -784,7 +803,7 @@ function StudioProductItem({
               color: "var(--color-ink)",
             }}
           >
-            ✕ Remove
+            {t("studio.btn.remove")}
           </button>
         )}
       </div>
