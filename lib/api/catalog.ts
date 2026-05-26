@@ -56,8 +56,8 @@ export const listItems = (params: ListItemsParams = {}) =>
 export const getItem = (item_id: string) =>
   apiFetch<Item>(B, `/items/${encodeURIComponent(item_id)}`);
 
-export const getItemBySlug = (slug: string) =>
-  apiFetch<Item>(B, `/items/by-slug/${encodeURIComponent(slug)}`);
+export const getItemBySlug = (slug: string, opts?: { preview?: boolean }) =>
+  apiFetch<Item>(B, `/items/by-slug/${encodeURIComponent(slug)}${opts?.preview ? "?preview=1" : ""}`);
 
 // --- Partners + shops ---
 
