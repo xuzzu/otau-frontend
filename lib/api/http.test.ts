@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { apiFetch, ApiError } from "./http";
 import { setCurrentUserId } from "./identity";
+import { setCurrentShopId } from "@/lib/shop-id";
 
 describe("apiFetch", () => {
   const realFetch = global.fetch;
@@ -14,6 +15,7 @@ describe("apiFetch", () => {
   afterEach(() => {
     global.fetch = realFetch;
     setCurrentUserId(null);
+    setCurrentShopId(null);
   });
 
   test("builds URL from base + path and parses JSON", async () => {
@@ -130,5 +132,22 @@ describe("apiFetch", () => {
     const headers = init.headers as Headers;
     expect(headers.get("X-Custom")).toBe("val");
     expect(headers.get("Accept")).toBe("application/json");
+  });
+
+  test("apiFetch injects X-Shop-Id on /me/store/* paths only", async () => {
+    setCurrentShopId("shop-abc");
+    try {
+      fetchMock.mockResolvedValueOnce(new Response("[]", { status: 200 }));
+      await apiFetch("http://catalog", "/me/store/items");
+      let headers = new Headers((fetchMock.mock.calls[0]![1]! as RequestInit).headers as HeadersInit);
+      expect(headers.get("X-Shop-Id")).toBe("shop-abc");
+
+      fetchMock.mockResolvedValueOnce(new Response("[]", { status: 200 }));
+      await apiFetch("http://catalog", "/items");
+      headers = new Headers((fetchMock.mock.calls[1]![1]! as RequestInit).headers as HeadersInit);
+      expect(headers.get("X-Shop-Id")).toBeNull();
+    } finally {
+      setCurrentShopId(null);
+    }
   });
 });
