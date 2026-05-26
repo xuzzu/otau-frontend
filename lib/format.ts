@@ -8,3 +8,9 @@ export const Tc = (n: number) => {
   if (n >= 1_000) return "₸" + Math.round(n / 1_000) + "k";
   return "₸" + n;
 };
+
+/** Format price with currency — "₸ 685 000" for KZT */
+export function formatPrice(amount: number, currency: string): string {
+  if (currency === "KZT") return T(amount);
+  return `${amount} ${currency}`;
+}
