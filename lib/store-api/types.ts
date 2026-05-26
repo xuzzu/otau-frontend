@@ -27,6 +27,15 @@ export type StoreItemSummary = {
   has_active_promotion: boolean;
 };
 
+export type StoreItemImage = {
+  id: string;
+  url: string;
+  is_main: boolean;
+  role: string;
+  sort_order: number;
+  variant_id: string | null;
+};
+
 export type StoreItem = {
   id: string; slug: string; partner_id: string; name: string;
   description: Record<string, string>;
@@ -44,6 +53,7 @@ export type StoreItem = {
   color_ids: string[];
   main_image_url: string | null;
   variants: StoreVariant[];
+  images: StoreItemImage[];
 };
 
 export type PromotionScope = "item" | "variant";
