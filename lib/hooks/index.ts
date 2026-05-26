@@ -7,6 +7,7 @@ import { ApiError } from "@/lib/api/http";
 import type {
   Cart,
   Like,
+  SellerMembership,
   SessionUpgradeBody,
   SessionVerifyBody,
 } from "@/lib/api/types";
@@ -99,6 +100,14 @@ export function useMe() {
       if ((error as ApiError)?.status === 401) return false;
       return failureCount < 1;
     },
+  });
+}
+
+export function useMyMemberships() {
+  return useQuery<SellerMembership[]>({
+    queryKey: ["seller-memberships"],
+    queryFn: core.listMyMemberships,
+    staleTime: 5 * 60 * 1000,
   });
 }
 

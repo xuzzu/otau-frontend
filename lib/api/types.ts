@@ -277,6 +277,18 @@ export type CreateGenerationBody = {
   prompt_text?: string;
 };
 
+// --- Core: seller memberships ---
+
+export type SellerRole = "owner" | "manager" | "sales" | "viewer";
+
+export type SellerMembership = {
+  id: string;
+  user_id: string;
+  partner_id: string;
+  role: SellerRole;
+  joined_at: string;
+};
+
 // --- Core (subset used by frontend) ---
 
 export type UserType = "guest" | "client" | "internal";

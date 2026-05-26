@@ -8,6 +8,7 @@ const kz: Dict = {
   "nav.catalog": "Каталог",
   "nav.showrooms": "Шоурумдер",
   "nav.journal": "Журнал",
+  "nav.my_store": "Менің дүкенім",
   "nav.location": "Алматы · ҚЗ",
   "nav.myroom": "Менің бөлмем",
   "nav.brand_sub": "Үйдегі жайлылық орталығы · 2026 жылдан",
@@ -16,6 +17,15 @@ const kz: Dict = {
   "nav.logout": "Шығу",
   "nav.cart": "Себет",
   "nav.liked": "Сақталғандар",
+
+  // ───── store ─────
+  "store.dashboard": "Басты бет",
+  "store.catalog": "Каталог",
+  "store.promotions": "Жеңілдіктер",
+  "store.shop": "Дүкен",
+  "store.preview": "Алдын-ала қарау",
+  "store.save": "Сақтау",
+  "store.add_item": "Жаңа тауар",
 
   "common.loading": "Жүктелуде…",
   "common.try_again": "Қайталау",
@@ -479,6 +489,7 @@ const ru: Dict = {
   "nav.catalog": "Каталог",
   "nav.showrooms": "Шоурумы",
   "nav.journal": "Журнал",
+  "nav.my_store": "Мой магазин",
   "nav.location": "Алматы · KZ",
   "nav.myroom": "Моя комната",
   "nav.brand_sub": "Центр домашнего уюта · с 2026",
@@ -487,6 +498,15 @@ const ru: Dict = {
   "nav.logout": "Выйти",
   "nav.cart": "Корзина",
   "nav.liked": "Избранное",
+
+  // ───── store ─────
+  "store.dashboard": "Главная",
+  "store.catalog": "Каталог",
+  "store.promotions": "Акции",
+  "store.shop": "Магазин",
+  "store.preview": "Предпросмотр",
+  "store.save": "Сохранить",
+  "store.add_item": "Новый товар",
 
   "common.loading": "Загрузка…",
   "common.try_again": "Попробовать снова",

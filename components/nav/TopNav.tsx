@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useT, type Lang } from "@/lib/i18n";
 import { cn } from "@/lib/cn";
 import { UserMenu } from "./UserMenu";
+import { useMyMemberships } from "@/lib/hooks";
 
 export function TopNav({ inverse = false }: { inverse?: boolean }) {
   const { t, lang, setLang } = useT();
@@ -11,11 +12,15 @@ export function TopNav({ inverse = false }: { inverse?: boolean }) {
   const sub = inverse ? "rgba(251,248,242,.7)" : "#9A8A72";
   const line = inverse ? "rgba(251,248,242,.18)" : "#E8DFD0";
 
+  const memberships = useMyMemberships();
+  const showStore = (memberships.data?.length ?? 0) > 0;
+
   const items: { href: string; key: string }[] = [
     { href: "/design", key: "nav.design" },
     { href: "/catalog", key: "nav.catalog" },
     { href: "/showrooms", key: "nav.showrooms" },
     { href: "/journal", key: "nav.journal" },
+    ...(showStore ? [{ href: "/store", key: "nav.my_store" }] : []),
   ];
 
   return (

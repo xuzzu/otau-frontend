@@ -6,6 +6,7 @@ import type {
   JournalArticle,
   Like,
   OtpStartedOut,
+  SellerMembership,
   SessionUpgradeBody,
   SessionVerifyBody,
   ShowroomVisitRequest,
@@ -39,6 +40,9 @@ export const sessionsExtend = () =>
 // --- Me ---
 
 export const getMe = () => apiFetch<User>(B, `/me`);
+
+export const listMyMemberships = () =>
+  apiFetch<SellerMembership[]>(B, `/me/seller-memberships`);
 
 // --- Cart ---
 
