@@ -504,8 +504,28 @@ export function StudioCanvas() {
                       Restore
                     </button>
                   </>
+                ) : activeGenRoom?.status === "done" ? (
+                  <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                    <span style={{ color: "#c9694a" }}>
+                      Generation finished but no catalog pieces matched this
+                      room.
+                    </span>
+                    <span className="mono" style={{ fontSize: 10 }}>
+                      Check that the catalog vector index is seeded and that
+                      /items/search returns results.
+                    </span>
+                  </div>
+                ) : activeGenRoom?.status === "failed" ? (
+                  <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                    <span style={{ color: "#c9694a" }}>Room generation failed.</span>
+                    {activeGenRoom.error && (
+                      <span className="mono" style={{ fontSize: 10 }}>
+                        {activeGenRoom.error.slice(0, 200)}
+                      </span>
+                    )}
+                  </div>
                 ) : (
-                  "No items in this room yet."
+                  "No items picked yet — the pipeline is still running."
                 )}
               </div>
             ) : (

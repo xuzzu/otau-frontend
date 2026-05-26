@@ -3,10 +3,13 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
+import { useQuery } from "@tanstack/react-query";
 import { useDesign } from "@/lib/store";
 import { useT } from "@/lib/i18n";
 import { T } from "@/lib/format";
+import { listItems } from "@/lib/api/catalog";
 import { useGeneration } from "@/lib/hooks";
+import { qk } from "@/lib/hooks/queryKeys";
 import type { Generation } from "@/lib/api/types";
 
 type Stage = 0 | 1 | 2 | 3 | 4;
@@ -14,12 +17,16 @@ type Stage = 0 | 1 | 2 | 3 | 4;
 const RENDER_DELAY_MS = 500;
 
 // 5 stages map to: read plan / collect items / arrange / render / finalize.
+// `hotspotting` is still a render-adjacent stage from the user's POV — it
+// happens after the image is produced but before the scene is "done", so we
+// bucket it with the render stage.
 function maxStage(g: Generation | null | undefined): Stage {
   if (!g) return 0;
   if (g.status === "done") return 4;
   let s: Stage = 0;
   for (const r of g.rooms) {
     if (r.status === "done") s = Math.max(s, 4) as Stage;
+    else if (r.status === "hotspotting") s = Math.max(s, 3) as Stage;
     else if (r.status === "rendering") s = Math.max(s, 3) as Stage;
     else if (r.status === "retrieving") s = Math.max(s, 2) as Stage;
     else if (r.status === "concepting") s = Math.max(s, 1) as Stage;
@@ -27,14 +34,13 @@ function maxStage(g: Generation | null | undefined): Stage {
   return s;
 }
 
-function selectedCount(g: Generation | null | undefined): number {
-  if (!g) return 0;
-  return g.rooms.reduce((sum, r) => sum + (r.selected_item_ids?.length ?? 0), 0);
-}
-
-function sellerCount(g: Generation | null | undefined): number {
-  if (!g) return 0;
-  return Math.min(5, Math.max(1, g.rooms.length));
+function selectedItemIds(g: Generation | null | undefined): string[] {
+  if (!g) return [];
+  const out: string[] = [];
+  for (const r of g.rooms) {
+    for (const id of r.selected_item_ids ?? []) out.push(id);
+  }
+  return out;
 }
 
 export function RevealLoader() {
@@ -98,8 +104,21 @@ export function RevealLoader() {
       ? spaceId.toUpperCase()
       : t("reveal.space.auto");
 
-  const pieces = selectedCount(gen);
-  const sellers = sellerCount(gen);
+  const itemIds = selectedItemIds(gen);
+  // Resolve unique partner_ids for the selected items so the "sellers"
+  // counter is real, not a placeholder. Skip the fetch entirely when no
+  // items have been picked yet — useItems({}) would otherwise list the
+  // whole catalog.
+  const itemsQ = useQuery({
+    queryKey: qk.items({ id: itemIds }),
+    queryFn: () => listItems({ id: itemIds }),
+    enabled: itemIds.length > 0,
+  });
+  const pieces = itemIds.length;
+  const sellers =
+    itemsQ.data && itemsQ.data.length > 0
+      ? new Set(itemsQ.data.map((it) => it.partner_id)).size
+      : 0;
 
   return (
     <main

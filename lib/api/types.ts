@@ -196,6 +196,7 @@ export type RoomStatus =
   | "concepting"
   | "retrieving"
   | "rendering"
+  | "hotspotting"
   | "done"
   | "failed";
 
