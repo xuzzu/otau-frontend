@@ -10,8 +10,13 @@ const B = BASES.catalog;
 export const getStoreInfo = () => apiFetch<StoreInfo>(B, `/me/store/info`);
 
 export type ListStoreItemsParams = {
-  status?: string; q?: string; tag?: string; all?: 0 | 1;
-  limit?: number; offset?: number;
+  status?: string;
+  q?: string;
+  tag?: string;
+  bucket?: import("./types").ItemBucket;
+  all?: 0 | 1;
+  limit?: number;
+  offset?: number;
 };
 function qs(params: Record<string, unknown>): string {
   const sp = new URLSearchParams();
@@ -134,3 +139,19 @@ export const addShopPhoto = (shop_id: string, body: { url: string; sort_order?: 
   });
 export const deleteShopPhoto = (shop_id: string, photo_id: string) =>
   apiFetch<null>(B, `/me/store/shops/${encodeURIComponent(shop_id)}/photos/${encodeURIComponent(photo_id)}`, { method: "DELETE" });
+
+import type {
+  ActivityEvent, CatalogCounts, MagicHint, StoreScene,
+} from "./types";
+
+export const listCatalogCounts = () =>
+  apiFetch<CatalogCounts>(B, `/me/store/catalog/counts`);
+
+export const listMagicHints = (limit = 10) =>
+  apiFetch<MagicHint[]>(B, `/me/store/magic-hints?limit=${limit}`);
+
+export const listActivity = (limit = 20) =>
+  apiFetch<ActivityEvent[]>(B, `/me/store/activity?limit=${limit}`);
+
+export const listStoreScenes = (limit = 20) =>
+  apiFetch<StoreScene[]>(B, `/me/store/scenes?limit=${limit}`);
