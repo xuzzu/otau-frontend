@@ -148,6 +148,32 @@ export function StudioCanvas() {
     setHiddenIds(new Set());
   }, [active]);
 
+  // The replace mutation invalidates the items + alternates queries on
+  // POST success, but at that point the worker hasn't finished — the room
+  // is still in `replacing` and selected_item_ids is the old list. We
+  // also need to invalidate when polling reveals the status transition
+  // back to `done`, otherwise the items panel keeps the stale slot.
+  const prevRoomStatus = useRef(activeGenRoom?.status);
+  useEffect(() => {
+    const current = activeGenRoom?.status;
+    if (
+      prevRoomStatus.current === "replacing" &&
+      current === "done" &&
+      generationId &&
+      activeGenRoom
+    ) {
+      queryClient.invalidateQueries({
+        queryKey: qk.generationRoomItemsByType(generationId, active),
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["alternates", generationId, activeGenRoom.id],
+      });
+    }
+    prevRoomStatus.current = current;
+  }, [activeGenRoom?.status, generationId, active, activeGenRoom, queryClient]);
+
+  const isReplacing = activeGenRoom?.status === "replacing";
+
   useEffect(() => {
     setActiveId(null);
     setHoverId(null);
@@ -359,7 +385,7 @@ export function StudioCanvas() {
             onHoverLeave={handleHoverLeave}
             activeImageIndex={activeImageIndex}
             onSelectImageIndex={setActiveImageIndex}
-            isReplacing={activeGenRoom?.status === "replacing"}
+            isReplacing={isReplacing}
           />
 
           <div
@@ -542,9 +568,12 @@ export function StudioCanvas() {
                     if (el) rowRefsRef.current.set(r.item.id, el);
                     else rowRefsRef.current.delete(r.item.id);
                   }}
-                  onRemove={() => handleRemove(r.item.id)}
-                  onReplace={(rect: DOMRect) =>
-                    setReplacePopoverState({ itemId: r.item.id, anchor: rect })
+                  onRemove={isReplacing ? undefined : () => handleRemove(r.item.id)}
+                  onReplace={
+                    isReplacing
+                      ? undefined
+                      : (rect: DOMRect) =>
+                          setReplacePopoverState({ itemId: r.item.id, anchor: rect })
                   }
                 />
               ))
