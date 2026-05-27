@@ -130,10 +130,9 @@ describe("ReplaceItemPopover", () => {
       ),
     );
 
-    // The i18n key is still "studio.replace.empty" until Task 14; useT() returns
-    // the key itself when missing, which is sufficient to assert here.
+    // Default lang is "kz" — studio.replace.empty resolves to the Kazakh string.
     expect(
-      await screen.findByText("studio.replace.empty"),
+      await screen.findByText("Балама нұсқа жоқ"),
     ).toBeInTheDocument();
   });
 
