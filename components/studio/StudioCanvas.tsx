@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Photo } from "@/components/ui/Photo";
 import { useDesign, useMyRoom, type RoomKey } from "@/lib/store";
 import { useT } from "@/lib/i18n";
@@ -13,12 +14,15 @@ import {
   useItems,
   usePartners,
 } from "@/lib/hooks";
+import { qk } from "@/lib/hooks/queryKeys";
 import { resolveCatalogAsset } from "@/lib/api/env";
+import { replaceItem } from "@/lib/api/generation";
 import type {
   GenerationRoom,
   ItemSummary,
 } from "@/lib/api/types";
 import { SceneViewport } from "./SceneViewport";
+import ReplaceItemPopover from "./ReplaceItemPopover";
 import { joinHotspotsToItems } from "@/lib/studio/joinHotspots";
 
 type RoomBox = {
@@ -65,8 +69,14 @@ export function StudioCanvas() {
   const [activeId, setActiveId] = useState<string | null>(null);
   const [hoverId, setHoverId] = useState<string | null>(null);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
+  const [replacePopoverState, setReplacePopoverState] = useState<{
+    itemId: string;
+    anchor: DOMRect;
+  } | null>(null);
+  const [replaceError, setReplaceError] = useState<string | null>(null);
   const rowRefsRef = useRef(new Map<string, HTMLDivElement>());
   const addMyRoom = useMyRoom((s) => s.add);
+  const queryClient = useQueryClient();
 
   const active: RoomKey =
     scope === "room"
@@ -101,6 +111,24 @@ export function StudioCanvas() {
     if (!gen) return null;
     return gen.rooms.find((r) => r.room_type === active) ?? null;
   }, [gen, active]);
+
+  const replaceMutation = useMutation({
+    mutationFn: ({ oldId, newId }: { oldId: string; newId: string }) => {
+      if (!generationId || !activeGenRoom) {
+        return Promise.reject(new Error("No active room"));
+      }
+      return replaceItem(generationId, activeGenRoom.id, oldId, newId);
+    },
+    onSuccess: () => {
+      if (generationId) {
+        queryClient.invalidateQueries({ queryKey: qk.generation(generationId) });
+      }
+      setReplaceError(null);
+    },
+    onError: (err) => {
+      setReplaceError(err instanceof Error ? err.message : String(err));
+    },
+  });
 
   useEffect(() => {
     setHiddenIds(new Set());
@@ -317,6 +345,7 @@ export function StudioCanvas() {
             onHoverLeave={handleHoverLeave}
             activeImageIndex={activeImageIndex}
             onSelectImageIndex={setActiveImageIndex}
+            isReplacing={activeGenRoom?.status === "replacing"}
           />
 
           <div
@@ -500,7 +529,9 @@ export function StudioCanvas() {
                     else rowRefsRef.current.delete(r.item.id);
                   }}
                   onRemove={() => handleRemove(r.item.id)}
-                  onReplace={() => alert(t("studio.alert.replace_pending"))}
+                  onReplace={(rect: DOMRect) =>
+                    setReplacePopoverState({ itemId: r.item.id, anchor: rect })
+                  }
                 />
               ))
             )}
@@ -544,6 +575,53 @@ export function StudioCanvas() {
           </div>
         </aside>
       </div>
+
+      {replacePopoverState && activeGenRoom && generationId && (
+        <ReplaceItemPopover
+          genId={generationId}
+          roomId={activeGenRoom.id}
+          originalItemId={replacePopoverState.itemId}
+          anchorRect={replacePopoverState.anchor}
+          onClose={() => setReplacePopoverState(null)}
+          onSelected={(newId) => {
+            replaceMutation.mutate({
+              oldId: replacePopoverState.itemId,
+              newId,
+            });
+            setReplacePopoverState(null);
+          }}
+        />
+      )}
+
+      {replaceError && (
+        <div
+          role="alert"
+          style={{
+            position: "fixed",
+            bottom: 20,
+            left: "50%",
+            transform: "translateX(-50%)",
+            background: "white",
+            border: "1px solid var(--color-hair)",
+            padding: "8px 16px",
+            fontSize: 12,
+            zIndex: 30,
+          }}
+        >
+          {t("studio.replace.error")}
+          <button
+            onClick={() => setReplaceError(null)}
+            style={{
+              marginLeft: 12,
+              background: "transparent",
+              border: "none",
+              cursor: "pointer",
+            }}
+          >
+            ×
+          </button>
+        </div>
+      )}
     </main>
   );
 }
@@ -637,7 +715,7 @@ function StudioProductItem({
   onHoverEnter?: () => void;
   onHoverLeave?: () => void;
   onRemove?: () => void;
-  onReplace?: () => void;
+  onReplace?: (rect: DOMRect) => void;
 }) {
   const { t } = useT();
   return (
@@ -715,7 +793,7 @@ function StudioProductItem({
           <button
             onClick={(e) => {
               e.stopPropagation();
-              onReplace();
+              onReplace(e.currentTarget.getBoundingClientRect());
             }}
             className="mono"
             title={t("studio.tooltip.replace")}

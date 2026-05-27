@@ -61,4 +61,29 @@ describe("useGeneration", () => {
     await new Promise((r) => setTimeout(r, 2000));
     expect(fetchMock.mock.calls.length).toBeGreaterThan(first);
   });
+
+  test("polls when a room is in replacing state even if generation is done", async () => {
+    fetchMock.mockImplementation(
+      async () =>
+        new Response(
+          JSON.stringify({
+            id: "g1",
+            status: "done",
+            rooms: [
+              {
+                id: "r1",
+                status: "replacing",
+                room_type: "Living",
+              },
+            ],
+          }),
+          { status: 200 },
+        ),
+    );
+    renderHook(() => useGeneration("g1"), { wrapper: makeWrapper() });
+    await waitFor(() => expect(fetchMock.mock.calls.length).toBeGreaterThan(0));
+    const first = fetchMock.mock.calls.length;
+    await new Promise((r) => setTimeout(r, 2000));
+    expect(fetchMock.mock.calls.length).toBeGreaterThan(first);
+  });
 });
