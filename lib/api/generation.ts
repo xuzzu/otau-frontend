@@ -1,6 +1,7 @@
 import { BASES } from "./env";
 import { apiFetch } from "./http";
 import type {
+  AlternatesResponse,
   CreateGenerationBody,
   Generation,
   GenerationRoom,
@@ -42,4 +43,28 @@ export const listRoomItemsByType = (
   apiFetch<ItemSummary[]>(
     B,
     `/generations/${encodeURIComponent(generation_id)}/rooms/by-type/${encodeURIComponent(room_type)}/items`,
+  );
+
+// --- Item Replacement (alternates + replace) ---
+
+export const getAlternates = (generation_id: string, room_id: string) =>
+  apiFetch<AlternatesResponse>(
+    B,
+    `/generations/${encodeURIComponent(generation_id)}/rooms/${encodeURIComponent(room_id)}/alternates`,
+  );
+
+export const replaceItem = (
+  generation_id: string,
+  room_id: string,
+  old_item_id: string,
+  new_item_id: string,
+) =>
+  apiFetch<GenerationRoom>(
+    B,
+    `/generations/${encodeURIComponent(generation_id)}/rooms/${encodeURIComponent(room_id)}/replace`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ old_item_id, new_item_id }),
+    },
   );

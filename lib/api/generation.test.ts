@@ -65,4 +65,27 @@ describe("generation client", () => {
       `${BASES.generation}/generations/g-1/rooms/by-type/Living%20Room`,
     );
   });
+
+  test("getAlternates hits /alternates subpath", async () => {
+    await gen.getAlternates("g-1", "r-1");
+    expect(fetchMock.mock.calls[0]![0]).toBe(
+      `${BASES.generation}/generations/g-1/rooms/r-1/alternates`,
+    );
+  });
+
+  test("replaceItem POSTs JSON body to /replace subpath", async () => {
+    await gen.replaceItem("g-1", "r-1", "item-old", "item-new");
+
+    const [url, init] = fetchMock.mock.calls[0]!;
+    expect(url).toBe(
+      `${BASES.generation}/generations/g-1/rooms/r-1/replace`,
+    );
+    expect(init.method).toBe("POST");
+    expect(JSON.parse(init.body as string)).toEqual({
+      old_item_id: "item-old",
+      new_item_id: "item-new",
+    });
+    const headers = init.headers as Headers;
+    expect(headers.get("Content-Type")).toBe("application/json");
+  });
 });

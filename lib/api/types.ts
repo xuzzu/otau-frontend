@@ -197,6 +197,7 @@ export type RoomStatus =
   | "retrieving"
   | "rendering"
   | "hotspotting"
+  | "replacing"
   | "done"
   | "failed";
 
@@ -225,6 +226,7 @@ export type GenerationRoom = {
   concept: Record<string, unknown>;
   selected_item_ids: string[];
   selected_variant_ids: string[];
+  alternates: Record<string, string[]>;
   prompt_text: string;
   image_url: string | null;
   image_url_2: string | null;
@@ -377,4 +379,21 @@ export type JournalArticle = {
   published_at: string | null;
   created_at: string;
   updated_at: string;
+};
+
+// --- Item Replacement ---
+
+// Shape returned by GET /alternates — looser than the catalog `ItemSummary`
+// (nullable name/category/etc., fewer required fields). Kept as its own type
+// to avoid widening the catalog one.
+export type ReplaceItemSummary = {
+  id: string;
+  name: string | null;
+  default_price: number | null;
+  main_image_url: string | null;
+  category_id: string | null;
+};
+
+export type AlternatesResponse = {
+  by_item: Record<string, ReplaceItemSummary[]>;
 };

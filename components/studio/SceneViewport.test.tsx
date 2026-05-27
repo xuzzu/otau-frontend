@@ -13,6 +13,7 @@ function makeRoom(overrides: Partial<GenerationRoom> = {}): GenerationRoom {
     concept: {},
     selected_item_ids: [],
     selected_variant_ids: [],
+    alternates: {},
     prompt_text: "",
     image_url: "/storage/scenes/g1/living/scene.png",
     image_url_2: null,
