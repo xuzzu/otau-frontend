@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import { useT } from "@/lib/i18n";
 import { Photo } from "@/components/ui/Photo";
 import { MagicHintChip, MagicHintBody } from "@/components/store/shared/MagicHint";
 import { T } from "@/lib/format";
@@ -9,6 +10,7 @@ import type { StoreItemSummary } from "@/lib/store-api/types";
 const LOW = 3;
 
 export function CatalogCard({ item }: { item: StoreItemSummary }) {
+  const { t } = useT();
   const href = item.magic_hint
     ? `/store/catalog/${item.id}/edit?assist=${item.magic_hint.kind}`
     : `/store/catalog/${item.id}/edit`;
@@ -30,10 +32,12 @@ export function CatalogCard({ item }: { item: StoreItemSummary }) {
         <Photo src={resolveCatalogAsset(item.main_image_url) ?? undefined} alt="" />
 
         {item.status === "draft" && (
-          <Badge variant="draft" position="tl">Draft</Badge>
+          <Badge variant="draft" position="tl">{t("store.dashboard.card.draft")}</Badge>
         )}
         {item.status === "active" && stockTone === "low" && (
-          <Badge variant="urgent" position="tl">Low · {item.in_stock_current_shop} left</Badge>
+          <Badge variant="urgent" position="tl">
+            {t("store.dashboard.card.low", { n: item.in_stock_current_shop })}
+          </Badge>
         )}
         {item.magic_hint && (
           <span style={{ position: "absolute", top: 10, right: 10 }}>
@@ -41,7 +45,7 @@ export function CatalogCard({ item }: { item: StoreItemSummary }) {
           </span>
         )}
         {item.has_active_promotion && !item.magic_hint && (
-          <Badge variant="promo" position="tr">Sale</Badge>
+          <Badge variant="promo" position="tr">{t("store.dashboard.card.sale")}</Badge>
         )}
       </div>
 
@@ -65,7 +69,7 @@ export function CatalogCard({ item }: { item: StoreItemSummary }) {
                 stockTone === "zero" ? "var(--color-ink)" :
                 "var(--color-moss)",
             }} />
-            {item.in_stock_current_shop} in stock
+            {t("store.dashboard.card.in_stock", { n: item.in_stock_current_shop })}
           </span>
         </div>
         {item.magic_hint && (

@@ -14,11 +14,12 @@ const fixture: DashboardData = {
 describe("PulseStrip", () => {
   it("renders all five KPI cards", () => {
     render(<PulseStrip data={fixture} />);
-    expect(screen.getByText("Desire")).toBeInTheDocument();
-    expect(screen.getByText("✦ Imagined")).toBeInTheDocument();
-    expect(screen.getByText("Stock")).toBeInTheDocument();
-    expect(screen.getByText("Visits")).toBeInTheDocument();
-    expect(screen.getByText("Trust")).toBeInTheDocument();
+    // kz labels (default lang)
+    expect(screen.getByText("Қалау")).toBeInTheDocument();
+    expect(screen.getByText("✦ Қиялмен")).toBeInTheDocument();
+    expect(screen.getByText("Қор")).toBeInTheDocument();
+    expect(screen.getByText("Кездесулер")).toBeInTheDocument();
+    expect(screen.getByText("Сенім")).toBeInTheDocument();
   });
 
   it("renders 247 likes total", () => {
@@ -28,7 +29,8 @@ describe("PulseStrip", () => {
 
   it("renders the low-stock warning when low_count > 0", () => {
     render(<PulseStrip data={fixture} />);
-    expect(screen.getByText(/2 below threshold/)).toBeInTheDocument();
+    // kz: "⚠ {n} төмен шегінде"
+    expect(screen.getByText(/2 төмен шегінде/)).toBeInTheDocument();
   });
 
   it("renders trust as awaiting first review when rating null", () => {
@@ -37,6 +39,7 @@ describe("PulseStrip", () => {
       trust: { rating: null, reviews_count: 0 },
     };
     render(<PulseStrip data={empty} />);
-    expect(screen.getByText(/awaiting first review/)).toBeInTheDocument();
+    // kz: "алғашқы пікірді күтуде"
+    expect(screen.getByText(/алғашқы пікірді күтуде/)).toBeInTheDocument();
   });
 });

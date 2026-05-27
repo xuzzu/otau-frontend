@@ -1,8 +1,11 @@
 "use client";
 import Link from "next/link";
+import { useT } from "@/lib/i18n";
 import { MagicSentence } from "@/components/store/shared/MagicHint";
 import type { DashboardData, MagicHint } from "@/lib/store-api/types";
 import type { ReactNode } from "react";
+
+const DAY_KEYS = ["sun","mon","tue","wed","thu","fri","sat"] as const;
 
 type Row = {
   icon: "urgent" | "soft" | "ok" | "magic";
@@ -21,6 +24,7 @@ export function AttentionList({
   magicHint?: MagicHint | null;
   promoEndingSoon?: { note: string; hoursLeft: number; redemptions: number; href: string } | null;
 }) {
+  const { t } = useT();
   const rows: Row[] = [];
 
   if (lowStockItems.length > 0) {
@@ -28,10 +32,10 @@ export function AttentionList({
       icon: "urgent", glyph: "!",
       body: (
         <span>
-          <strong>Low stock:</strong> {lowStockItems.slice(0, 3).join(", ")}
+          <strong>{t("store.dashboard.attention.low_stock")}</strong> {lowStockItems.slice(0, 3).join(", ")}
         </span>
       ),
-      actionLabel: "Restock",
+      actionLabel: t("store.dashboard.attention.restock"),
       actionHref: "/store/catalog?bucket=attention",
     });
   }
@@ -42,12 +46,16 @@ export function AttentionList({
       icon: "soft", glyph: "★",
       body: (
         <span>
-          <strong>{v.recipient_name}</strong> · {fmtVisit(v.date)}
+          <strong>{v.recipient_name}</strong> · {fmtVisit(v.date, t)}
           {v.items.length ? <> · {v.items.join(", ")}</> : null}
-          {v.ordinal ? <> · <em style={{ color: "var(--color-taupe-2)" }}>{ordinalLabel(v.ordinal)} visit</em></> : null}
+          {v.ordinal ? (
+            <> · <em style={{ color: "var(--color-taupe-2)" }}>
+              {t("store.dashboard.attention.visit_label", { ord: ordinalLabel(v.ordinal, t) })}
+            </em></>
+          ) : null}
         </span>
       ),
-      actionLabel: "Prep",
+      actionLabel: t("store.dashboard.attention.prep"),
       actionHref: "/store/visits",
     });
   }
@@ -57,11 +65,15 @@ export function AttentionList({
       icon: "ok", glyph: "%",
       body: (
         <span>
-          <strong>«{promoEndingSoon.note}»</strong> promo ends in {promoEndingSoon.hoursLeft}h ·
-          {" "}{promoEndingSoon.redemptions} redemptions · <em style={{ color: "var(--color-taupe-2)" }}>extend?</em>
+          <strong>«{promoEndingSoon.note}»</strong> {t("store.dashboard.attention.promo_text", {
+            name: promoEndingSoon.note,
+            h: promoEndingSoon.hoursLeft,
+            n: promoEndingSoon.redemptions,
+          }).replace(`«${promoEndingSoon.note}» `, "")}
+          {" "}<em style={{ color: "var(--color-taupe-2)" }}>{t("store.dashboard.attention.extend")}</em>
         </span>
       ),
-      actionLabel: "Review",
+      actionLabel: t("store.dashboard.attention.review"),
       actionHref: promoEndingSoon.href,
     });
   }
@@ -122,12 +134,15 @@ const actionStyle: React.CSSProperties = {
   paddingBottom: 2, textDecoration: "none", background: "transparent", border: 0, cursor: "pointer",
 };
 
-function fmtVisit(iso: string): string {
+function fmtVisit(iso: string, t: (k: string) => string): string {
   const d = new Date(iso);
-  const days = ["sun","mon","tue","wed","thu","fri","sat"];
-  return `${days[d.getDay()]} ${d.getHours().toString().padStart(2,"0")}:${d.getMinutes().toString().padStart(2,"0")}`;
+  const dayKey = DAY_KEYS[d.getDay()];
+  return `${t(`date.day.${dayKey}`)} ${d.getHours().toString().padStart(2,"0")}:${d.getMinutes().toString().padStart(2,"0")}`;
 }
 
-function ordinalLabel(n: number): string {
-  return ["first","second","third","fourth","fifth"][n - 1] ?? `${n}th`;
+function ordinalLabel(n: number, t: (k: string) => string): string {
+  const key = `store.dashboard.attention.ordinal.${n}`;
+  const val = t(key);
+  // Fall back to numeric if key missing (n > 5)
+  return val !== key ? val : `${n}`;
 }

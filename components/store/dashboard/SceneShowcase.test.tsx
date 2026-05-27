@@ -15,7 +15,8 @@ const scenes: StoreScene[] = [
 describe("SceneShowcase", () => {
   it("renders empty state when no scenes", () => {
     render(<SceneShowcase scenes={[]} />);
-    expect(screen.getByText(/haven't been imagined yet/i)).toBeInTheDocument();
+    // kz: "Заттарыңыз әлі қиялданбаған..."
+    expect(screen.getByText(/Заттарыңыз әлі қиялданбаған/i)).toBeInTheDocument();
   });
 
   it("renders hero of first scene by default", () => {
@@ -27,7 +28,8 @@ describe("SceneShowcase", () => {
 
   it("clicking a thumbnail swaps the hero", () => {
     render(<SceneShowcase scenes={scenes} />);
-    fireEvent.click(screen.getByLabelText("Scene 2 of 2"));
+    // kz: "Сахна {i} / {n}" → "Сахна 2 / 2"
+    fireEvent.click(screen.getByLabelText("Сахна 2 / 2"));
     // itemName appears in both the title and the caption — use getAllByText
     const matches = screen.getAllByText(/Bukhar oak shelf/);
     expect(matches.length).toBeGreaterThan(0);

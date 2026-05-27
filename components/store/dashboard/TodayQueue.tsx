@@ -1,4 +1,5 @@
 "use client";
+import { useT } from "@/lib/i18n";
 import { AttentionList } from "./AttentionList";
 import { ActivityFeed } from "./ActivityFeed";
 import type { ActivityEvent, DashboardData, MagicHint } from "@/lib/store-api/types";
@@ -11,11 +12,16 @@ export function TodayQueue({
   activity: ActivityEvent[];
   lowStockItems: string[];
 }) {
+  const { t } = useT();
   const topHint = magicHints[0] ?? null;
+  const count = countRows(dashboard, lowStockItems, topHint);
 
   return (
     <div style={{ display: "grid", gridTemplateColumns: "1.45fr 1fr", gap: 18 }}>
-      <Panel title="Attention" meta={`${countRows(dashboard, lowStockItems, topHint)} today`}>
+      <Panel
+        title={t("store.dashboard.section.queue.attention")}
+        meta={t("store.dashboard.attention.count_today", { n: count })}
+      >
         <AttentionList
           dashboard={dashboard}
           lowStockItems={lowStockItems}
@@ -23,7 +29,10 @@ export function TodayQueue({
           promoEndingSoon={null}
         />
       </Panel>
-      <Panel title="Activity" meta="just now">
+      <Panel
+        title={t("store.dashboard.section.queue.activity")}
+        meta={t("store.dashboard.section.queue.activity_meta")}
+      >
         <ActivityFeed events={activity.slice(0, 6)} />
       </Panel>
     </div>

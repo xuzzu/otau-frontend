@@ -17,14 +17,16 @@ describe("CatalogCard", () => {
     expect(screen.getByText(/218/)).toBeInTheDocument();
   });
 
-  it("renders Low · N left badge when stock <= 3", () => {
+  it("renders low-stock badge when stock <= 3", () => {
     render(<CatalogCard item={{ ...baseItem, in_stock_current_shop: 2 }} />);
-    expect(screen.getByText(/Low · 2 left/i)).toBeInTheDocument();
+    // kz: "Аз · {n} қалды"
+    expect(screen.getByText(/Аз · 2 қалды/i)).toBeInTheDocument();
   });
 
   it("renders Draft badge when status=draft", () => {
     render(<CatalogCard item={{ ...baseItem, status: "draft" }} />);
-    expect(screen.getByText("Draft")).toBeInTheDocument();
+    // kz: "Жоба"
+    expect(screen.getByText("Жоба")).toBeInTheDocument();
   });
 
   it("renders magic hint chip and body when present", () => {

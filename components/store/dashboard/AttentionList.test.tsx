@@ -25,7 +25,8 @@ describe("AttentionList", () => {
   it("renders low-stock row first when present", () => {
     render(<AttentionList dashboard={dash} lowStockItems={["Oak shelf — 2 left"]} magicHint={hint} />);
     const rows = screen.getAllByRole("listitem");
-    expect(rows[0].textContent).toMatch(/Low stock/i);
+    // kz: "Қор аз:"
+    expect(rows[0].textContent).toMatch(/Қор аз/i);
   });
 
   it("renders magic body in italic serif quote style", () => {

@@ -1,9 +1,10 @@
 "use client";
+import { useT } from "@/lib/i18n";
 import type { ActivityEvent } from "@/lib/store-api/types";
 
-function relTime(iso: string): string {
+function relTime(iso: string, justNow: string): string {
   const ms = Date.now() - new Date(iso).getTime();
-  if (ms < 60_000) return "just now";
+  if (ms < 60_000) return justNow;
   const mins = Math.floor(ms / 60_000);
   if (mins < 60) return `${mins}m`;
   const hours = Math.floor(mins / 60);
@@ -12,6 +13,9 @@ function relTime(iso: string): string {
 }
 
 export function ActivityFeed({ events }: { events: ActivityEvent[] }) {
+  const { t } = useT();
+  const justNow = t("store.dashboard.activity.just_now");
+
   return (
     <ul aria-live="polite" style={{ listStyle: "none", padding: 0, margin: 0 }}>
       {events.map((e, i) => (
@@ -20,8 +24,8 @@ export function ActivityFeed({ events }: { events: ActivityEvent[] }) {
           style={{ display: "grid", gridTemplateColumns: "32px 1fr auto", gap: 12, alignItems: "center", padding: "10px 0" }}
         >
           {renderAvatar(e)}
-          <div style={{ fontSize: 13.5, lineHeight: 1.35 }}>{renderBody(e)}</div>
-          <span className="mono" style={{ fontSize: 11, color: "var(--color-taupe)" }}>{relTime(e.created_at)}</span>
+          <div style={{ fontSize: 13.5, lineHeight: 1.35 }}>{renderBody(e, t)}</div>
+          <span className="mono" style={{ fontSize: 11, color: "var(--color-taupe)" }}>{relTime(e.created_at, justNow)}</span>
         </li>
       ))}
     </ul>
@@ -40,26 +44,30 @@ function renderAvatar(e: ActivityEvent) {
   return null;
 }
 
-function renderBody(e: ActivityEvent) {
+function renderBody(e: ActivityEvent, t: (k: string, p?: Record<string, string | number>) => string) {
   if (e.kind === "item_liked") {
-    const actor = e.actor_label ?? "Anonymous";
-    const name = e.item_name ?? "—";
-    return <span>{actor} liked {name}</span>;
+    const who = e.actor_label ?? t("store.dashboard.activity.anonymous");
+    const item = e.item_name ?? "—";
+    return <span>{t("store.dashboard.activity.liked", { who, item })}</span>;
   }
   if (e.kind === "stock_event") {
     const sign = (e.delta ?? 0) >= 0 ? "+" : "";
-    return <>Restock event · <strong>{sign}{e.delta ?? 0} {e.item_name ?? ""}</strong></>;
+    const n = Math.abs(e.delta ?? 0);
+    const item = e.item_name ?? "";
+    return <span>{t("store.dashboard.activity.restock_event", { sign, n, item })}</span>;
   }
   if (e.kind === "magic_event") {
-    const phrase =
-      e.magic_kind === "missing_description" ? "drafted description for" :
-      e.magic_kind === "pricing_low" ? "spotted pricing opportunity for" :
-      e.magic_kind === "missing_photo" ? "asked for a photo for" :
-      "noted something about";
-    return <span>Magic {phrase} {e.item_name ?? "—"}</span>;
+    const item = e.item_name ?? "—";
+    const magicKey =
+      e.magic_kind === "missing_description" ? "store.dashboard.activity.magic.missing_description" :
+      e.magic_kind === "pricing_low" ? "store.dashboard.activity.magic.pricing_low" :
+      e.magic_kind === "missing_photo" ? "store.dashboard.activity.magic.missing_photo" :
+      "store.dashboard.activity.magic.generic";
+    return <span>{t(magicKey, { item })}</span>;
   }
   if (e.kind === "visit_requested") {
-    return <span>{e.actor_label ?? "Visitor"} requested a visit</span>;
+    const who = e.actor_label ?? t("store.dashboard.activity.anonymous");
+    return <span>{t("store.dashboard.activity.visit_request", { who })}</span>;
   }
   return null;
 }

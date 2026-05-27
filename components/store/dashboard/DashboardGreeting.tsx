@@ -1,12 +1,9 @@
 "use client";
 import Link from "next/link";
+import { useT } from "@/lib/i18n";
 
-function greetingFor(hour: number): string {
-  if (hour < 5) return "Good night";
-  if (hour < 12) return "Good morning";
-  if (hour < 18) return "Good afternoon";
-  return "Good evening";
-}
+const DAY_KEYS = ["sun","mon","tue","wed","thu","fri","sat"] as const;
+const MONTH_KEYS = ["jan","feb","mar","apr","may","jun","jul","aug","sep","oct","nov","dec"] as const;
 
 function issueNumber(shopCreatedAt: string | undefined): number {
   if (!shopCreatedAt) return 1;
@@ -23,13 +20,19 @@ export function DashboardGreeting({
   city: string;
   shopCreatedAt?: string;
 }) {
+  const { t } = useT();
   const now = new Date();
-  const greeting = greetingFor(now.getHours());
-  const ruMonths = ["января","февраля","марта","апреля","мая","июня",
-                    "июля","августа","сентября","октября","ноября","декабря"];
-  const ruDays = ["ВС","ПН","ВТ","СР","ЧТ","ПТ","СБ"];
+  const hour = now.getHours();
+  const greeting =
+    hour < 5 ? t("store.greeting.night") :
+    hour < 12 ? t("store.greeting.morning") :
+    hour < 18 ? t("store.greeting.afternoon") :
+    t("store.greeting.evening");
+
+  const dayKey = DAY_KEYS[now.getDay()];
+  const monthKey = MONTH_KEYS[now.getMonth()];
   const subline =
-    `${ruDays[now.getDay()]} · ${now.getDate()} ${ruMonths[now.getMonth()]}` +
+    `${t(`date.day.${dayKey}`)} · ${now.getDate()} ${t(`date.month.${monthKey}_gen`)}` +
     ` · ${shopName.toUpperCase()} · ${city.toUpperCase()} · №${issueNumber(shopCreatedAt)}`;
 
   return (
@@ -51,7 +54,7 @@ export function DashboardGreeting({
       <div style={{ display: "flex", gap: 12 }}>
         <button
           type="button"
-          onClick={() => alert("Find anything — coming soon")}
+          onClick={() => alert(t("store.dashboard.section.greeting.find_soon"))}
           className="mono"
           style={{
             height: 38, padding: "0 16px", borderRadius: 999,
@@ -61,10 +64,10 @@ export function DashboardGreeting({
             display: "inline-flex", alignItems: "center", gap: 8,
           }}
         >
-          ⌕ Find anything <kbd style={{ fontFamily: "inherit", padding: "1px 5px", background: "var(--color-hair)", borderRadius: 3, fontSize: 10 }}>⌘K</kbd>
+          {t("store.dashboard.section.greeting.find")} <kbd style={{ fontFamily: "inherit", padding: "1px 5px", background: "var(--color-hair)", borderRadius: 3, fontSize: 10 }}>⌘K</kbd>
         </button>
         <Link href="/store/catalog/new" className="btn" style={{ height: 38, padding: "0 16px" }}>
-          + Add item <span className="arrow">→</span>
+          {t("store.dashboard.section.greeting.add_item")} <span className="arrow">→</span>
         </Link>
       </div>
     </div>

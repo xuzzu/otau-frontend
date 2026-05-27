@@ -1,8 +1,10 @@
 "use client";
 import { useState } from "react";
+import { useT } from "@/lib/i18n";
 import type { StoreScene } from "@/lib/store-api/types";
 
 export function SceneShowcase({ scenes }: { scenes: StoreScene[] }) {
+  const { t } = useT();
   const [active, setActive] = useState(0);
 
   if (scenes.length === 0) {
@@ -14,7 +16,7 @@ export function SceneShowcase({ scenes }: { scenes: StoreScene[] }) {
           fontSize: 18, background: "var(--color-paper)", border: "1px solid var(--color-hair)",
         }}
       >
-        Your items haven&apos;t been imagined yet. Once buyers start exploring your catalog, scenes will appear here.
+        {t("store.dashboard.scenes.empty")}
       </div>
     );
   }
@@ -22,6 +24,7 @@ export function SceneShowcase({ scenes }: { scenes: StoreScene[] }) {
   const cur = scenes[active] ?? scenes[0];
   const itemName = cur.featured_item?.name ?? "—";
   const audience = cur.audience_hint ? ` ${cur.audience_hint}` : "";
+  const atHome = t("store.dashboard.scenes.at_home");
 
   return (
     <div>
@@ -48,29 +51,42 @@ export function SceneShowcase({ scenes }: { scenes: StoreScene[] }) {
         }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
             <div className="mono" style={{ fontSize: 12, letterSpacing: "0.22em", textTransform: "uppercase", opacity: 0.92 }}>
-              Scene {active + 1} of {scenes.length}
-              {audience && <em className="serif" style={{ marginLeft: 8, opacity: 0.7, textTransform: "none", letterSpacing: 0, fontSize: 16 }}>composed for{audience}</em>}
+              {t("store.dashboard.scenes.counter", { i: active + 1, n: scenes.length })}
+              {audience && (
+                <em className="serif" style={{ marginLeft: 8, opacity: 0.7, textTransform: "none", letterSpacing: 0, fontSize: 16 }}>
+                  {t("store.dashboard.scenes.composed_for", { place: cur.audience_hint ?? "" })}
+                </em>
+              )}
             </div>
             <div style={{ display: "flex", gap: 10 }}>
-              <ArrowBtn aria-label="Previous scene" onClick={() => setActive((a) => (a - 1 + scenes.length) % scenes.length)}>←</ArrowBtn>
-              <ArrowBtn aria-label="Next scene" onClick={() => setActive((a) => (a + 1) % scenes.length)}>→</ArrowBtn>
+              <ArrowBtn
+                aria-label={t("store.dashboard.scenes.aria.prev")}
+                onClick={() => setActive((a) => (a - 1 + scenes.length) % scenes.length)}
+              >←</ArrowBtn>
+              <ArrowBtn
+                aria-label={t("store.dashboard.scenes.aria.next")}
+                onClick={() => setActive((a) => (a + 1) % scenes.length)}
+              >→</ArrowBtn>
             </div>
           </div>
           <div className="serif" style={{ fontSize: 56, lineHeight: 1.02, maxWidth: "70%" }}>
-            Your {itemName}, <em style={{ fontStyle: "italic", color: "var(--color-amber)" }}>at home</em>{audience && `${audience}.`}
+            {t("store.dashboard.scenes.title", { item: itemName, at_home: atHome })}
+            {audience && <em style={{ fontStyle: "italic", color: "var(--color-amber)" }}>{audience}.</em>}
           </div>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
             <div>
               <div className="mono" style={{ fontSize: 12, letterSpacing: "0.14em", textTransform: "uppercase", opacity: 0.92 }}>
-                Featuring <strong style={{ color: "var(--color-amber)", fontWeight: 500 }}>{itemName}</strong>
+                {t("store.dashboard.scenes.featuring", { item: itemName })}
                 {cur.featured_item && (
-                  <> · <strong style={{ color: "var(--color-amber)", fontWeight: 500 }}>{cur.featured_item.likes_today} saves</strong> today</>
+                  <> · <strong style={{ color: "var(--color-amber)", fontWeight: 500 }}>
+                    {t("store.dashboard.scenes.saves_today", { n: cur.featured_item.likes_today })}
+                  </strong></>
                 )}
               </div>
             </div>
             <button
               type="button"
-              onClick={() => alert("Feature in catalog — coming soon")}
+              onClick={() => alert(t("store.dashboard.scenes.coming_soon"))}
               className="mono"
               style={{
                 background: "rgba(216,160,91,.94)", color: "var(--color-ink)",
@@ -78,7 +94,7 @@ export function SceneShowcase({ scenes }: { scenes: StoreScene[] }) {
                 fontSize: 11, letterSpacing: "0.14em", textTransform: "uppercase", cursor: "pointer",
               }}
             >
-              ＋ Feature in catalog
+              {t("store.dashboard.scenes.feature_btn")}
             </button>
           </div>
         </div>
@@ -90,7 +106,7 @@ export function SceneShowcase({ scenes }: { scenes: StoreScene[] }) {
             <button
               key={s.id}
               type="button"
-              aria-label={`Scene ${i + 1} of ${scenes.length}`}
+              aria-label={t("store.dashboard.scenes.aria.thumb", { i: i + 1, n: scenes.length })}
               aria-current={i === active}
               onClick={() => setActive(i)}
               style={{

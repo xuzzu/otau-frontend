@@ -1,13 +1,14 @@
 "use client";
+import { useT } from "@/lib/i18n";
 import type { CatalogCounts, ItemBucket } from "@/lib/store-api/types";
 
-const ORDER: { key: ItemBucket; label: string; attention?: boolean }[] = [
-  { key: "all", label: "All" },
-  { key: "active", label: "Active" },
-  { key: "drafts", label: "Drafts" },
-  { key: "attention", label: "Needs attention", attention: true },
-  { key: "promoted", label: "Promoted" },
-  { key: "archived", label: "Archived" },
+const ORDER: { key: ItemBucket; labelKey: string; attention?: boolean }[] = [
+  { key: "all", labelKey: "store.dashboard.bucket.all" },
+  { key: "active", labelKey: "store.dashboard.bucket.active" },
+  { key: "drafts", labelKey: "store.dashboard.bucket.drafts" },
+  { key: "attention", labelKey: "store.dashboard.bucket.attention", attention: true },
+  { key: "promoted", labelKey: "store.dashboard.bucket.promoted" },
+  { key: "archived", labelKey: "store.dashboard.bucket.archived" },
 ];
 
 export function CatalogChips({
@@ -17,11 +18,14 @@ export function CatalogChips({
   counts: CatalogCounts | undefined;
   onChange: (b: ItemBucket) => void;
 }) {
+  const { t } = useT();
+
   return (
     <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-      {ORDER.map(({ key, label, attention }) => {
+      {ORDER.map(({ key, labelKey, attention }) => {
         const active = current === key;
         const n = counts?.[key as keyof CatalogCounts] ?? 0;
+        const label = t(labelKey);
         return (
           <button
             key={key}

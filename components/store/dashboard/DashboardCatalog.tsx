@@ -1,18 +1,20 @@
 "use client";
 import { useState, useEffect } from "react";
+import { useT } from "@/lib/i18n";
 import { useStoreCatalogCounts, useStoreItems } from "@/lib/store-api/hooks";
 import { CatalogChips } from "./CatalogChips";
 import { CatalogCard } from "./CatalogCard";
 import type { ItemBucket } from "@/lib/store-api/types";
 
 export function DashboardCatalog() {
+  const { t } = useT();
   const [bucket, setBucket] = useState<ItemBucket>("all");
   const [q, setQ] = useState("");
   const [debouncedQ, setDebouncedQ] = useState("");
 
   useEffect(() => {
-    const t = setTimeout(() => setDebouncedQ(q), 300);
-    return () => clearTimeout(t);
+    const timer = setTimeout(() => setDebouncedQ(q), 300);
+    return () => clearTimeout(timer);
   }, [q]);
 
   const counts = useStoreCatalogCounts();
@@ -26,7 +28,7 @@ export function DashboardCatalog() {
         <CatalogChips current={bucket} counts={counts.data} onChange={setBucket} />
         <input
           type="search"
-          placeholder="Search items, SKU, tags…"
+          placeholder={t("store.dashboard.catalog.search")}
           value={q}
           onChange={(e) => setQ(e.target.value)}
           className="mono"
@@ -40,10 +42,15 @@ export function DashboardCatalog() {
       </div>
 
       {items.isLoading ? (
-        <div className="mono" style={{ padding: 32, textAlign: "center", color: "var(--color-taupe)" }}>loading…</div>
+        <div className="mono" style={{ padding: 32, textAlign: "center", color: "var(--color-taupe)" }}>
+          {t("store.dashboard.catalog.loading")}
+        </div>
       ) : items.data && items.data.length === 0 ? (
         <div className="serif it" style={{ padding: 48, textAlign: "center", color: "var(--color-taupe-2)", fontSize: 18 }}>
-          Your shop is quiet here. <a href="/store/catalog/new" className="mono" style={{ marginLeft: 12 }}>+ Add item →</a>
+          {t("store.dashboard.catalog.empty")}{" "}
+          <a href="/store/catalog/new" className="mono" style={{ marginLeft: 12 }}>
+            {t("store.dashboard.catalog.add")}
+          </a>
         </div>
       ) : (
         <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 18 }}>

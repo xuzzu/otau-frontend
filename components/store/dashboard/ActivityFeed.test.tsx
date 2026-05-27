@@ -18,9 +18,12 @@ const events: ActivityEvent[] = [
 describe("ActivityFeed", () => {
   it("renders each event with its body template", () => {
     render(<ActivityFeed events={events} />);
-    expect(screen.getByText(/liked Aspara linen sofa/i)).toBeInTheDocument();
-    expect(screen.getByText(/Restock event/i)).toBeInTheDocument();
-    expect(screen.getByText(/drafted/i)).toBeInTheDocument();
+    // kz: "{who} ұнатты {item}" → "Anonymous ұнатты Aspara linen sofa"
+    expect(screen.getByText(/ұнатты Aspara linen sofa/i)).toBeInTheDocument();
+    // kz: "Толықтыру оқиғасы · {sign}{n} {item}" → "Толықтыру оқиғасы · +6 Walnut bench"
+    expect(screen.getByText(/Толықтыру оқиғасы/i)).toBeInTheDocument();
+    // kz: "Magic сипаттама жасады: {item}" → "Magic сипаттама жасады: Brass lamp"
+    expect(screen.getByText(/Magic сипаттама жасады/i)).toBeInTheDocument();
   });
 
   it("shows relative time labels", () => {

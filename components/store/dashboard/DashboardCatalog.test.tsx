@@ -34,7 +34,8 @@ describe("DashboardCatalog", () => {
 
   it("switches bucket when chip clicked", async () => {
     render(withClient(<DashboardCatalog />));
-    fireEvent.click(screen.getByText(/Drafts/));
+    // kz label for "drafts" bucket
+    fireEvent.click(screen.getByText(/Жобалар/));
     await waitFor(() => expect(screen.getByText("D")).toBeInTheDocument());
   });
 });

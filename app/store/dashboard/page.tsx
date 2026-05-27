@@ -34,13 +34,13 @@ export default function DashboardPage() {
     return items
       .filter((i) => i.in_stock_current_shop <= 3 && i.status === "active")
       .slice(0, 3)
-      .map((i) => `${i.name} — ${i.in_stock_current_shop} left`);
-  }, [lowItems.data]);
+      .map((i) => `${i.name} — ${t("store.dashboard.attention.left", { n: i.in_stock_current_shop })}`);
+  }, [lowItems.data, t]);
 
   if (dashboard.isLoading) return <DashboardSkeleton />;
   if (dashboard.error || !dashboard.data) {
     return <p className="mono" style={{ padding: 32, color: "var(--color-clay)" }}>
-      Dashboard · couldn&apos;t load. Refresh →
+      {t("store.dashboard.page.error")}
     </p>;
   }
 
@@ -50,19 +50,27 @@ export default function DashboardPage() {
     <div style={{ maxWidth: 1400, margin: "0 auto" }}>
       <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45, ease: EASE }}>
         <DashboardGreeting
-          firstName={extractFirstName()}
+          firstName={extractFirstName(t("store.greeting.fallback_name"))}
           shopName={currentShop?.name ?? ""}
           city={(currentShop as { city?: string } | undefined)?.city ?? ""}
         />
       </motion.div>
 
       <motion.section initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, ease: EASE, delay: 0.1 }} style={{ marginBottom: 56 }}>
-        <SectionHeader kicker="№ 01 · Pulse · last 7 days" title={t("store.dashboard.pulse.title")} rightMeta="vs prior week" />
+        <SectionHeader
+          kicker={t("store.dashboard.section.pulse.kicker")}
+          title={t("store.dashboard.pulse.title")}
+          rightMeta={t("store.dashboard.section.pulse.meta")}
+        />
         <PulseStrip data={data} />
       </motion.section>
 
       <motion.section initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, ease: EASE, delay: 0.2 }} style={{ marginBottom: 56 }}>
-        <SectionHeader kicker="№ 02 · Today's queue" title={t("store.dashboard.queue.title")} rightMeta="live" />
+        <SectionHeader
+          kicker={t("store.dashboard.section.queue.kicker")}
+          title={t("store.dashboard.queue.title")}
+          rightMeta={t("store.dashboard.section.queue.meta")}
+        />
         <TodayQueue
           dashboard={data}
           activity={activity.data ?? []}
@@ -72,17 +80,27 @@ export default function DashboardPage() {
       </motion.section>
 
       <motion.section initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, ease: EASE, delay: 0.3 }} style={{ marginBottom: 56 }}>
-        <SectionHeader kicker="№ 03 · Your shop" title={t("store.dashboard.catalog.title")} rightMeta="" />
+        <SectionHeader
+          kicker={t("store.dashboard.section.catalog.kicker")}
+          title={t("store.dashboard.catalog.title")}
+          rightMeta=""
+        />
         <DashboardCatalog />
       </motion.section>
 
       <motion.section initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, ease: EASE, delay: 0.4 }}>
         <SectionHeader
-          kicker="№ 04 · Scenes · this week"
-          title={<>Your items, <em style={{ color: "var(--color-taupe-2)" }}>imagined at home</em></>}
+          kicker={t("store.dashboard.section.scenes.kicker")}
+          title={<>
+            {t("store.dashboard.imagined.title").split("—")[0]}
+            <em style={{ color: "var(--color-taupe-2)" }}>{t("store.dashboard.section.scenes.title_em")}</em>
+          </>}
           rightMeta={
             data.imagined
-              ? `${data.imagined.scenes_count} scenes · ${data.imagined.items_in_scenes_count} items`
+              ? t("store.dashboard.section.scenes.meta", {
+                  scenes: data.imagined.scenes_count,
+                  items: data.imagined.items_in_scenes_count,
+                })
               : ""
           }
         />
@@ -92,18 +110,19 @@ export default function DashboardPage() {
   );
 }
 
-function extractFirstName(): string {
+function extractFirstName(fallback: string): string {
   if (typeof document !== "undefined") {
     const m = document.cookie.match(/(?:^|;\s*)firstName=([^;]+)/);
     if (m) return decodeURIComponent(m[1]);
   }
-  return "there";
+  return fallback;
 }
 
 function DashboardSkeleton() {
+  const { t } = useT();
   return (
     <div style={{ padding: 40 }}>
-      <div className="mono" style={{ color: "var(--color-taupe)" }}>loading dashboard…</div>
+      <div className="mono" style={{ color: "var(--color-taupe)" }}>{t("store.dashboard.page.loading")}</div>
     </div>
   );
 }
