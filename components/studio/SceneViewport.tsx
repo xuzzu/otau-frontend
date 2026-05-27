@@ -53,6 +53,7 @@ export function SceneViewport({
   onHoverLeave,
   activeImageIndex,
   onSelectImageIndex,
+  isReplacing,
 }: {
   genRoom: GenerationRoom | null;
   rows: HotspotRow[];
@@ -63,6 +64,8 @@ export function SceneViewport({
   /** Optional — if provided alongside image_url_2, switches to dual-image mode. */
   activeImageIndex?: number;
   onSelectImageIndex?: (index: number) => void;
+  /** When true, blur the scene image, hide hotspots, and show a "replacing" overlay. */
+  isReplacing?: boolean;
 }) {
   const { t } = useT();
   const status = genRoom?.status ?? null;
@@ -120,7 +123,8 @@ export function SceneViewport({
             objectFit: "cover",
             display: "block",
             opacity: safeActiveIndex === 0 ? 1 : 0,
-            transition: `opacity ${CROSSFADE_MS}ms ease-in-out`,
+            transition: `opacity ${CROSSFADE_MS}ms ease-in-out, filter 200ms ease-in-out`,
+            filter: isReplacing ? "blur(8px)" : "none",
           }}
         />
         {imageUrl2 ? (
@@ -135,26 +139,28 @@ export function SceneViewport({
               objectFit: "cover",
               display: "block",
               opacity: safeActiveIndex === 1 ? 1 : 0,
-              transition: `opacity ${CROSSFADE_MS}ms ease-in-out`,
+              transition: `opacity ${CROSSFADE_MS}ms ease-in-out, filter 200ms ease-in-out`,
+              filter: isReplacing ? "blur(8px)" : "none",
             }}
           />
         ) : null}
-        {rows.map((r) =>
-          r.hotspot ? (
-            <Hotspot
-              key={r.item.id}
-              n={r.n}
-              x={r.hotspot.point.x}
-              y={r.hotspot.point.y}
-              label={r.item.name}
-              active={activeId === r.item.id}
-              onActivate={() => onActivate(r.item.id)}
-              onHoverEnter={() => onHoverEnter(r.item.id)}
-              onHoverLeave={() => onHoverLeave(r.item.id)}
-            />
-          ) : null,
-        )}
-        {hasDual && onSelectImageIndex ? (
+        {!isReplacing &&
+          rows.map((r) =>
+            r.hotspot ? (
+              <Hotspot
+                key={r.item.id}
+                n={r.n}
+                x={r.hotspot.point.x}
+                y={r.hotspot.point.y}
+                label={r.item.name}
+                active={activeId === r.item.id}
+                onActivate={() => onActivate(r.item.id)}
+                onHoverEnter={() => onHoverEnter(r.item.id)}
+                onHoverLeave={() => onHoverLeave(r.item.id)}
+              />
+            ) : null,
+          )}
+        {hasDual && !isReplacing && onSelectImageIndex ? (
           <ImageIndexDots
             count={2}
             activeIndex={safeActiveIndex}
@@ -162,6 +168,7 @@ export function SceneViewport({
             t={t}
           />
         ) : null}
+        {isReplacing ? <ReplacingOverlay label={t("studio.status.replacing")} /> : null}
         </div>
       </div>
     );
@@ -216,6 +223,49 @@ export function SceneViewport({
         }}
       >
         {stageLabel(status ?? "queued", t)}
+      </div>
+    </div>
+  );
+}
+
+function ReplacingOverlay({ label }: { label: string }) {
+  return (
+    <div
+      role="status"
+      aria-busy="true"
+      aria-label={label}
+      data-testid="scene-replacing-overlay"
+      style={{
+        position: "absolute",
+        inset: 0,
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 14,
+        background: "rgba(255, 255, 255, 0.4)",
+        zIndex: 10,
+      }}
+    >
+      <motion.div
+        animate={{ rotate: 360 }}
+        transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
+        className="serif"
+        aria-hidden="true"
+        style={{ fontSize: 40, color: "var(--color-clay)", lineHeight: 1 }}
+      >
+        ◇
+      </motion.div>
+      <div
+        className="mono"
+        style={{
+          fontSize: 11,
+          letterSpacing: "0.14em",
+          textTransform: "uppercase",
+          color: "var(--color-ink)",
+        }}
+      >
+        {label}
       </div>
     </div>
   );

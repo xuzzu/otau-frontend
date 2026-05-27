@@ -73,6 +73,7 @@ describe("SceneViewport", () => {
         onActivate={() => {}}
         onHoverEnter={() => {}}
         onHoverLeave={() => {}}
+        isReplacing={false}
       />,
     );
     const box = container.querySelector('[data-testid="scene-box"]') as HTMLElement;
@@ -88,6 +89,7 @@ describe("SceneViewport", () => {
         onActivate={() => {}}
         onHoverEnter={() => {}}
         onHoverLeave={() => {}}
+        isReplacing={false}
       />,
     );
     const box = container.querySelector('[data-testid="scene-box"]') as HTMLElement;
@@ -103,6 +105,7 @@ describe("SceneViewport", () => {
         onActivate={() => {}}
         onHoverEnter={() => {}}
         onHoverLeave={() => {}}
+        isReplacing={false}
       />,
     );
     const buttons = getAllByRole("button");
@@ -120,8 +123,47 @@ describe("SceneViewport", () => {
         onActivate={() => {}}
         onHoverEnter={() => {}}
         onHoverLeave={() => {}}
+        isReplacing={false}
       />,
     );
+    expect(queryAllByRole("button")).toHaveLength(0);
+  });
+
+  test("renders blur overlay when isReplacing is true", () => {
+    const { container, getByRole } = render(
+      <SceneViewport
+        genRoom={makeRoom({ image_width: 600, image_height: 400 })}
+        rows={[]}
+        activeId={null}
+        onActivate={() => {}}
+        onHoverEnter={() => {}}
+        onHoverLeave={() => {}}
+        isReplacing={true}
+      />,
+    );
+    // Overlay is the only role="status" element here.
+    const overlay = getByRole("status");
+    expect(overlay).toBeTruthy();
+    expect(overlay.getAttribute("aria-busy")).toBe("true");
+
+    // The scene image is blurred while replacing.
+    const img = container.querySelector("img") as HTMLImageElement;
+    expect(img.style.filter).toContain("blur");
+  });
+
+  test("hides hotspots when isReplacing is true", () => {
+    const { queryAllByRole } = render(
+      <SceneViewport
+        genRoom={makeRoom({ image_width: 600, image_height: 400 })}
+        rows={[row("a", 1, 0.1, 0.2), row("b", 2, 0.7, 0.8)]}
+        activeId={null}
+        onActivate={() => {}}
+        onHoverEnter={() => {}}
+        onHoverLeave={() => {}}
+        isReplacing={true}
+      />,
+    );
+    // No Hotspot buttons should render while replacing.
     expect(queryAllByRole("button")).toHaveLength(0);
   });
 });
