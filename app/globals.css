@@ -145,6 +145,45 @@ body {
   color: var(--color-taupe);
 }
 
+/* ───────── scene viewport breathing glow ───────── */
+@keyframes scene-breathe {
+  0%,
+  100% {
+    opacity: 0.1;
+    transform: scale(0.999);
+  }
+  50% {
+    opacity: 0.6;
+    transform: scale(0.940);
+  }
+}
+.scene-frame {
+  position: relative;
+}
+.scene-frame::before {
+  content: "";
+  position: absolute;
+  inset: -26px;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='260' height='260'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.71  0 0 0 0 0.33  0 0 0 0 0.18  0 0 0 0.9 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>"),
+    radial-gradient(
+      ellipse at center,
+      rgba(117, 52, 28, 0.746) 0%,
+      rgba(181, 118, 46, 0.506) 55%,
+      rgba(181, 83, 46, 0) 78%
+    );
+  background-blend-mode: multiply;
+  filter: blur(14px);
+  animation: scene-breathe 5s ease-in-out infinite;
+  will-change: opacity, transform;
+}
+.scene-frame > * {
+  position: relative;
+  z-index: 1;
+}
+
 /* ───────── placeholder pattern ───────── */
 .stripes {
   background: repeating-linear-gradient(

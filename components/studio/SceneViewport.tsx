@@ -102,12 +102,13 @@ export function SceneViewport({
 
   if (imageUrl) {
     return (
-      <div
-        style={sceneBox}
-        data-testid="scene-box"
-        onMouseEnter={() => setIsHovering(true)}
-        onMouseLeave={() => setIsHovering(false)}
-      >
+      <div className="scene-frame">
+        <div
+          style={sceneBox}
+          data-testid="scene-box"
+          onMouseEnter={() => setIsHovering(true)}
+          onMouseLeave={() => setIsHovering(false)}
+        >
         <img
           src={imageUrl}
           alt={t("scene.image_alt")}
@@ -161,6 +162,7 @@ export function SceneViewport({
             t={t}
           />
         ) : null}
+        </div>
       </div>
     );
   }

@@ -61,8 +61,7 @@ export function StudioCanvas() {
   } = useDesign();
 
   const [hiddenIds, setHiddenIds] = useState<Set<string>>(new Set());
-  const [lightingIdx, setLightingIdx] = useState(0);
-  const [conceptOpen, setConceptOpen] = useState(false);
+  const [isEvening, setIsEvening] = useState(false);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [hoverId, setHoverId] = useState<string | null>(null);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
@@ -135,21 +134,6 @@ export function StudioCanvas() {
     return m;
   }, [partnersQ.data]);
 
-  const conceptText = useMemo(() => {
-    const desc = activeGenRoom?.concept?.["concept_description"];
-    return typeof desc === "string" ? desc : "";
-  }, [activeGenRoom]);
-
-  const LIGHTING_KEYS = [
-    "studio.lighting.cozy",
-    "studio.lighting.minimal",
-    "studio.lighting.evening",
-  ] as const;
-
-  const spaceLabel = scope === "apartment"
-    ? (spaceId ?? "Apartment").toUpperCase()
-    : t("studio.default_space");
-
   const total = visibleItems.reduce(
     (sum, p) => sum + (p.default_price ?? 0),
     0,
@@ -212,9 +196,6 @@ export function StudioCanvas() {
           </Link>
           <span style={{ color: "var(--color-taupe)" }}>/</span>
           <span className="label">{t("studio.myroom")}</span>
-          <span className="serif it" style={{ fontSize: 18 }}>
-            {spaceLabel}
-          </span>
           <span className="chip" style={{ marginLeft: 8 }}>
             <span className="dot" />
             {t("studio.draft")}
@@ -222,7 +203,6 @@ export function StudioCanvas() {
         </div>
         <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
           <button className="btn ghost small">{t("studio.share")}</button>
-          <button className="btn ghost small">{t("studio.export")}</button>
           <button className="btn small">{t("studio.send")}</button>
         </div>
       </div>
@@ -230,26 +210,28 @@ export function StudioCanvas() {
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: "300px 1fr 380px",
+          gridTemplateColumns: isApartment ? "240px 1fr 400px" : "1fr 420px",
           flex: 1,
           minHeight: 0,
         }}
       >
-        <aside
-          style={{
-            borderRight: "1px solid var(--color-hair)",
-            padding: 24,
-            display: "flex",
-            flexDirection: "column",
-            gap: 18,
-            background: "var(--color-paper)",
-          }}
-        >
-          {isApartment && <CompactSchematic active={active} t={t} />}
+        {isApartment && (
+          <aside
+            style={{
+              borderRight: "1px solid var(--color-hair)",
+              padding: 20,
+              display: "flex",
+              flexDirection: "column",
+              gap: 14,
+              background: "var(--color-paper)",
+            }}
+          >
+            <CompactSchematic active={active} t={t} />
 
-          {isApartment && (
-            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-              <div className="label">{t("studio.rooms_label")}</div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+              <div className="label" style={{ marginBottom: 4 }}>
+                {t("studio.rooms_label")}
+              </div>
               {PLAN_ROOMS.map((r) => (
                 <button
                   key={r.key}
@@ -258,7 +240,7 @@ export function StudioCanvas() {
                     display: "flex",
                     justifyContent: "space-between",
                     alignItems: "center",
-                    padding: "10px 12px",
+                    padding: "8px 10px",
                     background: active === r.key ? "var(--color-ink)" : "transparent",
                     color: active === r.key ? "var(--color-paper)" : "var(--color-ink)",
                     border: `1px solid ${
@@ -270,84 +252,18 @@ export function StudioCanvas() {
                     transition: "background .2s, color .2s, border-color .2s",
                   }}
                 >
-                  <span style={{ fontSize: 14 }}>{t(r.i18n)}</span>
+                  <span style={{ fontSize: 13 }}>{t(r.i18n)}</span>
                   <span
                     className="mono"
-                    style={{
-                      fontSize: 10,
-                      letterSpacing: "0.10em",
-                    }}
+                    style={{ fontSize: 10, letterSpacing: "0.10em" }}
                   >
                     {r.area} м²
                   </span>
                 </button>
               ))}
             </div>
-          )}
-
-          <hr className="hr-hair" />
-
-          <div>
-            <div className="label">{t("studio.total_label")}</div>
-            <div
-              className="serif num"
-              style={{ fontSize: 28, lineHeight: 1, marginTop: 8 }}
-            >
-              {T(total)}
-            </div>
-            <div className="label" style={{ marginTop: 6 }}>
-              {t("studio.items_sellers", {
-                items: visibleItems.length,
-                sellers: new Set(
-                  visibleItems
-                    .map((p) => partnerById.get(p.partner_id))
-                    .filter(Boolean),
-                ).size,
-              })}
-            </div>
-            <div
-              style={{
-                marginTop: 12,
-                height: 4,
-                background: "var(--color-hair)",
-                position: "relative",
-              }}
-            >
-              <motion.div
-                initial={{ width: 0 }}
-                animate={{
-                  width: `${Math.min(100, budget > 0 ? (total / budget) * 100 : 0)}%`,
-                }}
-                transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
-                style={{
-                  position: "absolute",
-                  left: 0,
-                  top: 0,
-                  bottom: 0,
-                  background: total > budget ? "#C9694A" : "var(--color-clay)",
-                }}
-              />
-            </div>
-            <div className="label" style={{ marginTop: 6 }}>
-              {t("studio.budget_label")} {T(budget)}
-            </div>
-          </div>
-
-          {styles.length > 0 && (
-            <div>
-              <div className="label" style={{ marginBottom: 8 }}>
-                {t("studio.styles_label")}
-              </div>
-              <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-                {styles.map((s) => (
-                  <span key={s} className="chip solid" style={{ fontSize: 10 }}>
-                    {t(`style.${s}`)}
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
-        </aside>
+          </aside>
+        )}
 
         <section
           style={{
@@ -415,19 +331,11 @@ export function StudioCanvas() {
           >
             <button
               className="btn ghost small"
-              onClick={() =>
-                setLightingIdx((i) => (i + 1) % LIGHTING_KEYS.length)
-              }
+              onClick={() => setIsEvening((v) => !v)}
               title={t("studio.tooltip.cycle_lighting")}
             >
-              ☀︎ {t(LIGHTING_KEYS[lightingIdx])}
-            </button>
-            <button
-              className="btn ghost small"
-              onClick={() => setConceptOpen((v) => !v)}
-              title={t("studio.tooltip.concept")}
-            >
-              {t("studio.btn.concept")}
+              {isEvening ? "☾" : "☀︎"}{" "}
+              {t(isEvening ? "studio.lighting.evening" : "studio.lighting.day")}
             </button>
             <button
               className="btn ghost small"
@@ -452,23 +360,6 @@ export function StudioCanvas() {
               })}
             </span>
           </div>
-
-          {conceptOpen && conceptText && (
-            <div
-              style={{
-                border: "1px solid var(--color-hair)",
-                background: "var(--color-paper)",
-                padding: 18,
-              }}
-            >
-              <div className="label" style={{ marginBottom: 6 }}>
-                {t("studio.concept_label")}
-              </div>
-              <div className="serif it" style={{ fontSize: 16, lineHeight: 1.5 }}>
-                {conceptText}
-              </div>
-            </div>
-          )}
         </section>
 
         <aside
@@ -481,28 +372,77 @@ export function StudioCanvas() {
         >
           <div
             style={{
-              padding: "22px 22px 12px",
+              padding: "22px 22px 18px",
               borderBottom: "1px solid var(--color-hair)",
               display: "flex",
-              alignItems: "flex-end",
-              justifyContent: "space-between",
-              gap: 10,
+              flexDirection: "column",
+              gap: 12,
             }}
           >
             <div>
-              <div className="label">{t("studio.in_render")}</div>
-              <div className="serif it" style={{ fontSize: 22, marginTop: 4 }}>
-                {t(activeBox.i18n)} · {visibleItems.length}
+              <div className="label">{t("studio.total_label")}</div>
+              <div
+                className="serif num"
+                style={{ fontSize: 32, lineHeight: 1, marginTop: 6 }}
+              >
+                {T(total)}
+              </div>
+              <div className="label" style={{ marginTop: 6 }}>
+                {t("studio.items_sellers", {
+                  items: visibleItems.length,
+                  sellers: new Set(
+                    visibleItems
+                      .map((p) => partnerById.get(p.partner_id))
+                      .filter(Boolean),
+                  ).size,
+                })}
+              </div>
+              <div
+                style={{
+                  marginTop: 10,
+                  height: 4,
+                  background: "var(--color-hair)",
+                  position: "relative",
+                }}
+              >
+                <motion.div
+                  initial={{ width: 0 }}
+                  animate={{
+                    width: `${Math.min(100, budget > 0 ? (total / budget) * 100 : 0)}%`,
+                  }}
+                  transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
+                  style={{
+                    position: "absolute",
+                    left: 0,
+                    top: 0,
+                    bottom: 0,
+                    background: total > budget ? "#C9694A" : "var(--color-clay)",
+                  }}
+                />
+              </div>
+              <div className="label" style={{ marginTop: 6 }}>
+                {t("studio.budget_label")} {T(budget)}
               </div>
             </div>
-            <button
-              className="btn ghost small"
-              onClick={() => alert(t("studio.alert.add_pending"))}
-              title={t("studio.tooltip.add_item")}
-              style={{ padding: "6px 10px" }}
-            >
-              {t("studio.btn.add")}
-            </button>
+
+            {styles.length > 0 && (
+              <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                {styles.map((s) => (
+                  <span key={s} className="chip solid" style={{ fontSize: 10 }}>
+                    {t(`style.${s}`)}
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div
+            style={{
+              padding: "14px 22px",
+              borderBottom: "1px solid var(--color-hair)",
+            }}
+          >
+            <div className="label">{t("studio.in_render")}</div>
           </div>
           <div style={{ flex: 1, overflow: "auto" }}>
             {loadingItems ? (
@@ -568,10 +508,10 @@ export function StudioCanvas() {
           <div
             style={{
               borderTop: "1px solid var(--color-hair)",
-              padding: "14px 18px",
+              padding: "16px 18px",
               display: "flex",
-              gap: 8,
-              alignItems: "center",
+              flexDirection: "column",
+              gap: 10,
             }}
           >
             {hiddenIds.size > 0 && (
@@ -579,17 +519,26 @@ export function StudioCanvas() {
                 onClick={handleRestoreAll}
                 className="btn ghost small"
                 title={t("studio.tooltip.restore")}
+                style={{ alignSelf: "flex-start" }}
               >
                 {t("studio.btn.restore_n", { n: hiddenIds.size })}
               </button>
             )}
-            <div style={{ flex: 1 }} />
             <button
-              className="btn small"
+              className="btn clay"
               onClick={handleAddAllToMyRoom}
               disabled={visibleItems.length === 0}
               title={t("studio.tooltip.add_all")}
+              style={{
+                width: "100%",
+                justifyContent: "center",
+                fontSize: 15,
+                padding: "16px 22px",
+              }}
             >
+              <span className="arrow" aria-hidden>
+                +
+              </span>
               {t("studio.btn.add_all_room")}
             </button>
           </div>

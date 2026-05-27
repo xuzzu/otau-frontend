@@ -21,6 +21,7 @@ export function Hotspot({
   onHoverEnter?: () => void;
   onHoverLeave?: () => void;
 }) {
+  const flipLeft = x > 0.72;
   return (
     <div
       style={{
@@ -72,13 +73,14 @@ export function Hotspot({
       </button>
       {active && (
         <motion.div
-          initial={{ opacity: 0, x: -8 }}
+          initial={{ opacity: 0, x: flipLeft ? 8 : -8 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
           className="mono"
           style={{
             position: "absolute",
-            left: 44,
+            left: flipLeft ? undefined : 44,
+            right: flipLeft ? 44 : undefined,
             top: 4,
             whiteSpace: "nowrap",
             padding: "6px 10px",
