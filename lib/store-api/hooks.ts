@@ -3,7 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useShopContext } from "@/lib/shop-context";
 import * as cat from "./store-catalog";
 import * as core from "./store-core";
-import type { StoreItem, StoreItemSummary, Promotion, DashboardData } from "./types";
+import type { StoreItem, StoreItemSummary, Promotion, DashboardData, ActivityEvent, CatalogCounts, MagicHint, StoreScene } from "./types";
 
 function useShopId() {
   return useShopContext().selectedShopId;
@@ -171,4 +171,41 @@ export function useDeleteShopPhoto(shop_id: string) {
   const qc = useQueryClient(); const shopId = useShopId();
   return useMutation({ mutationFn: (photo_id: string) => cat.deleteShopPhoto(shop_id, photo_id),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["store", shopId] }) });
+}
+
+export function useStoreCatalogCounts() {
+  const shopId = useShopId();
+  return useQuery<CatalogCounts>({
+    queryKey: ["store", shopId, "catalog-counts"],
+    queryFn: cat.listCatalogCounts,
+    enabled: !!shopId,
+  });
+}
+
+export function useStoreMagicHints(limit = 10) {
+  const shopId = useShopId();
+  return useQuery<MagicHint[]>({
+    queryKey: ["store", shopId, "magic-hints", limit],
+    queryFn: () => cat.listMagicHints(limit),
+    enabled: !!shopId,
+  });
+}
+
+export function useStoreActivity(limit = 20) {
+  const shopId = useShopId();
+  return useQuery<ActivityEvent[]>({
+    queryKey: ["store", shopId, "activity", limit],
+    queryFn: () => cat.listActivity(limit),
+    enabled: !!shopId,
+    refetchInterval: 30_000,
+  });
+}
+
+export function useStoreScenes(limit = 20) {
+  const shopId = useShopId();
+  return useQuery<StoreScene[]>({
+    queryKey: ["store", shopId, "scenes", limit],
+    queryFn: () => cat.listStoreScenes(limit),
+    enabled: !!shopId,
+  });
 }
