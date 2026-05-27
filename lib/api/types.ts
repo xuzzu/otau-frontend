@@ -293,7 +293,7 @@ export type SellerMembership = {
 
 // --- Core (subset used by frontend) ---
 
-export type UserType = "guest" | "client" | "internal";
+export type UserType = "guest" | "client" | "seller_member" | "internal";
 export type UserStatus = "anonymous" | "active" | "suspended" | "deleted";
 
 export type User = {
@@ -311,20 +311,14 @@ export type User = {
   updated_at: string;
 };
 
-export type CredentialKind = "email_otp" | "sms_otp";
-
-export type SessionUpgradeBody = {
-  kind: CredentialKind;
+export type RegisterBody = {
   identifier: string;
+  password: string;
 };
 
-export type SessionVerifyBody = SessionUpgradeBody & {
-  code: string;
-};
-
-export type OtpStartedOut = {
-  sent_to: string;
-  dev_code: string | null;
+export type LoginBody = {
+  identifier: string;
+  password: string;
 };
 
 export type CartItem = {

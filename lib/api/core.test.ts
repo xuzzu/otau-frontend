@@ -55,33 +55,31 @@ describe("core client", () => {
     expect(qs.get("limit")).toBe("5");
   });
 
-  test("sessionsUpgrade POSTs kind + identifier to /sessions/upgrade", async () => {
-    await core.sessionsUpgrade({
-      kind: "email_otp",
+  test("sessionsRegister POSTs identifier + password to /sessions/register", async () => {
+    await core.sessionsRegister({
       identifier: "x@y.com",
+      password: "hunter2secret",
     });
     const [url, init] = fetchMock.mock.calls[0]!;
-    expect(url).toBe(`${BASES.core}/sessions/upgrade`);
+    expect(url).toBe(`${BASES.core}/sessions/register`);
     expect(init.method).toBe("POST");
     expect(JSON.parse(init.body as string)).toEqual({
-      kind: "email_otp",
       identifier: "x@y.com",
+      password: "hunter2secret",
     });
   });
 
-  test("sessionsVerify POSTs kind + identifier + code", async () => {
-    await core.sessionsVerify({
-      kind: "sms_otp",
+  test("sessionsLogin POSTs identifier + password to /sessions/login", async () => {
+    await core.sessionsLogin({
       identifier: "+77001234567",
-      code: "042837",
+      password: "mypassword",
     });
     const [url, init] = fetchMock.mock.calls[0]!;
-    expect(url).toBe(`${BASES.core}/sessions/verify`);
+    expect(url).toBe(`${BASES.core}/sessions/login`);
     expect(init.method).toBe("POST");
     expect(JSON.parse(init.body as string)).toEqual({
-      kind: "sms_otp",
       identifier: "+77001234567",
-      code: "042837",
+      password: "mypassword",
     });
   });
 

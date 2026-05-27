@@ -125,7 +125,7 @@ export default function AccountPage() {
             </div>
           </div>
           <div>
-            <div className="label">{t("login.tab.phone")}</div>
+            <div className="label">{t("account.phone")}</div>
             <div className="serif" style={{ fontSize: 22, marginTop: 4 }}>
               {me.data?.phone ?? "—"}
             </div>

@@ -7,9 +7,9 @@ import { ApiError } from "@/lib/api/http";
 import type {
   Cart,
   Like,
+  LoginBody,
+  RegisterBody,
   SellerMembership,
-  SessionUpgradeBody,
-  SessionVerifyBody,
 } from "@/lib/api/types";
 import { qk } from "./queryKeys";
 
@@ -223,15 +223,22 @@ export function useToggleLike() {
 
 // --- Core: sessions / auth ---
 
-export const useSessionsUpgrade = () =>
-  useMutation({
-    mutationFn: (body: SessionUpgradeBody) => core.sessionsUpgrade(body),
-  });
-
-export function useSessionsVerify() {
+export function useRegister() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (body: SessionVerifyBody) => core.sessionsVerify(body),
+    mutationFn: (body: RegisterBody) => core.sessionsRegister(body),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: qk.me });
+      qc.invalidateQueries({ queryKey: qk.cart });
+      qc.invalidateQueries({ queryKey: qk.myLikes });
+    },
+  });
+}
+
+export function useLogin() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (body: LoginBody) => core.sessionsLogin(body),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: qk.me });
       qc.invalidateQueries({ queryKey: qk.cart });

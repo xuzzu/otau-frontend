@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { renderHook, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import type { ReactNode } from "react";
-import { useSessionsVerify } from "./index";
+import { useLogin } from "./index";
 import { qk } from "./queryKeys";
 
 function wrapperOf(client: QueryClient) {
@@ -13,7 +13,7 @@ function wrapperOf(client: QueryClient) {
 
 const realFetch = global.fetch;
 
-describe("useSessionsVerify", () => {
+describe("useLogin", () => {
   let fetchMock: ReturnType<typeof vi.fn>;
   beforeEach(() => {
     fetchMock = vi.fn();
@@ -46,13 +46,12 @@ describe("useSessionsVerify", () => {
         ),
     );
 
-    const { result } = renderHook(() => useSessionsVerify(), {
+    const { result } = renderHook(() => useLogin(), {
       wrapper: wrapperOf(client),
     });
     result.current.mutate({
-      kind: "email_otp",
       identifier: "x@y.com",
-      code: "042837",
+      password: "hunter2secret",
     });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
@@ -69,16 +68,15 @@ describe("useSessionsVerify", () => {
 
     fetchMock.mockImplementation(
       async () =>
-        new Response('{"detail":"Invalid verification code"}', { status: 400 }),
+        new Response('{"detail":"Invalid credentials"}', { status: 400 }),
     );
 
-    const { result } = renderHook(() => useSessionsVerify(), {
+    const { result } = renderHook(() => useLogin(), {
       wrapper: wrapperOf(client),
     });
     result.current.mutate({
-      kind: "email_otp",
       identifier: "x@y.com",
-      code: "wrong",
+      password: "wrongpassword",
     });
 
     await waitFor(() => expect(result.current.isError).toBe(true));

@@ -5,10 +5,9 @@ import type {
   CartItem,
   JournalArticle,
   Like,
-  OtpStartedOut,
+  LoginBody,
+  RegisterBody,
   SellerMembership,
-  SessionUpgradeBody,
-  SessionVerifyBody,
   ShowroomVisitRequest,
   User,
 } from "./types";
@@ -17,15 +16,15 @@ const B = BASES.core;
 
 // --- Sessions ---
 
-export const sessionsUpgrade = (body: SessionUpgradeBody) =>
-  apiFetch<OtpStartedOut>(B, `/sessions/upgrade`, {
+export const sessionsRegister = (body: RegisterBody) =>
+  apiFetch<User>(B, `/sessions/register`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
   });
 
-export const sessionsVerify = (body: SessionVerifyBody) =>
-  apiFetch<User>(B, `/sessions/verify`, {
+export const sessionsLogin = (body: LoginBody) =>
+  apiFetch<User>(B, `/sessions/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
