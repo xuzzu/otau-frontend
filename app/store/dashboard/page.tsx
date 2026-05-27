@@ -7,6 +7,7 @@ import {
   useStoreScenes, useStoreItems,
 } from "@/lib/store-api/hooks";
 import { useShopContext } from "@/lib/shop-context";
+import { useT } from "@/lib/i18n";
 
 import { SectionHeader } from "@/components/store/shared/SectionHeader";
 import { DashboardGreeting } from "@/components/store/dashboard/DashboardGreeting";
@@ -18,6 +19,7 @@ import { SceneShowcase } from "@/components/store/dashboard/SceneShowcase";
 const EASE = [0.22, 1, 0.36, 1] as const;
 
 export default function DashboardPage() {
+  const { t } = useT();
   const dashboard = useStoreDashboard();
   const activity = useStoreActivity(20);
   const hints = useStoreMagicHints(10);
@@ -55,12 +57,12 @@ export default function DashboardPage() {
       </motion.div>
 
       <motion.section initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, ease: EASE, delay: 0.1 }} style={{ marginBottom: 56 }}>
-        <SectionHeader kicker="№ 01 · Pulse · last 7 days" title="How the shop is breathing" rightMeta="vs prior week" />
+        <SectionHeader kicker="№ 01 · Pulse · last 7 days" title={t("store.dashboard.pulse.title")} rightMeta="vs prior week" />
         <PulseStrip data={data} />
       </motion.section>
 
       <motion.section initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, ease: EASE, delay: 0.2 }} style={{ marginBottom: 56 }}>
-        <SectionHeader kicker="№ 02 · Today's queue" title="Needs your eye" rightMeta="live" />
+        <SectionHeader kicker="№ 02 · Today's queue" title={t("store.dashboard.queue.title")} rightMeta="live" />
         <TodayQueue
           dashboard={data}
           activity={activity.data ?? []}
@@ -70,7 +72,7 @@ export default function DashboardPage() {
       </motion.section>
 
       <motion.section initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, ease: EASE, delay: 0.3 }} style={{ marginBottom: 56 }}>
-        <SectionHeader kicker="№ 03 · Your shop" title="Catalog" rightMeta="" />
+        <SectionHeader kicker="№ 03 · Your shop" title={t("store.dashboard.catalog.title")} rightMeta="" />
         <DashboardCatalog />
       </motion.section>
 
