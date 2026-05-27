@@ -47,7 +47,7 @@ const kz: Dict = {
   "login.switch.tosignin": "Аккаунтыңыз бар ма? Кіріңіз",
   "login.error.invalid": "Email/телефон не құпиясөз қате",
   "login.error.conflict": "Бұл email/телефон бұрыннан тіркелген",
-  "login.error.short_password": "Құпиясөз кемінде 8 таңбадан тұруы тиіс",
+  "login.error.validation": "Email/телефон не құпиясөз қате — қайта тексеріңіз",
   "login.error.generic": "Сұрау сәтсіз. Қайта көріңіз.",
 
   "cart.title": "Себет",
@@ -524,7 +524,7 @@ const ru: Dict = {
   "login.switch.tosignin": "Уже зарегистрированы? Войдите",
   "login.error.invalid": "Неверный email/телефон или пароль",
   "login.error.conflict": "Этот email/телефон уже зарегистрирован",
-  "login.error.short_password": "Пароль должен быть не короче 8 символов",
+  "login.error.validation": "Email/телефон или пароль введены некорректно — проверьте",
   "login.error.generic": "Запрос не выполнен. Попробуйте ещё раз.",
 
   "cart.title": "Корзина",

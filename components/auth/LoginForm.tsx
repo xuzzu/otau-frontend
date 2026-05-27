@@ -30,7 +30,7 @@ export function LoginForm({ onSuccess }: { onSuccess: () => void }) {
     } catch (e) {
       if (e instanceof ApiError) {
         if (e.status === 409) setError(t("login.error.conflict"));
-        else if (e.status === 422) setError(t("login.error.short_password"));
+        else if (e.status === 422) setError(t("login.error.validation"));
         else if (e.status === 400) setError(t("login.error.invalid"));
         else setError(t("login.error.generic"));
       } else {
