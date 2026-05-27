@@ -1,11 +1,9 @@
 // Server component: gates /store/* by seller membership.
-// cookies() is async in this Next.js version (>=15-RC) — must await.
-// redirect() from next/navigation works in server components without "use server".
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
 import { ShopProvider } from "@/lib/shop-context";
 import { ShopTabs } from "@/components/store/ShopTabs";
-import { StoreSideNav } from "@/components/store/StoreSideNav";
+import { TopNav } from "@/components/nav/TopNav";
 import { BASES } from "@/lib/api/env";
 
 async function fetchMe(cookieHeader: string): Promise<{ id: string } | null> {
@@ -43,7 +41,6 @@ async function fetchStoreInfo(cookieHeader: string, userId: string): Promise<Sto
 }
 
 export default async function StoreLayout({ children }: { children: React.ReactNode }) {
-  // cookies() is async in this version — await required.
   const cookieStore = await cookies();
   const cookieHeader = cookieStore.getAll().map((c) => `${c.name}=${c.value}`).join("; ");
 
@@ -58,11 +55,9 @@ export default async function StoreLayout({ children }: { children: React.ReactN
 
   return (
     <ShopProvider shops={info.shops}>
+      <TopNav />
       <ShopTabs />
-      <div style={{ display: "flex", minHeight: "calc(100vh - 80px)" }}>
-        <StoreSideNav />
-        <main style={{ flex: 1, padding: "32px 56px" }}>{children}</main>
-      </div>
+      <main style={{ padding: "32px 56px" }}>{children}</main>
     </ShopProvider>
   );
 }
