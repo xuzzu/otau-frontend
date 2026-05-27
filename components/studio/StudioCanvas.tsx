@@ -122,6 +122,20 @@ export function StudioCanvas() {
     onSuccess: () => {
       if (generationId) {
         queryClient.invalidateQueries({ queryKey: qk.generation(generationId) });
+        // Also invalidate the room-items query so the items list rebinds to
+        // the new selected_item_ids (otherwise the user could click Replace
+        // on a stale slot and get a 422).
+        queryClient.invalidateQueries({
+          queryKey: qk.generationRoomItemsByType(generationId, active),
+        });
+        // Alternates may also change once the worker populates entries for
+        // the newly-inserted item; invalidate to pick those up on the next
+        // popover open.
+        if (activeGenRoom) {
+          queryClient.invalidateQueries({
+            queryKey: ["alternates", generationId, activeGenRoom.id],
+          });
+        }
       }
       setReplaceError(null);
     },
