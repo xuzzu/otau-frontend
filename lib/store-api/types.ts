@@ -15,6 +15,21 @@ export type StoreVariant = {
   in_stock_current_shop: number;
 };
 
+export type MagicHintKind =
+  | "pricing_low"
+  | "missing_description"
+  | "missing_photo"
+  | "publish_demanded";
+
+export type MagicHint = {
+  kind: MagicHintKind;
+  item_id: string;
+  short_label: string;
+  body: string;
+  action_label: string;
+  evidence: Record<string, unknown>;
+};
+
 export type StoreItemSummary = {
   id: string;
   slug: string;
@@ -25,6 +40,7 @@ export type StoreItemSummary = {
   default_price: number | null;
   in_stock_current_shop: number;
   has_active_promotion: boolean;
+  magic_hint: MagicHint | null;
 };
 
 export type StoreItemImage = {
@@ -74,7 +90,72 @@ export type Promotion = {
   status_bucket: "active" | "scheduled" | "ended";
 };
 
+export type LikesSummary = {
+  total: number;
+  last_7d: number;
+  prev_7d: number;
+  spark_14d: number[];
+};
+export type ImaginedSummary = {
+  scenes_count: number;
+  items_in_scenes_count: number;
+  since: string;
+};
+export type StockSummary = {
+  units: number;
+  low_count: number;
+  restocks_7d: number;
+};
+export type NextVisit = {
+  date: string;
+  recipient_name: string;
+  items: string[];
+  ordinal: number | null;
+};
+export type VisitsSummary = {
+  pending_count: number;
+  next: NextVisit | null;
+};
+export type TrustSummary = {
+  rating: number | null;
+  reviews_count: number;
+};
 export type DashboardData = {
-  likes: { total: number; last_7d: number; prev_7d: number };
-  visits: { pending_count: number; next: { date: string; recipient_name: string } | null };
+  likes: LikesSummary;
+  imagined: ImaginedSummary | null;
+  stock: StockSummary | null;
+  visits: VisitsSummary;
+  trust: TrustSummary;
+};
+
+export type ActivityEventKind =
+  | "item_liked" | "visit_requested" | "stock_event" | "magic_event";
+
+export type ActivityEvent = {
+  kind: ActivityEventKind;
+  created_at: string;
+  item_id: string | null;
+  item_name: string | null;
+  actor_label: string | null;
+  delta: number | null;
+  magic_kind: MagicHintKind | null;
+};
+
+export type StoreScene = {
+  id: string;
+  image_url: string | null;
+  featured_item: { id: string; name: string; likes_today: number; carts_today: number } | null;
+  audience_hint: string | null;
+  created_at: string;
+};
+
+export type ItemBucket = "all" | "active" | "drafts" | "attention" | "promoted" | "archived";
+
+export type CatalogCounts = {
+  all: number;
+  active: number;
+  drafts: number;
+  attention: number;
+  promoted: number;
+  archived: number;
 };
