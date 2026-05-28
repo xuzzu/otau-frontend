@@ -13,6 +13,9 @@ export type StoreVariant = {
   currency: string;
   is_default: boolean;
   in_stock_current_shop: number;
+  color_id?: string | null;
+  material_id?: string | null;
+  size_label?: string | null;
 };
 
 export type MagicHintKind =

@@ -634,6 +634,26 @@ const kz: Dict = {
   "store.itemform.field.material": "Материал",
   "store.itemform.field.size": "Өлшем белгісі",
   "store.itemform.toggle.off_disabled": "Алдымен қосымша нұсқаларды жойыңыз",
+
+  // ItemForm orchestrator strings
+  "store.itemform.header.add": "Тауар қосу",
+  "store.itemform.header.edit": "Тауарды өңдеу",
+  "store.itemform.starting_price.title": "Бастапқы баға",
+  "store.itemform.btn.save_draft": "Жобаны сақтау",
+  "store.itemform.btn.save": "Сақтау",
+  "store.itemform.btn.publish": "Жариялау",
+  "store.itemform.btn.unpublish": "Жарияламау",
+  "store.itemform.btn.preview": "Алдын ала қарау ↗",
+  "store.itemform.btn.archive": "Мұрағат",
+  "store.itemform.btn.restore": "Қалпына келтіру",
+  "store.itemform.btn.delete": "Жою",
+  "store.itemform.draft_hint": "Фотосуреттер мен нұсқалар жобаны сақтаған соң қолжетімді болады",
+  "store.itemform.publish.missing.name": "Атауы жоқ",
+  "store.itemform.publish.missing.category": "Санат таңдалмаған",
+  "store.itemform.publish.missing.image": "Кем дегенде бір фотосурет қажет",
+  "store.itemform.publish.missing.variant_price": "Нұсқаның бағасы 0",
+  "store.itemform.publish.missing.variant_sku": "Нұсқаның SKU-і жоқ",
+  "store.itemform.publish.checklist_title": "Жариялау үшін қажет:",
 };
 
 const ru: Dict = {
@@ -1270,6 +1290,26 @@ const ru: Dict = {
   "store.itemform.field.material": "Материал",
   "store.itemform.field.size": "Метка размера",
   "store.itemform.toggle.off_disabled": "Сначала удалите лишние варианты",
+
+  // ItemForm orchestrator strings
+  "store.itemform.header.add": "Добавить товар",
+  "store.itemform.header.edit": "Редактировать товар",
+  "store.itemform.starting_price.title": "Начальная цена",
+  "store.itemform.btn.save_draft": "Сохранить черновик",
+  "store.itemform.btn.save": "Сохранить",
+  "store.itemform.btn.publish": "Опубликовать",
+  "store.itemform.btn.unpublish": "Снять с публикации",
+  "store.itemform.btn.preview": "Превью ↗",
+  "store.itemform.btn.archive": "В архив",
+  "store.itemform.btn.restore": "Восстановить",
+  "store.itemform.btn.delete": "Удалить",
+  "store.itemform.draft_hint": "Фото и варианты станут доступны после сохранения черновика",
+  "store.itemform.publish.missing.name": "Нет названия",
+  "store.itemform.publish.missing.category": "Не выбрана категория",
+  "store.itemform.publish.missing.image": "Нужно хотя бы одно фото",
+  "store.itemform.publish.missing.variant_price": "Цена варианта равна 0",
+  "store.itemform.publish.missing.variant_sku": "У варианта нет SKU",
+  "store.itemform.publish.checklist_title": "Для публикации нужно:",
 };
 
 
