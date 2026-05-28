@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { BasicsSection, type BasicsValue } from "./BasicsSection";
@@ -65,12 +65,12 @@ function StartingPriceBlock({
 }) {
   const inputStyle: React.CSSProperties = {
     fontFamily: "var(--font-geist-sans)",
-    fontSize: 13,
+    fontSize: 15,
     color: "var(--color-ink)",
     background: "var(--color-cream)",
     border: "1px solid var(--color-hair)",
     borderRadius: 4,
-    padding: "5px 8px",
+    padding: "10px 11px",
     width: "100%",
     boxSizing: "border-box",
   };
@@ -85,8 +85,8 @@ function StartingPriceBlock({
         style={{
           display: "grid",
           gridTemplateColumns: "1fr 1fr",
-          gap: 16,
-          maxWidth: 400,
+          gap: 20,
+          maxWidth: 480,
         }}
       >
         <FieldCol label={t("store.itemform.field.sku")}>
@@ -178,23 +178,23 @@ function PublishChecklist({ missing, t }: { missing: string[]; t: (k: string) =>
 // ─── action buttons ────────────────────────────────────────────────────────────
 
 const btnPrimary: React.CSSProperties = {
-  padding: "8px 20px",
+  padding: "10px 22px",
   background: "var(--color-ink)",
   color: "var(--color-cream)",
   border: 0,
   cursor: "pointer",
-  fontSize: 13,
+  fontSize: 14,
   fontFamily: "var(--font-geist-sans)",
   borderRadius: 4,
 };
 
 const btnGhost: React.CSSProperties = {
-  padding: "8px 20px",
+  padding: "10px 22px",
   background: "transparent",
   color: "var(--color-ink)",
   border: "1px solid var(--color-ink)",
   cursor: "pointer",
-  fontSize: 13,
+  fontSize: 14,
   fontFamily: "var(--font-geist-sans)",
   borderRadius: 4,
 };
@@ -241,6 +241,12 @@ export function ItemForm(props: Props) {
   // Publish error state (from API 422)
   const [publishMissing, setPublishMissing] = useState<string[]>([]);
 
+  // ─── auto-draft state (create mode only) ──────────────────────────────────
+  const autoDraftFiredRef = useRef(false);
+  const autoDraftTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [autoDraftPending, setAutoDraftPending] = useState(false);
+  const [autoDraftError, setAutoDraftError] = useState<string | null>(null);
+
   const create = useCreateItem();
   const patch = usePatchItem(props.mode === "edit" ? props.item.id : "");
   const publish = usePublishItem(props.mode === "edit" ? props.item.id : "");
@@ -249,27 +255,99 @@ export function ItemForm(props: Props) {
   const restore = useRestoreItem(props.mode === "edit" ? props.item.id : "");
   const del = useDeleteItem(props.mode === "edit" ? props.item.id : "");
 
-  // ─── save draft (create mode) ──────────────────────────────────────────────
+  // ─── auto-draft effect (create mode only) ─────────────────────────────────
+
+  const canAutoDraft =
+    props.mode === "create" &&
+    basics.name.trim().length >= 2 &&
+    basics.category_id.length > 0;
+
+  useEffect(() => {
+    if (props.mode !== "create") return;
+    if (autoDraftFiredRef.current) return;
+
+    // Clear any pending timer
+    if (autoDraftTimerRef.current !== null) {
+      clearTimeout(autoDraftTimerRef.current);
+      autoDraftTimerRef.current = null;
+    }
+
+    if (!canAutoDraft) return;
+
+    autoDraftTimerRef.current = setTimeout(async () => {
+      // Guard: double-check fired flag and pending state
+      if (autoDraftFiredRef.current || create.isPending) return;
+
+      autoDraftFiredRef.current = true;
+      setAutoDraftPending(true);
+      setAutoDraftError(null);
+
+      try {
+        const slug = slugify(basics.name);
+        const created = await create.mutateAsync({
+          slug,
+          name: basics.name,
+          description: basics.description,
+          category_id: basics.category_id,
+          room_target_id: basics.room_target_id ?? undefined,
+          dims: basics.dims,
+          weight_kg: basics.weight_kg ?? undefined,
+          style_ids: basics.style_ids,
+          material_ids: basics.material_ids,
+          color_ids: [],
+          default_variant_sku: startingSku || undefined,
+          default_variant_price: startingPrice,
+        });
+        router.replace(`/store/catalog/${created.id}/edit`);
+      } catch {
+        // Reset guard so user can retry
+        autoDraftFiredRef.current = false;
+        setAutoDraftPending(false);
+        setAutoDraftError(t("store.itemform.create_draft_error"));
+      }
+    }, 700);
+
+    return () => {
+      if (autoDraftTimerRef.current !== null) {
+        clearTimeout(autoDraftTimerRef.current);
+        autoDraftTimerRef.current = null;
+      }
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [canAutoDraft, props.mode]);
+
+  // ─── manual save draft (fallback for create mode) ─────────────────────────
 
   const canSaveDraft = basics.name.trim().length > 0 && basics.category_id.length > 0;
 
   async function handleSaveDraft() {
-    const slug = slugify(basics.name);
-    const created = await create.mutateAsync({
-      slug,
-      name: basics.name,
-      description: basics.description,
-      category_id: basics.category_id,
-      room_target_id: basics.room_target_id ?? undefined,
-      dims: basics.dims,
-      weight_kg: basics.weight_kg ?? undefined,
-      style_ids: basics.style_ids,
-      material_ids: basics.material_ids,
-      color_ids: [],
-      default_variant_sku: startingSku || undefined,
-      default_variant_price: startingPrice,
-    });
-    router.replace(`/store/catalog/${created.id}/edit`);
+    if (autoDraftFiredRef.current || create.isPending) return;
+    autoDraftFiredRef.current = true;
+    setAutoDraftPending(true);
+    setAutoDraftError(null);
+
+    try {
+      const slug = slugify(basics.name);
+      const created = await create.mutateAsync({
+        slug,
+        name: basics.name,
+        description: basics.description,
+        category_id: basics.category_id,
+        room_target_id: basics.room_target_id ?? undefined,
+        dims: basics.dims,
+        weight_kg: basics.weight_kg ?? undefined,
+        style_ids: basics.style_ids,
+        material_ids: basics.material_ids,
+        color_ids: [],
+        default_variant_sku: startingSku || undefined,
+        default_variant_price: startingPrice,
+      });
+      router.replace(`/store/catalog/${created.id}/edit`);
+    } catch {
+      autoDraftFiredRef.current = false;
+      setAutoDraftPending(false);
+      setAutoDraftError(t("store.itemform.create_draft_error"));
+    }
   }
 
   // ─── save (edit mode) ─────────────────────────────────────────────────────
@@ -355,11 +433,11 @@ export function ItemForm(props: Props) {
     : t("store.itemform.header.add");
 
   return (
-    <div style={{ maxWidth: 720, paddingBottom: 80 }}>
+    <div style={{ maxWidth: 920, margin: "0 auto", paddingBottom: 80 }}>
       {/* Page title */}
       <h1
         className="serif"
-        style={{ fontSize: 32, fontWeight: 400, margin: "0 0 40px 0", lineHeight: 1.1 }}
+        style={{ fontSize: 36, fontWeight: 400, margin: "0 0 40px 0", lineHeight: 1.1 }}
       >
         {title}
       </h1>
@@ -370,9 +448,41 @@ export function ItemForm(props: Props) {
         onChange={(patch) => setBasics((prev) => ({ ...prev, ...patch }))}
       />
 
-      {/* Create mode: starting price block + hint */}
+      {/* Create mode: auto-draft status + starting price block */}
       {!isEdit && (
         <>
+          {/* Auto-draft status inline */}
+          {autoDraftPending && (
+            <p
+              data-testid="auto-draft-status"
+              className="mono"
+              style={{
+                fontSize: 11,
+                letterSpacing: "0.10em",
+                color: "var(--color-clay)",
+                marginBottom: 16,
+                fontStyle: "italic",
+              }}
+            >
+              {t("store.itemform.creating_draft")}
+            </p>
+          )}
+          {autoDraftError && (
+            <p
+              data-testid="auto-draft-error"
+              className="mono"
+              role="alert"
+              style={{
+                fontSize: 11,
+                letterSpacing: "0.08em",
+                color: "var(--color-terracotta, #b94f40)",
+                marginBottom: 16,
+              }}
+            >
+              {autoDraftError}
+            </p>
+          )}
+
           <StartingPriceBlock
             sku={startingSku}
             setSku={setStartingSku}
@@ -380,19 +490,6 @@ export function ItemForm(props: Props) {
             setPrice={setStartingPrice}
             t={t}
           />
-
-          <p
-            className="mono"
-            style={{
-              fontSize: 11,
-              letterSpacing: "0.10em",
-              color: "var(--color-clay)",
-              marginBottom: 32,
-              fontStyle: "italic",
-            }}
-          >
-            {t("store.itemform.draft_hint")}
-          </p>
         </>
       )}
 
@@ -423,10 +520,12 @@ export function ItemForm(props: Props) {
           <button
             data-testid="save-draft-btn"
             onClick={handleSaveDraft}
-            disabled={!canSaveDraft || create.isPending}
+            disabled={!canSaveDraft || create.isPending || autoDraftFiredRef.current}
             style={{ ...btnPrimary, opacity: canSaveDraft ? 1 : 0.45 }}
           >
-            {t("store.itemform.btn.save_draft")}
+            {autoDraftPending
+              ? t("store.itemform.creating_draft")
+              : t("store.itemform.btn.save_draft")}
           </button>
         ) : (
           <>
@@ -547,7 +646,7 @@ function FieldCol({
       <span
         className="mono"
         style={{
-          fontSize: 10,
+          fontSize: 12,
           letterSpacing: "0.14em",
           textTransform: "uppercase",
           color: "var(--color-clay)",

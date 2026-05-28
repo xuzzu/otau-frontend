@@ -43,12 +43,12 @@ export function VariantCard({
 
   const inputStyle: React.CSSProperties = {
     fontFamily: "var(--font-geist-sans)",
-    fontSize: 13,
+    fontSize: 15,
     color: "var(--color-ink)",
     background: "var(--color-cream)",
     border: "1px solid var(--color-hair)",
     borderRadius: 4,
-    padding: "5px 8px",
+    padding: "10px 11px",
     width: "100%",
     boxSizing: "border-box",
   };
@@ -301,7 +301,7 @@ function FieldCol({
       <span
         className="mono"
         style={{
-          fontSize: 10,
+          fontSize: 12,
           letterSpacing: "0.14em",
           textTransform: "uppercase",
           color: "var(--color-clay)",

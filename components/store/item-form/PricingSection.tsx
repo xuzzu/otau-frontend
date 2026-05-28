@@ -104,12 +104,12 @@ export function PricingSection({
 
   const inputStyle: React.CSSProperties = {
     fontFamily: "var(--font-geist-sans)",
-    fontSize: 13,
+    fontSize: 15,
     color: "var(--color-ink)",
     background: "var(--color-cream)",
     border: "1px solid var(--color-hair)",
     borderRadius: 4,
-    padding: "5px 8px",
+    padding: "10px 11px",
     width: "100%",
     boxSizing: "border-box",
   };
@@ -173,13 +173,13 @@ export function PricingSection({
             onClick={handleAddVariant}
             className="mono"
             style={{
-              fontSize: 11,
+              fontSize: 13,
               letterSpacing: "0.12em",
               textTransform: "uppercase",
               background: "none",
               border: "1px dashed var(--color-clay)",
               borderRadius: 4,
-              padding: "8px 16px",
+              padding: "10px 18px",
               color: "var(--color-clay)",
               cursor: "pointer",
               marginTop: 8,
@@ -317,7 +317,7 @@ function VariantsToggle({
       <span
         className="mono"
         style={{
-          fontSize: 11,
+          fontSize: 13,
           letterSpacing: "0.10em",
           textTransform: "uppercase",
           color: "var(--color-clay)",
@@ -343,7 +343,7 @@ function FieldCol({
       <span
         className="mono"
         style={{
-          fontSize: 10,
+          fontSize: 12,
           letterSpacing: "0.14em",
           textTransform: "uppercase",
           color: "var(--color-clay)",

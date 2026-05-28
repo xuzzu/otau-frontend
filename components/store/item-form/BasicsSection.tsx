@@ -26,19 +26,19 @@ export function BasicsSection({
 
   const inputStyle: React.CSSProperties = {
     fontFamily: "var(--font-geist-sans)",
-    fontSize: 13,
+    fontSize: 15,
     color: "var(--color-ink)",
     background: "var(--color-cream)",
     border: "1px solid var(--color-hair)",
     borderRadius: 4,
-    padding: "5px 8px",
+    padding: "10px 11px",
     width: "100%",
     boxSizing: "border-box",
   };
 
   const dimInputStyle: React.CSSProperties = {
     ...inputStyle,
-    width: 72,
+    width: 88,
   };
 
   return (
@@ -48,7 +48,7 @@ export function BasicsSection({
         title={t("store.itemform.basics.title")}
       />
 
-      {/* Name */}
+      {/* Name — full width */}
       <FieldRow label={t("store.itemform.field.name")}>
         <input
           data-testid="basics-name"
@@ -59,7 +59,7 @@ export function BasicsSection({
         />
       </FieldRow>
 
-      {/* Category */}
+      {/* Category — full width (chip block) */}
       <FieldRow label={t("store.itemform.field.category")} required>
         <CategoryPicker
           value={value.category_id || null}
@@ -67,17 +67,19 @@ export function BasicsSection({
         />
       </FieldRow>
 
-      {/* Room */}
+      {/* Room — half width */}
       <FieldRow label={t("store.itemform.field.room")}>
-        <TaxonomySelect
-          kind="roomTypes"
-          value={value.room_target_id}
-          onChange={(id) => onChange({ room_target_id: id })}
-          allowNone
-        />
+        <div style={{ maxWidth: 400 }}>
+          <TaxonomySelect
+            kind="roomTypes"
+            value={value.room_target_id}
+            onChange={(id) => onChange({ room_target_id: id })}
+            allowNone
+          />
+        </div>
       </FieldRow>
 
-      {/* Styles */}
+      {/* Styles — full width (chips) */}
       <FieldRow label={t("store.itemform.field.styles")}>
         <TaxonomyChips
           kind="styles"
@@ -86,7 +88,7 @@ export function BasicsSection({
         />
       </FieldRow>
 
-      {/* Materials */}
+      {/* Materials — full width (chips) */}
       <FieldRow label={t("store.itemform.field.materials")}>
         <TaxonomyChips
           kind="materials"
@@ -95,33 +97,57 @@ export function BasicsSection({
         />
       </FieldRow>
 
-      {/* Description kz */}
-      <FieldRow label={t("store.itemform.field.desc_kz")}>
-        <textarea
-          data-testid="basics-desc-kz"
-          value={value.description.kz ?? ""}
-          onChange={(e) =>
-            onChange({ description: { ...value.description, kz: e.target.value } })
-          }
-          style={{ ...inputStyle, height: 72, resize: "vertical" }}
-        />
+      {/* Description kz / ru — 2-column side-by-side */}
+      <FieldRow label={t("store.itemform.field.desc_kz") + " / " + t("store.itemform.field.desc_ru")}>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+            <span
+              className="mono"
+              style={{
+                fontSize: 11,
+                letterSpacing: "0.12em",
+                textTransform: "uppercase",
+                color: "var(--color-clay)",
+              }}
+            >
+              {t("store.itemform.field.desc_kz")}
+            </span>
+            <textarea
+              data-testid="basics-desc-kz"
+              value={value.description.kz ?? ""}
+              onChange={(e) =>
+                onChange({ description: { ...value.description, kz: e.target.value } })
+              }
+              style={{ ...inputStyle, height: 88, resize: "vertical" }}
+            />
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+            <span
+              className="mono"
+              style={{
+                fontSize: 11,
+                letterSpacing: "0.12em",
+                textTransform: "uppercase",
+                color: "var(--color-clay)",
+              }}
+            >
+              {t("store.itemform.field.desc_ru")}
+            </span>
+            <textarea
+              data-testid="basics-desc-ru"
+              value={value.description.ru ?? ""}
+              onChange={(e) =>
+                onChange({ description: { ...value.description, ru: e.target.value } })
+              }
+              style={{ ...inputStyle, height: 88, resize: "vertical" }}
+            />
+          </div>
+        </div>
       </FieldRow>
 
-      {/* Description ru */}
-      <FieldRow label={t("store.itemform.field.desc_ru")}>
-        <textarea
-          data-testid="basics-desc-ru"
-          value={value.description.ru ?? ""}
-          onChange={(e) =>
-            onChange({ description: { ...value.description, ru: e.target.value } })
-          }
-          style={{ ...inputStyle, height: 72, resize: "vertical" }}
-        />
-      </FieldRow>
-
-      {/* Dimensions */}
+      {/* Dimensions row */}
       <FieldRow label={t("store.itemform.field.dims")}>
-        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+        <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
           <DimInput
             label={t("store.itemform.dim.w")}
             value={value.dims.w}
@@ -154,7 +180,7 @@ export function BasicsSection({
           onChange={(e) =>
             onChange({ weight_kg: e.target.value === "" ? null : Number(e.target.value) })
           }
-          style={{ ...dimInputStyle, width: 100 }}
+          style={{ ...dimInputStyle, width: 120 }}
         />
       </FieldRow>
     </section>
@@ -176,20 +202,20 @@ function FieldRow({
     <div
       style={{
         display: "grid",
-        gridTemplateColumns: "140px 1fr",
-        gap: 12,
+        gridTemplateColumns: "160px 1fr",
+        gap: 16,
         alignItems: "start",
-        marginBottom: 14,
+        marginBottom: 18,
       }}
     >
       <span
         className="mono"
         style={{
-          fontSize: 11,
+          fontSize: 12,
           letterSpacing: "0.12em",
           textTransform: "uppercase",
           color: "var(--color-clay)",
-          paddingTop: 7,
+          paddingTop: 11,
         }}
       >
         {label}
@@ -216,10 +242,10 @@ function DimInput({
   style: React.CSSProperties;
 }) {
   return (
-    <label style={{ display: "flex", flexDirection: "column", gap: 3 }}>
+    <label style={{ display: "flex", flexDirection: "column", gap: 4 }}>
       <span
         className="mono"
-        style={{ fontSize: 9, letterSpacing: "0.14em", textTransform: "uppercase", color: "var(--color-clay)" }}
+        style={{ fontSize: 11, letterSpacing: "0.14em", textTransform: "uppercase", color: "var(--color-clay)" }}
       >
         {label}
       </span>
