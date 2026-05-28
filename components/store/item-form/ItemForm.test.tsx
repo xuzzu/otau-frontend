@@ -1,5 +1,5 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { render, screen, fireEvent, waitFor, act } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ShopProvider } from "@/lib/shop-context";
 import { ItemForm, slugify } from "./ItemForm";
@@ -161,6 +161,11 @@ describe("slugify", () => {
 describe("ItemForm – create mode", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.useFakeTimers();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
   });
 
   it("renders a heading in create mode (kz or ru)", () => {
@@ -194,6 +199,8 @@ describe("ItemForm – create mode", () => {
     fireEvent.click(screen.getByText("Отырғыш"));
     fireEvent.click(screen.getByText("Диван"));
 
+    // Advance past debounce so auto-draft fires (it marks button as fired)
+    // but for this test we just check the canSaveDraft state before debounce fires
     const btn = screen.getByTestId("save-draft-btn");
     expect((btn as HTMLButtonElement).disabled).toBe(false);
   });
@@ -212,36 +219,121 @@ describe("ItemForm – create mode", () => {
     fireEvent.click(screen.getByText("Отырғыш"));
     fireEvent.click(screen.getByText("Диван"));
 
-    // Click save draft
+    // Click save draft (manual fallback) — this fires before the debounce resolves
+    // because we haven't advanced timers yet
     const btn = screen.getByTestId("save-draft-btn");
     fireEvent.click(btn);
 
-    await waitFor(() => {
-      expect(mockCreateStoreItem).toHaveBeenCalled();
-      const firstCallArg = mockCreateStoreItem.mock.calls[0][0];
-      expect(firstCallArg).toMatchObject({
-        slug: expect.stringMatching(/^[a-z0-9-]+$/),
-        name: "Test Item",
-        category_id: "cat1",
-      });
+    // Flush all timers and microtasks
+    await vi.runAllTimersAsync();
+
+    expect(mockCreateStoreItem).toHaveBeenCalled();
+    const firstCallArg = mockCreateStoreItem.mock.calls[0][0];
+    expect(firstCallArg).toMatchObject({
+      slug: expect.stringMatching(/^[a-z0-9-]+$/),
+      name: "Test Item",
+      category_id: "cat1",
     });
 
-    await waitFor(() => {
-      expect(mockReplace).toHaveBeenCalledWith("/store/catalog/new-item-id/edit");
-    });
+    expect(mockReplace).toHaveBeenCalledWith("/store/catalog/new-item-id/edit");
   });
 
-  it("shows a draft hint message in create mode", () => {
+  // ─── auto-draft tests ──────────────────────────────────────────────────────
+
+  it("auto-draft does NOT fire when only name is set (no category)", async () => {
+    mockCreateStoreItem.mockResolvedValue({ ...baseItem, id: "new1" });
+
     render(wrap(<ItemForm mode="create" />));
-    // The hint should have some text from the draft_hint i18n key
-    // In Kazakh: "Фотосуреттер мен нұсқалар жобаны сақтаған соң қолжетімді болады"
-    // In Russian: "Фото и варианты станут доступны после сохранения черновика"
-    // Search for the paragraph (it's an <p> element styled italic)
-    const paragraphs = document.querySelectorAll("p");
-    expect(paragraphs.length).toBeGreaterThan(0);
-    // At least one paragraph should mention photos/variants/draft
-    const text = Array.from(paragraphs).map((p) => p.textContent).join(" ");
-    expect(text).toBeTruthy();
+
+    const nameInput = screen.getByTestId("basics-name");
+    fireEvent.change(nameInput, { target: { value: "My Sofa" } });
+
+    // Advance well past debounce + flush all pending timers/microtasks
+    await vi.runAllTimersAsync();
+
+    expect(mockCreateStoreItem).not.toHaveBeenCalled();
+    expect(mockReplace).not.toHaveBeenCalled();
+  });
+
+  it("auto-draft does NOT fire when only category is set (no name)", async () => {
+    mockCreateStoreItem.mockResolvedValue({ ...baseItem, id: "new1" });
+
+    render(wrap(<ItemForm mode="create" />));
+
+    // Set category only (no name)
+    fireEvent.click(screen.getByText("Отырғыш"));
+    fireEvent.click(screen.getByText("Диван"));
+
+    await vi.runAllTimersAsync();
+
+    expect(mockCreateStoreItem).not.toHaveBeenCalled();
+    expect(mockReplace).not.toHaveBeenCalled();
+  });
+
+  it("auto-draft fires once when both name (>=2 chars) and category are set", async () => {
+    const createdItem = { ...baseItem, id: "new1" };
+    mockCreateStoreItem.mockResolvedValue(createdItem);
+
+    render(wrap(<ItemForm mode="create" />));
+
+    const nameInput = screen.getByTestId("basics-name");
+    fireEvent.change(nameInput, { target: { value: "My Sofa" } });
+
+    fireEvent.click(screen.getByText("Отырғыш"));
+    fireEvent.click(screen.getByText("Диван"));
+
+    // Advance all timers and flush async chain
+    await vi.runAllTimersAsync();
+
+    expect(mockCreateStoreItem).toHaveBeenCalledTimes(1);
+    const arg = mockCreateStoreItem.mock.calls[0][0];
+    expect(arg).toMatchObject({
+      slug: expect.stringMatching(/^[a-z0-9-]+$/),
+      name: "My Sofa",
+      category_id: "cat1",
+    });
+    expect(mockReplace).toHaveBeenCalledWith("/store/catalog/new1/edit");
+  });
+
+  it("auto-draft fires only once even if timers advance again", async () => {
+    const createdItem = { ...baseItem, id: "new1" };
+    mockCreateStoreItem.mockResolvedValue(createdItem);
+
+    render(wrap(<ItemForm mode="create" />));
+
+    const nameInput = screen.getByTestId("basics-name");
+    fireEvent.change(nameInput, { target: { value: "My Sofa" } });
+
+    fireEvent.click(screen.getByText("Отырғыш"));
+    fireEvent.click(screen.getByText("Диван"));
+
+    // First pass — fires once
+    await vi.runAllTimersAsync();
+
+    expect(mockCreateStoreItem).toHaveBeenCalledTimes(1);
+
+    // Second pass — should NOT fire again (guard is set)
+    await vi.runAllTimersAsync();
+
+    // Still only once
+    expect(mockCreateStoreItem).toHaveBeenCalledTimes(1);
+  });
+
+  it("auto-draft requires name length >= 2", async () => {
+    mockCreateStoreItem.mockResolvedValue({ ...baseItem, id: "new1" });
+
+    render(wrap(<ItemForm mode="create" />));
+
+    const nameInput = screen.getByTestId("basics-name");
+    // Single character — too short
+    fireEvent.change(nameInput, { target: { value: "A" } });
+
+    fireEvent.click(screen.getByText("Отырғыш"));
+    fireEvent.click(screen.getByText("Диван"));
+
+    await vi.runAllTimersAsync();
+
+    expect(mockCreateStoreItem).not.toHaveBeenCalled();
   });
 });
 
