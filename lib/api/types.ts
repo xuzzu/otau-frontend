@@ -6,6 +6,8 @@ export type Category = {
   id: string;
   slug: string;
   name: I18nText;
+  parent_id: string | null;
+  sort_order?: number;
 };
 export type Color = { id: string; slug: string; name: I18nText; hex: string };
 export type Material = { id: string; slug: string; name: I18nText };
