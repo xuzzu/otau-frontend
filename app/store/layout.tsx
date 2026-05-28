@@ -2,7 +2,7 @@
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
 import { ShopProvider } from "@/lib/shop-context";
-import { ShopTabs } from "@/components/store/ShopTabs";
+import { SellerShell } from "@/components/store/console/SellerShell";
 import { TopNav } from "@/components/nav/TopNav";
 import { BASES } from "@/lib/api/env";
 
@@ -55,9 +55,10 @@ export default async function StoreLayout({ children }: { children: React.ReactN
 
   return (
     <ShopProvider shops={info.shops}>
-      <TopNav />
-      <ShopTabs />
-      <main style={{ padding: "32px 56px" }}>{children}</main>
+      <div style={{ height: "100vh", display: "flex", flexDirection: "column", overflow: "hidden" }}>
+        <TopNav />
+        <SellerShell>{children}</SellerShell>
+      </div>
     </ShopProvider>
   );
 }
