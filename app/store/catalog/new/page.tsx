@@ -1,3 +1,5 @@
-"use client";
-import { ItemForm } from "@/components/store/item-form/ItemForm";
-export default function NewItemPage() { return <ItemForm mode="create" />; }
+import { ItemEditScreen } from "@/components/store/item-edit/ItemEditScreen";
+
+export default function NewItemPage() {
+  return <ItemEditScreen />;
+}

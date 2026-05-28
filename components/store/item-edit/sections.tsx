@@ -1,0 +1,360 @@
+import { Photo } from "../console/atoms";
+import { Section, Field, Input, Textarea, Select, Toggle, Tick, Pill, MiniStat } from "./atoms";
+import { SECTIONS, PHOTOS, MATERIALS, COLOR_VARIANTS, TAGS, DELIVERY_REGIONS } from "../_fixtures/item-edit";
+
+// ——— Left section rail ———
+export function SectionRail() {
+  return (
+    <aside style={{ width: 184, padding: "24px 18px", borderRight: "1px solid #E8DFD0", flexShrink: 0, background: "#F4EFE6", overflowY: "auto" }}>
+      <div className="label">Sections</div>
+      <div style={{ marginTop: 12, display: "flex", flexDirection: "column", gap: 2 }}>
+        {SECTIONS.map((it) => (
+          <a key={it.n} style={{
+            display: "flex", alignItems: "center", gap: 10, padding: "7px 8px",
+            fontSize: 12, cursor: "pointer", color: "#1A1612",
+            background: it.active ? "#FBF8F2" : "transparent",
+            border: "1px solid", borderColor: it.active ? "#E8DFD0" : "transparent",
+          }}>
+            <span className="mono" style={{ fontSize: 9, letterSpacing: "0.10em", color: "#9A8A72" }}>{it.n}</span>
+            <span style={{ flex: 1 }}>{it.l}</span>
+            {it.done && <span style={{ color: "#3F4A39", fontSize: 11 }}>✓</span>}
+            {it.warn && <span style={{ color: "#B5532E", fontSize: 12 }}>●</span>}
+          </a>
+        ))}
+      </div>
+
+      <hr className="hr-hair" style={{ margin: "22px 0 16px" }} />
+      <div className="label">History</div>
+      <div style={{ fontSize: 11, color: "#5B5043", marginTop: 8, lineHeight: 1.5 }}>
+        <div>v.14 · today, 14:08 <span className="it" style={{ color: "#9A8A72" }}>(you)</span></div>
+        <div style={{ marginTop: 4 }}>v.13 · 26 May <span className="it" style={{ color: "#9A8A72" }}>price ₸685k</span></div>
+        <div style={{ marginTop: 4 }}>v.12 · 12 May <span className="it" style={{ color: "#9A8A72" }}>+4 photos</span></div>
+      </div>
+    </aside>
+  );
+}
+
+// ——— 01 · Photos ———
+export function PhotosSection() {
+  return (
+    <Section n="01" title="Photos" hint="7 of 12 · drag to reorder · first is hero">
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(8, 1fr)", gap: 10 }}>
+        {PHOTOS.map((src, i) => (
+          <div key={i} style={{ position: "relative", aspectRatio: "1", outline: i === 0 ? "2px solid #B5532E" : "none", outlineOffset: 2 }}>
+            <Photo src={src} style={{ position: "absolute", inset: 0 }} />
+            {i === 0 && (
+              <div className="mono" style={{ position: "absolute", top: 6, left: 6, padding: "3px 7px", background: "#B5532E", color: "#FBF8F2", fontSize: 9, letterSpacing: "0.12em", textTransform: "uppercase" }}>Hero</div>
+            )}
+            <div className="mono" style={{ position: "absolute", bottom: 6, left: 6, padding: "2px 5px", background: "rgba(26,22,18,.7)", color: "#FBF8F2", fontSize: 9, letterSpacing: "0.08em" }}>0{i + 1}</div>
+            <span style={{ position: "absolute", top: 6, right: 6, width: 18, height: 18, background: "#FBF8F2", border: "1px solid #E8DFD0", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, color: "#1A1612" }}>⋯</span>
+          </div>
+        ))}
+        <div style={{ aspectRatio: "1", border: "1.5px dashed #B8A98F", background: "#FBF8F2", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 6, color: "#5B5043", cursor: "pointer" }}>
+          <span style={{ fontFamily: "Instrument Serif, serif", fontSize: 28, color: "#9A8A72" }}>+</span>
+          <span className="mono" style={{ fontSize: 9, letterSpacing: "0.10em", textTransform: "uppercase", color: "#5B5043" }}>Drop or browse</span>
+        </div>
+      </div>
+
+      <div style={{ marginTop: 14, padding: 14, background: "#FBF8F2", border: "1px solid #E8DFD0", display: "flex", alignItems: "center", gap: 16 }}>
+        <span style={{ width: 28, height: 28, borderRadius: 999, background: "#1A1612", color: "#FBF8F2", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12 }}>◇</span>
+        <div style={{ flex: 1 }}>
+          <div style={{ fontSize: 13 }}>
+            <span className="serif it">Otaū can render the room scenes for you.</span>
+            <span style={{ color: "#5B5043" }}> Upload a hero photo and we&apos;ll generate 3 lifestyle scenes for free.</span>
+          </div>
+        </div>
+        <button className="btn ghost" style={{ padding: "8px 14px", fontSize: 11 }}>Generate scenes →</button>
+      </div>
+    </Section>
+  );
+}
+
+// ——— 02 · Basics ———
+export function BasicsSection() {
+  return (
+    <Section n="02" title="Basics" hint="Shown on the marketplace card">
+      <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 24 }}>
+        <Field label="Title"><Input value="Klemo modular sofa, 3‑seat" hint="58 / 80" /></Field>
+        <Field label="Subtitle · optional"><Input value="Low frame, washable slipcover" /></Field>
+      </div>
+
+      <Field label="Description" sub="Markdown supported · 240 chars min for AI scene generation">
+        <Textarea>
+          A low, generous frame in solid oak with washed Belgian linen. The slipcover
+          comes off for the August dry‑clean and goes back on like a memory. Built in
+          Astana by hand, in editions of 24. We send it on a Tuesday, you sit on it
+          by the weekend.
+        </Textarea>
+        <div className="mono" style={{ fontSize: 9, letterSpacing: "0.10em", color: "#9A8A72", marginTop: 8, textTransform: "uppercase" }}>
+          312 characters · readability A · 2 sensory words · ✓ no banned phrases
+        </div>
+      </Field>
+
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 24 }}>
+        <Field label="URL handle"><Input value="klemo-modular-sofa-3-seat" prefix="otau.kz/i/" /></Field>
+        <Field label="SKU · internal"><Input value="OT‑3127" /></Field>
+      </div>
+    </Section>
+  );
+}
+
+// ——— 03 · Price & stock ———
+export function PriceStockSection() {
+  return (
+    <Section n="03" title="Price &amp; stock">
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 20 }}>
+        <Field label="Price · KZT"><Input value="685 000" prefix="₸" /></Field>
+        <Field label="Compare at · KZT"><Input value="740 000" prefix="₸" placeholder /></Field>
+        <Field label="Cost · internal"><Input value="412 000" prefix="₸" hint="Margin 39.8%" /></Field>
+        <Field label="Tax class"><Select value="Furniture · 12% VAT" /></Field>
+      </div>
+
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 20, marginTop: 12 }}>
+        <Field label="In stock"><Input value="5" suffix="units" /></Field>
+        <Field label="Build to order"><Toggle on label="On · 6 wk lead" /></Field>
+        <Field label="Restock arriving"><Input value="14 Jun 2026" suffix="cal" /></Field>
+        <Field label="Notify when low"><Input value="3" suffix="units" /></Field>
+      </div>
+    </Section>
+  );
+}
+
+// ——— 04 · Dimensions ———
+export function DimensionsSection() {
+  return (
+    <Section n="04" title="Dimensions &amp; weight" hint="Used for AR placement and delivery quotes">
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr) 1.2fr", gap: 16 }}>
+        <Field label="Width"><Input value="220" suffix="cm" /></Field>
+        <Field label="Depth"><Input value="92" suffix="cm" /></Field>
+        <Field label="Height"><Input value="78" suffix="cm" /></Field>
+        <Field label="Seat height"><Input value="44" suffix="cm" /></Field>
+        <Field label="Weight"><Input value="62" suffix="kg" /></Field>
+        <Field label="Volume packed"><Input value="0.84" suffix="m³" /></Field>
+      </div>
+
+      <div style={{ marginTop: 16, padding: "18px 22px", background: "#FBF8F2", border: "1px solid #E8DFD0", display: "flex", alignItems: "center", gap: 28 }}>
+        <DimDiagram />
+        <div style={{ flex: 1 }}>
+          <div className="label">Fits in</div>
+          <div style={{ display: "flex", gap: 8, marginTop: 8, flexWrap: "wrap" }}>
+            {["Living room", "Kitchen / dining", "Studio", "Office"].map((t, i) => (
+              <span key={t} className={i < 2 ? "chip solid" : "chip"} style={{ fontSize: 10 }}>{t}</span>
+            ))}
+          </div>
+          <div className="label" style={{ marginTop: 14 }}>Won&apos;t fit through</div>
+          <div className="mono" style={{ fontSize: 11, letterSpacing: "0.06em", color: "#B5532E", marginTop: 6, textTransform: "uppercase" }}>
+            ⚠ Standard doorway · 80 cm — needs disassembly
+          </div>
+        </div>
+      </div>
+    </Section>
+  );
+}
+
+function DimDiagram() {
+  return (
+    <svg viewBox="0 0 220 110" style={{ width: 240, height: 120, display: "block" }}>
+      <rect x="20" y="30" width="160" height="60" fill="none" stroke="#1A1612" strokeWidth="1.2" />
+      <rect x="26" y="36" width="46" height="40" fill="none" stroke="#1A1612" strokeWidth="0.6" />
+      <rect x="76" y="36" width="46" height="40" fill="none" stroke="#1A1612" strokeWidth="0.6" />
+      <rect x="126" y="36" width="48" height="40" fill="none" stroke="#1A1612" strokeWidth="0.6" />
+      <line x1="20" y1="100" x2="180" y2="100" stroke="#9A8A72" strokeWidth="0.6" />
+      <line x1="20" y1="96" x2="20" y2="104" stroke="#9A8A72" strokeWidth="0.6" />
+      <line x1="180" y1="96" x2="180" y2="104" stroke="#9A8A72" strokeWidth="0.6" />
+      <text x="100" y="108" textAnchor="middle" fontSize="9" fontFamily="JetBrains Mono" fill="#5B5043">220 cm</text>
+      <line x1="190" y1="30" x2="190" y2="90" stroke="#9A8A72" strokeWidth="0.6" />
+      <line x1="186" y1="30" x2="194" y2="30" stroke="#9A8A72" strokeWidth="0.6" />
+      <line x1="186" y1="90" x2="194" y2="90" stroke="#9A8A72" strokeWidth="0.6" />
+      <text x="202" y="62" fontSize="9" fontFamily="JetBrains Mono" fill="#5B5043">78</text>
+      <text x="100" y="22" textAnchor="middle" fontSize="9" fontFamily="JetBrains Mono" fill="#9A8A72" letterSpacing="0.1em">FRONT ELEVATION</text>
+    </svg>
+  );
+}
+
+// ——— 05 · Materials & colors ———
+export function MaterialsColorsSection() {
+  return (
+    <Section n="05" title="Materials &amp; colors">
+      <Field label="Materials · pick all that apply">
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+          {MATERIALS.map((m, i) => (
+            <span key={m} className={i < 3 ? "chip solid" : "chip"} style={{ fontSize: 11 }}>{m}</span>
+          ))}
+        </div>
+      </Field>
+
+      <Field label="Available colors · 6 variants" sub="Buyers can preview each in the studio">
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(7, max-content)", gap: 12, alignItems: "start" }}>
+          {COLOR_VARIANTS.map((s, i) => (
+            <div key={i} style={{ width: 88 }}>
+              <div style={{ width: 88, height: 88, background: s.c, border: "1px solid rgba(26,22,18,.15)" }} />
+              <div className="mono" style={{ fontSize: 10, letterSpacing: "0.08em", color: "#1A1612", marginTop: 6, textTransform: "uppercase" }}>{s.n}</div>
+              <div className="mono" style={{ fontSize: 9, letterSpacing: "0.06em", color: "#9A8A72", marginTop: 2 }}>
+                ₸685 000 · {i === 4 ? "0" : 5 - (i % 3)} in stock
+              </div>
+            </div>
+          ))}
+          <div style={{ width: 88, height: 88, border: "1.5px dashed #B8A98F", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", color: "#5B5043" }}>
+            <span style={{ fontFamily: "Instrument Serif, serif", fontSize: 24, color: "#9A8A72" }}>+</span>
+            <span className="mono" style={{ fontSize: 9, letterSpacing: "0.08em", color: "#5B5043", textTransform: "uppercase", marginTop: 2 }}>variant</span>
+          </div>
+        </div>
+      </Field>
+    </Section>
+  );
+}
+
+// ——— 06 · Category ———
+export function CategorySection() {
+  return (
+    <Section n="06" title="Category &amp; tags">
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 20 }}>
+        <Field label="Primary category"><Select value="Sofas · Modular" /></Field>
+        <Field label="Style"><Select value="Scandinavian · Soft" /></Field>
+        <Field label="Room"><Select value="Living room" /></Field>
+      </div>
+      <Field label="Tags · used for search and AI matching">
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 6, padding: "10px 12px", background: "#FBF8F2", border: "1px solid #E8DFD0" }}>
+          {TAGS.map((t) => (
+            <span key={t} className="chip" style={{ fontSize: 10, background: "#F4EFE6" }}>{t} ×</span>
+          ))}
+          <span style={{ fontSize: 12, color: "#9A8A72", padding: "6px 4px" }}>+ tag</span>
+        </div>
+      </Field>
+    </Section>
+  );
+}
+
+// ——— 07 · Studio / AR ———
+export function StudioARSection() {
+  return (
+    <Section n="07" title="Studio &amp; AR" hint="Required for ◇ Try in room">
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
+        <div style={{ padding: 16, background: "#FBF8F2", border: "1px solid #E8DFD0" }}>
+          <div className="label">3D model · .glb</div>
+          <div style={{ display: "flex", alignItems: "center", gap: 14, marginTop: 12 }}>
+            <div style={{ width: 72, height: 72, background: "#F4EFE6", border: "1px solid #E8DFD0", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <svg viewBox="0 0 60 60" width="44" height="44" fill="none" stroke="#1A1612" strokeWidth="1">
+                <path d="M30 6 L54 18 L54 42 L30 54 L6 42 L6 18 Z" />
+                <path d="M30 6 L30 54 M6 18 L54 42 M6 42 L54 18" />
+              </svg>
+            </div>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 13 }}>klemo-3seat-v3.glb</div>
+              <div className="mono" style={{ fontSize: 10, letterSpacing: "0.08em", color: "#9A8A72", marginTop: 4 }}>14.2 MB · 28k tris · uploaded 12 May</div>
+              <div style={{ display: "flex", gap: 12, marginTop: 8 }}>
+                <span className="mono" style={{ fontSize: 10, letterSpacing: "0.08em", color: "#B5532E", textTransform: "uppercase" }}>Replace</span>
+                <span className="mono" style={{ fontSize: 10, letterSpacing: "0.08em", color: "#9A8A72", textTransform: "uppercase" }}>Preview ↗</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style={{ padding: 16, background: "#FBF8F2", border: "1px solid #E8DFD0" }}>
+          <div className="label">AR readiness</div>
+          <div style={{ marginTop: 12, display: "flex", flexDirection: "column", gap: 6 }}>
+            <Tick on>Hero photo on white</Tick>
+            <Tick on>3D model uploaded</Tick>
+            <Tick on>Dimensions verified</Tick>
+            <Tick warn>Lighting probe missing</Tick>
+            <Tick on>Anchor points set · floor</Tick>
+          </div>
+          <div className="mono" style={{ fontSize: 10, letterSpacing: "0.10em", color: "#D8A05B", marginTop: 12, textTransform: "uppercase" }}>
+            ● 4 of 5 — fix lighting to enable AR
+          </div>
+        </div>
+      </div>
+    </Section>
+  );
+}
+
+// ——— 08 · Delivery ———
+export function DeliverySection() {
+  return (
+    <Section n="08" title="Delivery">
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 20 }}>
+        <Field label="Ships from"><Select value="Astana · workshop" /></Field>
+        <Field label="Handling time"><Select value="3–5 business days" /></Field>
+        <Field label="Assembly"><Select value="White-glove included" /></Field>
+      </div>
+      <Field label="Regions & rates">
+        <div style={{ background: "#FBF8F2", border: "1px solid #E8DFD0" }}>
+          {DELIVERY_REGIONS.map((r, i, a) => (
+            <div key={r.r} style={{ display: "flex", alignItems: "center", padding: "12px 16px", borderBottom: i < a.length - 1 ? "1px solid #E8DFD0" : "none", gap: 12 }}>
+              <span style={{ width: 30, height: 16, borderRadius: 999, background: r.on ? "#3F4A39" : "#E8DFD0", position: "relative", flexShrink: 0 }}>
+                <span style={{ position: "absolute", top: 2, left: r.on ? 16 : 2, width: 12, height: 12, borderRadius: 999, background: "#FBF8F2" }} />
+              </span>
+              <span style={{ flex: 1, fontSize: 13 }}>{r.r}</span>
+              <span className="mono" style={{ fontSize: 11, letterSpacing: "0.06em", color: "#5B5043" }}>{r.t}</span>
+            </div>
+          ))}
+        </div>
+      </Field>
+    </Section>
+  );
+}
+
+// ——— Right rail ———
+export function RightRail() {
+  return (
+    <aside style={{ width: 300, background: "#FBF8F2", borderLeft: "1px solid #E8DFD0", padding: "22px 22px", overflowY: "auto", flexShrink: 0 }}>
+      <div className="label">Marketplace preview</div>
+
+      <div style={{ marginTop: 12 }}>
+        <div style={{ position: "relative", height: 180 }}>
+          <Photo src="https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=600&q=70" style={{ position: "absolute", inset: 0 }} />
+          <div className="mono" style={{ position: "absolute", top: 10, left: 10, padding: "4px 8px", background: "rgba(251,248,242,.92)", fontSize: 9, letterSpacing: "0.12em", textTransform: "uppercase" }}>Editor&apos;s pick</div>
+        </div>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginTop: 10 }}>
+          <div>
+            <div style={{ fontSize: 13, lineHeight: 1.2 }}>Klemo modular sofa, 3‑seat</div>
+            <div className="label" style={{ marginTop: 4, fontSize: 9 }}>Mebel Astana · 220 × 92 cm</div>
+          </div>
+          <div className="num" style={{ fontSize: 13 }}>₸685 000</div>
+        </div>
+      </div>
+
+      <hr className="hr-hair" style={{ margin: "20px 0" }} />
+
+      <div className="label">Visibility</div>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 6, marginTop: 10 }}>
+        <Pill on>Live</Pill>
+        <Pill>Draft</Pill>
+        <Pill>Hidden</Pill>
+      </div>
+      <div style={{ marginTop: 10, fontSize: 11, color: "#5B5043", lineHeight: 1.4 }}>
+        Live since 12 Apr. Indexed in <span className="it">Sofas</span>, <span className="it">Modular</span>, and the May <span className="it">Soft scandinavian</span> scene.
+      </div>
+
+      <hr className="hr-hair" style={{ margin: "20px 0" }} />
+
+      <div className="label">Checklist</div>
+      <div style={{ marginTop: 10, display: "flex", flexDirection: "column", gap: 6 }}>
+        <Tick on>Photos · 7 / 12</Tick>
+        <Tick on>Description · A‑readable</Tick>
+        <Tick on>Dimensions complete</Tick>
+        <Tick warn>AR · lighting missing</Tick>
+        <Tick on>Delivery rates · 3 regions</Tick>
+      </div>
+
+      <hr className="hr-hair" style={{ margin: "20px 0" }} />
+
+      <div className="label">Performance · 30d</div>
+      <div style={{ marginTop: 10, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+        <MiniStat l="Views" v="4 281" />
+        <MiniStat l="Adds" v="118" />
+        <MiniStat l="Inquiries" v="32" />
+        <MiniStat l="Sold" v="14" />
+      </div>
+
+      <div style={{ marginTop: 28, paddingTop: 18, borderTop: "1px solid #E8DFD0" }}>
+        <div className="label" style={{ color: "#B5532E" }}>Danger zone</div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 10 }}>
+          <span style={{ fontSize: 12, color: "#5B5043", cursor: "pointer" }}>↗ Duplicate listing</span>
+          <span style={{ fontSize: 12, color: "#5B5043", cursor: "pointer" }}>⌧ Archive (keep history)</span>
+          <span style={{ fontSize: 12, color: "#B5532E", cursor: "pointer" }}>× Delete permanently</span>
+        </div>
+      </div>
+    </aside>
+  );
+}
