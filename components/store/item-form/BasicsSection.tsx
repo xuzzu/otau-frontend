@@ -1,7 +1,7 @@
 "use client";
 
 import { SectionHeader } from "@/components/store/shared/SectionHeader";
-import { TaxonomySelect, TaxonomyChips } from "./TaxonomyPicker";
+import { TaxonomySelect, TaxonomyChips, CategoryPicker } from "./TaxonomyPicker";
 import { useT } from "@/lib/i18n";
 
 export type BasicsValue = {
@@ -61,8 +61,7 @@ export function BasicsSection({
 
       {/* Category */}
       <FieldRow label={t("store.itemform.field.category")} required>
-        <TaxonomySelect
-          kind="categories"
+        <CategoryPicker
           value={value.category_id || null}
           onChange={(id) => onChange({ category_id: id ?? "" })}
         />

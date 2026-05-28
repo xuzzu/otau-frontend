@@ -3,12 +3,14 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { BasicsSection } from "./BasicsSection";
 import type { BasicsValue } from "./BasicsSection";
 
-// ── Taxonomy fixture ───────────────────────────────────────────────────────────
+// ── Taxonomy fixture (hierarchical categories) ─────────────────────────────────
 const fixture = {
   data: {
     categories: [
-      { id: "cat1", slug: "divan", name: { kz: "Диван", ru: "Диван" } },
-      { id: "cat2", slug: "kreslo", name: { kz: "Кресло", ru: "Кресло" } },
+      { id: "p1", slug: "seating", name: { kz: "Отырғыш", ru: "Сиденья" }, parent_id: null, sort_order: 1 },
+      { id: "p2", slug: "tables",  name: { kz: "Үстелдер", ru: "Столы" },  parent_id: null, sort_order: 2 },
+      { id: "l1", slug: "sofa",    name: { kz: "Диван",    ru: "Диван" },   parent_id: "p1", sort_order: 1 },
+      { id: "l2", slug: "chair",   name: { kz: "Кресло",   ru: "Кресло" },  parent_id: "p1", sort_order: 2 },
     ],
     colors: [],
     materials: [
@@ -24,8 +26,10 @@ const fixture = {
   },
   indexed: {
     categories: {
-      cat1: { id: "cat1", slug: "divan",  name: { kz: "Диван",  ru: "Диван"  } },
-      cat2: { id: "cat2", slug: "kreslo", name: { kz: "Кресло", ru: "Кресло" } },
+      p1: { id: "p1", slug: "seating", name: { kz: "Отырғыш", ru: "Сиденья" }, parent_id: null, sort_order: 1 },
+      p2: { id: "p2", slug: "tables",  name: { kz: "Үстелдер", ru: "Столы" },  parent_id: null, sort_order: 2 },
+      l1: { id: "l1", slug: "sofa",    name: { kz: "Диван",    ru: "Диван" },   parent_id: "p1", sort_order: 1 },
+      l2: { id: "l2", slug: "chair",   name: { kz: "Кресло",   ru: "Кресло" },  parent_id: "p1", sort_order: 2 },
     },
     colors: {},
     materials: {
@@ -79,28 +83,27 @@ describe("BasicsSection", () => {
     expect(onChange).toHaveBeenCalledWith({ name: "Aspara диван" });
   });
 
-  it("selecting a category fires onChange with category_id", () => {
+  it("CategoryPicker renders parent chips; clicking parent then leaf fires onChange with category_id", () => {
     const onChange = vi.fn();
     render(<BasicsSection value={defaultValue} onChange={onChange} />);
 
-    // The category select is a combobox — pick the first one (Диван = cat1, Кресло = cat2)
-    const selects = screen.getAllByRole("combobox");
-    // First combobox should be category (no allowNone)
-    fireEvent.change(selects[0], { target: { value: "cat2" } });
+    // Parent chips are rendered by CategoryPicker
+    expect(screen.getByText("Отырғыш")).toBeInTheDocument();
 
-    expect(onChange).toHaveBeenCalledWith({ category_id: "cat2" });
+    // Click parent to reveal leaves
+    fireEvent.click(screen.getByText("Отырғыш"));
+    expect(screen.getByText("Диван")).toBeInTheDocument();
+
+    // Click leaf → onChange fires with category_id = "l1"
+    fireEvent.click(screen.getByText("Диван"));
+    expect(onChange).toHaveBeenCalledWith({ category_id: "l1" });
   });
 
-  it("adding a style chip fires onChange with the new style_ids array", () => {
+  it("clicking a style chip fires onChange with the new style_ids array", () => {
     const onChange = vi.fn();
     render(<BasicsSection value={defaultValue} onChange={onChange} />);
 
-    // Open the styles chip popover
-    const addBtns = screen.getAllByLabelText("Добавить");
-    // First "+ добавить" should be for styles
-    fireEvent.click(addBtns[0]);
-
-    // Click Скандинавия (sty1)
+    // Style chips are now always visible (no popover)
     fireEvent.click(screen.getByText("Скандинавия"));
 
     expect(onChange).toHaveBeenCalledWith({ style_ids: ["sty1"] });
@@ -137,16 +140,10 @@ describe("BasicsSection", () => {
     const onChange = vi.fn();
     render(<BasicsSection value={defaultValue} onChange={onChange} />);
 
-    // Room select is the second combobox (has allowNone "— нет —")
-    const selects = screen.getAllByRole("combobox");
-    const roomSelect = selects.find((s) => {
-      // The room select has "— нет —" option
-      return Array.from(s.querySelectorAll("option")).some(
-        (o) => (o as HTMLOptionElement).value === ""
-      );
-    });
+    // Room select is now the only combobox (category uses CategoryPicker chips)
+    const roomSelect = screen.getByRole("combobox");
     expect(roomSelect).toBeDefined();
-    fireEvent.change(roomSelect!, { target: { value: "rt1" } });
+    fireEvent.change(roomSelect, { target: { value: "rt1" } });
 
     expect(onChange).toHaveBeenCalledWith({ room_target_id: "rt1" });
   });

@@ -58,7 +58,11 @@ vi.mock("@/lib/store-api/store-core", () => ({
 vi.mock("@/lib/hooks/useTaxonomy", () => ({
   useTaxonomy: () => ({
     indexed: {
-      categories: { cat1: { id: "cat1", slug: "sofa", name: { kz: "Диван", ru: "Диван" } } },
+      categories: {
+        // 1 parent + 1 leaf so CategoryPicker can render them
+        par1: { id: "par1", slug: "seating", name: { kz: "Отырғыш", ru: "Сиденья" }, parent_id: null, sort_order: 1 },
+        cat1: { id: "cat1", slug: "sofa",    name: { kz: "Диван",    ru: "Диван"   }, parent_id: "par1", sort_order: 1 },
+      },
       colors: {},
       materials: {},
       styles: {},
@@ -67,7 +71,10 @@ vi.mock("@/lib/hooks/useTaxonomy", () => ({
     isLoading: false,
     isSuccess: true,
     data: {
-      categories: [{ id: "cat1", slug: "sofa", name: { kz: "Диван", ru: "Диван" } }],
+      categories: [
+        { id: "par1", slug: "seating", name: { kz: "Отырғыш", ru: "Сиденья" }, parent_id: null,   sort_order: 1 },
+        { id: "cat1", slug: "sofa",    name: { kz: "Диван",    ru: "Диван"   }, parent_id: "par1", sort_order: 1 },
+      ],
       colors: [],
       materials: [],
       styles: [],
@@ -183,9 +190,9 @@ describe("ItemForm – create mode", () => {
     const nameInput = screen.getByTestId("basics-name");
     fireEvent.change(nameInput, { target: { value: "Test Item" } });
 
-    // Select a category
-    const selects = screen.getAllByRole("combobox");
-    fireEvent.change(selects[0], { target: { value: "cat1" } });
+    // CategoryPicker: click parent chip then leaf chip
+    fireEvent.click(screen.getByText("Отырғыш"));
+    fireEvent.click(screen.getByText("Диван"));
 
     const btn = screen.getByTestId("save-draft-btn");
     expect((btn as HTMLButtonElement).disabled).toBe(false);
@@ -201,9 +208,9 @@ describe("ItemForm – create mode", () => {
     const nameInput = screen.getByTestId("basics-name");
     fireEvent.change(nameInput, { target: { value: "Test Item" } });
 
-    // Select category
-    const selects = screen.getAllByRole("combobox");
-    fireEvent.change(selects[0], { target: { value: "cat1" } });
+    // CategoryPicker: click parent chip then leaf chip
+    fireEvent.click(screen.getByText("Отырғыш"));
+    fireEvent.click(screen.getByText("Диван"));
 
     // Click save draft
     const btn = screen.getByTestId("save-draft-btn");

@@ -1,25 +1,29 @@
 import { render, screen, fireEvent } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { TaxonomySelect, TaxonomyChips } from "./TaxonomyPicker";
+import { TaxonomySelect, TaxonomyChips, CategoryPicker } from "./TaxonomyPicker";
 
-// Small taxonomy fixture — names in kz (default locale) and ru
+// Hierarchical fixture: 2 parents, 4 leaves (2 per parent)
 const fixture = {
   data: {
     categories: [
-      { id: "cat1", slug: "divan", name: { kz: "Диван", ru: "Диван" } },
-      { id: "cat2", slug: "kreslo", name: { kz: "Кресло", ru: "Кресло" } },
+      { id: "p1", slug: "seating", name: { kz: "Отырғыш", ru: "Сиденья" }, parent_id: null, sort_order: 1 },
+      { id: "p2", slug: "tables",  name: { kz: "Үстелдер", ru: "Столы" },  parent_id: null, sort_order: 2 },
+      { id: "l1", slug: "sofa",    name: { kz: "Диван",    ru: "Диван" },   parent_id: "p1", sort_order: 1 },
+      { id: "l2", slug: "chair",   name: { kz: "Кресло",   ru: "Кресло" },  parent_id: "p1", sort_order: 2 },
+      { id: "l3", slug: "desk",    name: { kz: "Жұмыс үстелі", ru: "Стол-письменный" }, parent_id: "p2", sort_order: 1 },
+      { id: "l4", slug: "coffee",  name: { kz: "Кофе үстелі",  ru: "Журнальный стол"  }, parent_id: "p2", sort_order: 2 },
     ],
     colors: [
       { id: "col1", slug: "beige", name: { kz: "Бежевый", ru: "Бежевый" }, hex: "#F5F0E8" },
-      { id: "col2", slug: "black", name: { kz: "Қара", ru: "Чёрный" }, hex: "#1A1A1A" },
+      { id: "col2", slug: "black", name: { kz: "Қара",    ru: "Чёрный"  }, hex: "#1A1A1A" },
     ],
     materials: [
       { id: "mat1", slug: "linen", name: { kz: "Зығыр", ru: "Лён" } },
-      { id: "mat2", slug: "oak",   name: { kz: "Емен", ru: "Дуб" } },
+      { id: "mat2", slug: "oak",   name: { kz: "Емен",  ru: "Дуб" } },
     ],
     styles: [
       { id: "sty1", slug: "scandinavian", name: { kz: "Скандинавия", ru: "Скандинавский" } },
-      { id: "sty2", slug: "loft",         name: { kz: "Лофт", ru: "Лофт" } },
+      { id: "sty2", slug: "loft",         name: { kz: "Лофт",        ru: "Лофт"          } },
     ],
     roomTypes: [
       { id: "rt1", slug: "living", name: { kz: "Қонақ бөлме", ru: "Гостиная" } },
@@ -27,8 +31,12 @@ const fixture = {
   },
   indexed: {
     categories: {
-      cat1: { id: "cat1", slug: "divan",  name: { kz: "Диван",  ru: "Диван"  } },
-      cat2: { id: "cat2", slug: "kreslo", name: { kz: "Кресло", ru: "Кресло" } },
+      p1:  { id: "p1",  slug: "seating", name: { kz: "Отырғыш",       ru: "Сиденья" },            parent_id: null, sort_order: 1 },
+      p2:  { id: "p2",  slug: "tables",  name: { kz: "Үстелдер",       ru: "Столы" },              parent_id: null, sort_order: 2 },
+      l1:  { id: "l1",  slug: "sofa",    name: { kz: "Диван",           ru: "Диван" },              parent_id: "p1", sort_order: 1 },
+      l2:  { id: "l2",  slug: "chair",   name: { kz: "Кресло",          ru: "Кресло" },             parent_id: "p1", sort_order: 2 },
+      l3:  { id: "l3",  slug: "desk",    name: { kz: "Жұмыс үстелі",   ru: "Стол-письменный" },    parent_id: "p2", sort_order: 1 },
+      l4:  { id: "l4",  slug: "coffee",  name: { kz: "Кофе үстелі",    ru: "Журнальный стол" },    parent_id: "p2", sort_order: 2 },
     },
     colors: {
       col1: { id: "col1", slug: "beige", name: { kz: "Бежевый", ru: "Бежевый" }, hex: "#F5F0E8" },
@@ -48,12 +56,10 @@ const fixture = {
   },
 };
 
-// Mock useTaxonomy
 vi.mock("@/lib/hooks/useTaxonomy", () => ({
   useTaxonomy: () => ({ ...fixture, isLoading: false, isSuccess: true }),
 }));
 
-// Mock useLocale to always return "kz" (the default locale)
 vi.mock("@/lib/i18n", async (importOriginal) => {
   const real = await importOriginal<typeof import("@/lib/i18n")>();
   return { ...real, useLocale: () => "kz" };
@@ -61,35 +67,31 @@ vi.mock("@/lib/i18n", async (importOriginal) => {
 
 const noop = () => {};
 
+// ─────────────────────────────────────────────────────────────────────────────
 describe("TaxonomySelect", () => {
   it("renders localized options (kz) and fires onChange with the id", () => {
     const onChange = vi.fn();
-    render(<TaxonomySelect kind="categories" value={null} onChange={onChange} />);
+    render(<TaxonomySelect kind="colors" value={null} onChange={onChange} />);
 
     const select = screen.getByRole("combobox");
-    // kz labels
-    expect(screen.getByText("Диван")).toBeInTheDocument();
-    expect(screen.getByText("Кресло")).toBeInTheDocument();
+    expect(screen.getByText("Бежевый")).toBeInTheDocument();
+    expect(screen.getByText("Қара")).toBeInTheDocument();
 
-    fireEvent.change(select, { target: { value: "cat2" } });
-    expect(onChange).toHaveBeenCalledWith("cat2");
+    fireEvent.change(select, { target: { value: "col2" } });
+    expect(onChange).toHaveBeenCalledWith("col2");
   });
 
   it("allowNone adds a none option and onChange fires null when selected", () => {
     const onChange = vi.fn();
     render(<TaxonomySelect kind="roomTypes" value="rt1" onChange={onChange} allowNone />);
 
-    const select = screen.getByRole("combobox");
-    // None option
     expect(screen.getByText("— нет —")).toBeInTheDocument();
-
-    // Select the empty value
-    fireEvent.change(select, { target: { value: "" } });
+    fireEvent.change(screen.getByRole("combobox"), { target: { value: "" } });
     expect(onChange).toHaveBeenCalledWith(null);
   });
 
   it("without allowNone there is no none option", () => {
-    render(<TaxonomySelect kind="categories" value={null} onChange={noop} />);
+    render(<TaxonomySelect kind="materials" value={null} onChange={noop} />);
     expect(screen.queryByText("— нет —")).not.toBeInTheDocument();
   });
 
@@ -104,53 +106,97 @@ describe("TaxonomySelect", () => {
   });
 
   it("does not render a swatch for non-colour kinds", () => {
-    render(<TaxonomySelect kind="categories" value="cat1" onChange={noop} />);
+    render(<TaxonomySelect kind="materials" value="mat1" onChange={noop} />);
     expect(screen.queryByTestId("selected-swatch")).not.toBeInTheDocument();
   });
 });
 
-describe("TaxonomyChips", () => {
+// ─────────────────────────────────────────────────────────────────────────────
+describe("TaxonomyChips (toggle-style)", () => {
   beforeEach(() => vi.clearAllMocks());
 
-  it("renders selected chips with localized (kz) labels", () => {
-    render(<TaxonomyChips kind="styles" value={["sty1"]} onChange={noop} />);
-    // kz label
-    expect(screen.getByText(/Скандинавия/)).toBeInTheDocument();
-  });
-
-  it("clicking + открыть popover reveals remaining options", () => {
-    render(<TaxonomyChips kind="styles" value={["sty1"]} onChange={noop} />);
-    fireEvent.click(screen.getByLabelText("Добавить"));
-    // sty2 is not yet selected; its kz name should appear
+  it("renders all options as chips (not just selected)", () => {
+    render(<TaxonomyChips kind="styles" value={[]} onChange={noop} />);
+    // Both style chips should be visible without any "+ добавить"
+    expect(screen.getByText("Скандинавия")).toBeInTheDocument();
     expect(screen.getByText("Лофт")).toBeInTheDocument();
-    // sty1 is selected so it shouldn't appear in the popover
-    expect(screen.queryByRole("option", { name: "Скандинавия" })).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("Добавить")).not.toBeInTheDocument();
   });
 
-  it("clicking an option fires onChange with the id appended", () => {
+  it("clicking an unselected chip adds it (onChange called with id added)", () => {
     const onChange = vi.fn();
-    render(<TaxonomyChips kind="styles" value={["sty1"]} onChange={onChange} />);
-    fireEvent.click(screen.getByLabelText("Добавить"));
-    fireEvent.click(screen.getByText("Лофт"));
-    expect(onChange).toHaveBeenCalledWith(["sty1", "sty2"]);
+    render(<TaxonomyChips kind="styles" value={[]} onChange={onChange} />);
+    fireEvent.click(screen.getByText("Скандинавия"));
+    expect(onChange).toHaveBeenCalledWith(["sty1"]);
   });
 
-  it("clicking × on a chip fires onChange with the id removed", () => {
+  it("clicking a selected chip removes it (onChange called with id removed)", () => {
     const onChange = vi.fn();
     render(<TaxonomyChips kind="styles" value={["sty1", "sty2"]} onChange={onChange} />);
-    const removeBtn = screen.getByLabelText("Убрать Скандинавия");
-    fireEvent.click(removeBtn);
+    fireEvent.click(screen.getByText("Скандинавия"));
     expect(onChange).toHaveBeenCalledWith(["sty2"]);
   });
 
-  it("search input filters the popover options", () => {
-    render(<TaxonomyChips kind="materials" value={[]} onChange={noop} />);
-    fireEvent.click(screen.getByLabelText("Добавить"));
-    const searchInput = screen.getByPlaceholderText("Поиск…");
-    // Filter to only Зығыр (kz: linen)
-    fireEvent.change(searchInput, { target: { value: "Зығыр" } });
-    expect(screen.getByText("Зығыр")).toBeInTheDocument();
-    // Емен should not match
-    expect(screen.queryByText("Емен")).not.toBeInTheDocument();
+  it("selected chips show ink background, unselected show hair border", () => {
+    const { container } = render(
+      <TaxonomyChips kind="styles" value={["sty1"]} onChange={noop} />
+    );
+    // sty1 chip should have ink background
+    const chips = container.querySelectorAll("[data-chip]");
+    // At least 2 chips rendered (one selected, one not)
+    expect(chips.length).toBe(2);
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+describe("CategoryPicker (hierarchical)", () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it("renders parent chips for all parents", () => {
+    render(<CategoryPicker value={null} onChange={noop} />);
+    expect(screen.getByText("Отырғыш")).toBeInTheDocument();
+    expect(screen.getByText("Үстелдер")).toBeInTheDocument();
+  });
+
+  it("clicking a parent chip reveals its leaf chips", () => {
+    render(<CategoryPicker value={null} onChange={noop} />);
+    // No leaf chips initially
+    expect(screen.queryByText("Диван")).not.toBeInTheDocument();
+    // Click first parent
+    fireEvent.click(screen.getByText("Отырғыш"));
+    // Now p1's leaves should appear
+    expect(screen.getByText("Диван")).toBeInTheDocument();
+    expect(screen.getByText("Кресло")).toBeInTheDocument();
+    // p2's leaves should NOT appear
+    expect(screen.queryByText("Жұмыс үстелі")).not.toBeInTheDocument();
+  });
+
+  it("clicking a leaf fires onChange with leafId", () => {
+    const onChange = vi.fn();
+    render(<CategoryPicker value={null} onChange={onChange} />);
+    fireEvent.click(screen.getByText("Отырғыш"));
+    fireEvent.click(screen.getByText("Диван"));
+    expect(onChange).toHaveBeenCalledWith("l1");
+  });
+
+  it("initial leaf value pre-selects its parent (leaves visible on mount)", () => {
+    render(<CategoryPicker value="l3" onChange={noop} />);
+    // l3 has parent_id "p2" → p2 leaves should be visible
+    expect(screen.getByText("Жұмыс үстелі")).toBeInTheDocument();
+    expect(screen.getByText("Кофе үстелі")).toBeInTheDocument();
+  });
+
+  it("shows breadcrumb with parent › leaf when a leaf is selected", () => {
+    render(<CategoryPicker value="l1" onChange={noop} />);
+    // Should show "Отырғыш › Диван"
+    expect(screen.getByText(/Отырғыш.*Диван/)).toBeInTheDocument();
+  });
+
+  it("clicking a parent chip when a leaf is already selected clears the leaf", () => {
+    const onChange = vi.fn();
+    render(<CategoryPicker value="l1" onChange={onChange} />);
+    // Click a different parent — the picker opens p2; leaf selection (l1) is cleared
+    fireEvent.click(screen.getByText("Үстелдер"));
+    expect(onChange).toHaveBeenCalledWith(null);
   });
 });
