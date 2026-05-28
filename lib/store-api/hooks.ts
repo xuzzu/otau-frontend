@@ -89,6 +89,25 @@ export function useDeleteVariant(item_id: string) {
     onSuccess: () => qc.invalidateQueries({ queryKey: ["store", shopId, "items", item_id] }) });
 }
 
+export function useUploadImage(item_id: string) {
+  const qc = useQueryClient(); const shopId = useShopId();
+  return useMutation({
+    mutationFn: (args: { file: File; variant_id?: string; is_main?: boolean; role?: string }) =>
+      cat.uploadItemImage(item_id, args.file, { variant_id: args.variant_id, is_main: args.is_main, role: args.role }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["store", shopId, "items", item_id] }),
+  });
+}
+export function usePublishItem(id: string) {
+  const qc = useQueryClient(); const shopId = useShopId();
+  return useMutation({ mutationFn: () => cat.publishItem(id),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["store", shopId] }) });
+}
+export function useUnpublishItem(id: string) {
+  const qc = useQueryClient(); const shopId = useShopId();
+  return useMutation({ mutationFn: () => cat.unpublishItem(id),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["store", shopId] }) });
+}
+
 export function useAddImage(item_id: string) {
   const qc = useQueryClient(); const shopId = useShopId();
   return useMutation({ mutationFn: (body: cat.ImageInput) => cat.addImage(item_id, body),

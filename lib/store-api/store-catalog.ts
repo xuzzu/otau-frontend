@@ -1,5 +1,7 @@
 import { BASES } from "@/lib/api/env";
 import { apiFetch } from "@/lib/api/http";
+import { getCurrentUserId } from "@/lib/api/identity";
+import { getCurrentShopId } from "@/lib/shop-id";
 import type {
   StoreInfo, StoreItem, StoreItemSummary, Promotion,
   StoreVariant, PromotionScope, PromotionDiscountKind,
@@ -82,6 +84,36 @@ export const patchVariant = (item_id: string, vid: string, body: Partial<Variant
 export const deleteVariant = (item_id: string, vid: string) =>
   apiFetch<null>(B, `/me/store/items/${encodeURIComponent(item_id)}/variants/${encodeURIComponent(vid)}`, { method: "DELETE" });
 
+// Image upload (multipart — cannot use apiFetch which doesn't set Content-Type for JSON blobs)
+export type UploadImageOpts = { variant_id?: string; is_main?: boolean; role?: string };
+export async function uploadItemImage(
+  item_id: string,
+  file: File,
+  opts: UploadImageOpts = {},
+): Promise<import("./types").StoreItemImage> {
+  const fd = new FormData();
+  fd.append("file", file);
+  if (opts.variant_id !== undefined) fd.append("variant_id", opts.variant_id);
+  if (opts.is_main !== undefined) fd.append("is_main", String(opts.is_main));
+  if (opts.role !== undefined) fd.append("role", opts.role);
+
+  const path = `/me/store/items/${encodeURIComponent(item_id)}/images/upload`;
+  const headers = new Headers({ Accept: "application/json" });
+  const uid = getCurrentUserId();
+  if (uid) headers.set("X-User-Id", uid);
+  const sid = getCurrentShopId();
+  if (sid) headers.set("X-Shop-Id", sid);
+  // Do NOT set Content-Type — browser sets multipart/form-data with boundary.
+
+  const res = await fetch(`${B}${path}`, { method: "POST", headers, credentials: "include", body: fd });
+  if (!res.ok) {
+    const body = await res.text().catch(() => "");
+    const { ApiError } = await import("@/lib/api/http");
+    throw new ApiError(res.status, path, body);
+  }
+  return res.json() as Promise<import("./types").StoreItemImage>;
+}
+
 // Images
 export type ImageInput = { url: string; role?: string; is_main?: boolean; sort_order?: number; variant_id?: string };
 export const addImage = (item_id: string, body: ImageInput) =>
@@ -139,6 +171,11 @@ export const addShopPhoto = (shop_id: string, body: { url: string; sort_order?: 
   });
 export const deleteShopPhoto = (shop_id: string, photo_id: string) =>
   apiFetch<null>(B, `/me/store/shops/${encodeURIComponent(shop_id)}/photos/${encodeURIComponent(photo_id)}`, { method: "DELETE" });
+
+export const publishItem = (id: string) =>
+  apiFetch<StoreItem>(B, `/me/store/items/${encodeURIComponent(id)}/publish`, { method: "POST" });
+export const unpublishItem = (id: string) =>
+  apiFetch<StoreItem>(B, `/me/store/items/${encodeURIComponent(id)}/unpublish`, { method: "POST" });
 
 import type {
   ActivityEvent, CatalogCounts, MagicHint, StoreScene,
