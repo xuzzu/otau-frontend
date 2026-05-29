@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import type { ReactNode } from "react";
 
 const patchMock = vi.fn(async () => ({}));
+const publishMock = vi.fn(async () => ({}));
 vi.mock("@/lib/store-api/store-catalog", () => ({
   getStoreItem: vi.fn(async () => ({
     id: "i1", slug: "klemo", name: "Klemo", brand: "Mebel", description: {},
@@ -13,6 +14,8 @@ vi.mock("@/lib/store-api/store-catalog", () => ({
     main_image_url: null, variants: [], images: [],
   })),
   patchStoreItem: (...a: unknown[]) => patchMock(...(a as [])),
+  createStoreItem: vi.fn(async () => ({ id: "new1", slug: "new-sofa", name: "New sofa", brand: null, description: {}, category_id: "corner-sofas", room_target_id: null, dims: {}, weight_kg: null, tag: "none", status: "draft", published_at: null, created_at: "", updated_at: "", style_ids: [], material_ids: [], finish_material_ids: [], color_ids: [], main_image_url: null, variants: [], images: [], partner_id: "p1" })),
+  publishItem: (...a: unknown[]) => publishMock(...(a as [])),
 }));
 vi.mock("@/lib/shop-context", () => ({ useShopContext: () => ({ selectedShopId: "shop1" }) }));
 
@@ -26,7 +29,7 @@ function makeWrapper() {
 }
 
 describe("useItemEditForm (edit)", () => {
-  beforeEach(() => { patchMock.mockClear(); });
+  beforeEach(() => { patchMock.mockClear(); publishMock.mockClear(); });
   afterEach(() => { vi.useRealTimers(); });
 
   test("seeds form from the loaded item", async () => {
@@ -46,5 +49,26 @@ describe("useItemEditForm (edit)", () => {
     await act(async () => { vi.advanceTimersByTime(800); });
     expect(patchMock).toHaveBeenCalledTimes(1);
     expect((patchMock.mock.calls[0] as unknown[])[1]).toMatchObject({ name: "Klemo sofa" });
+  });
+
+  test("create mode auto-creates a draft once name+category are set", async () => {
+    const onCreated = vi.fn();
+    // Use real timers to mount, then switch to fake for debounce control.
+    const { result } = renderHook(() => useItemEditForm(undefined, { onCreated }), { wrapper: makeWrapper() });
+    vi.useFakeTimers();
+    act(() => result.current.setField("name", "New sofa"));
+    act(() => result.current.setField("category_id", "corner-sofas"));
+    await act(async () => { vi.advanceTimersByTime(800); });
+    const { createStoreItem } = await import("@/lib/store-api/store-catalog");
+    expect(createStoreItem).toHaveBeenCalledTimes(1);
+    expect(onCreated).toHaveBeenCalledWith("new1");
+  });
+
+  test("publish() captures 422 missing[] into publishMissing", async () => {
+    publishMock.mockRejectedValueOnce({ status: 422, body: JSON.stringify({ detail: { missing: ["dims"] } }) });
+    const { result } = renderHook(() => useItemEditForm("i1"), { wrapper: makeWrapper() });
+    await waitFor(() => expect(result.current.form.name).toBe("Klemo"));
+    await act(async () => { await result.current.publish(); });
+    expect(result.current.publishMissing).toEqual(["dims"]);
   });
 });
