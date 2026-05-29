@@ -19,6 +19,7 @@ function CatalogInner() {
       category: sp.get("category")?.split(",").filter(Boolean) ?? [],
       style: sp.get("style")?.split(",").filter(Boolean) ?? [],
       seller: sp.get("seller")?.split(",").filter(Boolean) ?? [],
+      room: sp.get("room") ?? undefined,
       sort: (sp.get("sort") as SortKey) ?? "curated",
     };
   }, [sp]);
@@ -27,10 +28,15 @@ function CatalogInner() {
   const partnersQ = usePartners();
   const partners = partnersQ.data ?? [];
 
-  const categoryId = useMemo(() => {
+  const categoryIds = useMemo(() => {
     if (!indexed || params.category.length === 0) return undefined;
-    const slug = params.category[0];
-    return Object.values(indexed.categories).find((c) => c.slug === slug)?.id;
+    const idBySlug = new Map(
+      Object.values(indexed.categories).map((c) => [c.slug, c.id]),
+    );
+    const ids = params.category
+      .map((slug) => idBySlug.get(slug))
+      .filter((id): id is string => Boolean(id));
+    return ids.length ? ids : undefined;
   }, [indexed, params.category]);
 
   const styleId = useMemo(() => {
@@ -47,9 +53,10 @@ function CatalogInner() {
   const itemsQ = useItems({
     q: params.q,
     sort: params.sort,
-    category_id: categoryId,
+    category_id: categoryIds,
     style_id: styleId,
     partner_id: partnerId,
+    room: params.room,
     limit: 100,
   });
 

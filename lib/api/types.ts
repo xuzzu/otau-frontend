@@ -12,7 +12,7 @@ export type Category = {
 export type Color = { id: string; slug: string; name: I18nText; hex: string };
 export type Material = { id: string; slug: string; name: I18nText };
 export type Style = { id: string; slug: string; name: I18nText };
-export type RoomType = { id: string; slug: string; name: I18nText };
+export type RoomType = { id: string; slug: string; name: I18nText; sort_order?: number };
 
 // --- Catalog: partners + shops ---
 
@@ -392,4 +392,19 @@ export type ReplaceItemSummary = {
 
 export type AlternatesResponse = {
   by_item: Record<string, ReplaceItemSummary[]>;
+};
+
+// GET /scenes — a room's rendered item-combination history (oldest first).
+export type RoomScene = {
+  items_signature: string;
+  selected_item_ids: string[];
+  image_url: string;
+  replaced_item_id: string | null;
+  inserted_item_id: string | null;
+  created_at: string;
+};
+
+export type RoomScenesResponse = {
+  scenes: RoomScene[];
+  items: Record<string, ReplaceItemSummary>;
 };

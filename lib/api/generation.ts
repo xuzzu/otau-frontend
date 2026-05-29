@@ -6,6 +6,7 @@ import type {
   Generation,
   GenerationRoom,
   ItemSummary,
+  RoomScenesResponse,
 } from "./types";
 
 const B = BASES.generation;
@@ -51,6 +52,12 @@ export const getAlternates = (generation_id: string, room_id: string) =>
   apiFetch<AlternatesResponse>(
     B,
     `/generations/${encodeURIComponent(generation_id)}/rooms/${encodeURIComponent(room_id)}/alternates`,
+  );
+
+export const getRoomScenes = (generation_id: string, room_id: string) =>
+  apiFetch<RoomScenesResponse>(
+    B,
+    `/generations/${encodeURIComponent(generation_id)}/rooms/${encodeURIComponent(room_id)}/scenes`,
   );
 
 export const replaceItem = (

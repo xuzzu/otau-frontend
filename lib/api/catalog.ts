@@ -38,7 +38,8 @@ export type ListItemsParams = {
   id?: string[];
   partner_id?: string;
   shop_id?: string;
-  category_id?: string;
+  category_id?: string[];
+  room?: string;
   room_target_id?: string;
   tag?: string;
   status?: ItemStatus;

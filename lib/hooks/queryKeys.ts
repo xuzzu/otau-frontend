@@ -20,6 +20,8 @@ export const qk = {
   generation: (id: string) => ["generation", id] as const,
   generationRoomItemsByType: (genId: string, roomType: string) =>
     ["generation-room-items", genId, roomType] as const,
+  roomScenes: (genId: string, roomId: string) =>
+    ["room-scenes", genId, roomId] as const,
   me: ["me"] as const,
   cart: ["cart"] as const,
   myLikes: ["my-likes"] as const,

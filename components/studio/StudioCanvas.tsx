@@ -130,10 +130,14 @@ export function StudioCanvas() {
         });
         // Alternates may also change once the worker populates entries for
         // the newly-inserted item; invalidate to pick those up on the next
-        // popover open.
+        // popover open. Scene history grows on every render, so refresh it too
+        // (drives the "already used / instant" markers in the popover).
         if (activeGenRoom) {
           queryClient.invalidateQueries({
             queryKey: ["alternates", generationId, activeGenRoom.id],
+          });
+          queryClient.invalidateQueries({
+            queryKey: qk.roomScenes(generationId, activeGenRoom.id),
           });
         }
       }
@@ -167,6 +171,9 @@ export function StudioCanvas() {
       });
       queryClient.invalidateQueries({
         queryKey: ["alternates", generationId, activeGenRoom.id],
+      });
+      queryClient.invalidateQueries({
+        queryKey: qk.roomScenes(generationId, activeGenRoom.id),
       });
     }
     prevRoomStatus.current = current;
@@ -624,6 +631,7 @@ export function StudioCanvas() {
           genId={generationId}
           roomId={activeGenRoom.id}
           originalItemId={replacePopoverState.itemId}
+          selectedItemIds={activeGenRoom.selected_item_ids ?? []}
           anchorRect={replacePopoverState.anchor}
           onClose={() => setReplacePopoverState(null)}
           onSelected={(newId) => {

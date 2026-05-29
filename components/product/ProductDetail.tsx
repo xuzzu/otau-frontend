@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, type CSSProperties } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { ProductHero3D } from "./ProductHero3D";
@@ -17,9 +17,7 @@ import {
   useMyCart,
   useMyLikes,
   usePartners,
-  useRoomTypeLabel,
   useShops,
-  useStyleLabel,
   useTaxonomy,
   useToggleLike,
 } from "@/lib/hooks";
@@ -46,14 +44,21 @@ export function ProductDetail({ product }: { product: Item }) {
   const [viewer3DOpen, setViewer3DOpen] = useState(false);
   const modelAssetUrl = resolveCatalogAsset(product.model_3d?.asset_url);
 
+  // Track measurement/error keyed by src so switching images resets cleanly,
+  // deriving the current values during render (no setState-in-effect).
+  const [measured, setMeasured] = useState<{
+    src: string;
+    aspect: number;
+  } | null>(null);
+  const [erroredSrc, setErroredSrc] = useState<string | null>(null);
+  const heroAspect = measured?.src === activeImage ? measured.aspect : null;
+  const heroErr = erroredSrc === activeImage;
+
   const partnersQ = usePartners();
   const partner = partnersQ.data?.find((p) => p.id === product.partner_id);
   const seller = partner?.name ?? "";
 
   const categoryLabel = useCategoryLabel(product.category_id);
-  const roomLabel = useRoomTypeLabel(product.room_target_id);
-  const primaryStyleId = product.style_ids[0];
-  const primaryStyleLabel = useStyleLabel(primaryStyleId);
   const { indexed } = useTaxonomy();
 
   const defaultVariant = useMemo(
@@ -65,6 +70,28 @@ export function ProductDetail({ product }: { product: Item }) {
   );
   const price = defaultVariant?.price ?? 0;
   const description = pickText(product.description, locale);
+
+  // Feather the hero photo into the cream field only where letterbox/pillarbox
+  // bars appear: a perfectly-fitting photo keeps clean edges, while a
+  // mismatched aspect ratio melts softly into the background instead of
+  // meeting it at a hard rectangle.
+  const heroMask = useMemo<CSSProperties>(() => {
+    if (!heroAspect) return {};
+    const container = 4 / 3;
+    if (Math.abs(heroAspect - container) < 0.02) return {};
+    const maxFeather = 5;
+    let grad: string;
+    if (heroAspect > container) {
+      const bar = ((1 - container / heroAspect) / 2) * 100;
+      const f = Math.min(maxFeather, (100 - 2 * bar) * 0.35);
+      grad = `linear-gradient(to bottom, transparent ${bar}%, #000 ${bar + f}%, #000 ${100 - bar - f}%, transparent ${100 - bar}%)`;
+    } else {
+      const bar = ((1 - heroAspect / container) / 2) * 100;
+      const f = Math.min(maxFeather, (100 - 2 * bar) * 0.35);
+      grad = `linear-gradient(to right, transparent ${bar}%, #000 ${bar + f}%, #000 ${100 - bar - f}%, transparent ${100 - bar}%)`;
+    }
+    return { WebkitMaskImage: grad, maskImage: grad };
+  }, [heroAspect]);
 
   return (
     <main style={{ background: "var(--color-paper)", minHeight: "100vh" }}>
@@ -83,9 +110,6 @@ export function ProductDetail({ product }: { product: Item }) {
           </Link>{" "}
           / {categoryLabel} /{" "}
           <span style={{ color: "var(--color-ink)" }}>{product.name}</span>
-        </div>
-        <div className="label">
-          SKU · {product.slug.toUpperCase()} · {seller}
         </div>
       </div>
 
@@ -117,12 +141,28 @@ export function ProductDetail({ product }: { product: Item }) {
               background: "var(--color-cream)",
             }}
           >
-            {activeImage ? (
-              <Photo
+            {activeImage && !heroErr ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
                 src={activeImage}
-                label={product.name}
-                fit="contain"
-                style={{ position: "absolute", inset: 0 }}
+                alt={product.name}
+                onLoad={(e) =>
+                  setMeasured({
+                    src: activeImage,
+                    aspect:
+                      e.currentTarget.naturalWidth /
+                      e.currentTarget.naturalHeight,
+                  })
+                }
+                onError={() => setErroredSrc(activeImage)}
+                style={{
+                  position: "absolute",
+                  inset: 0,
+                  width: "100%",
+                  height: "100%",
+                  objectFit: "contain",
+                  ...heroMask,
+                }}
               />
             ) : (
               <ProductHero3D kind="sofa" color="#9A8A72" />
@@ -205,18 +245,13 @@ export function ProductDetail({ product }: { product: Item }) {
         </div>
 
         <div style={{ display: "flex", flexDirection: "column", overflow: "hidden" }}>
-          <div className="label">
-            {seller}
-            {primaryStyleLabel ? ` · ${primaryStyleLabel}` : ""}
-            {roomLabel ? ` · ${roomLabel}` : ""}
-          </div>
           <h1
             className="serif"
             style={{
               fontSize: 44,
               lineHeight: 1.04,
               letterSpacing: "-0.02em",
-              margin: "10px 0 6px",
+              margin: "0 0 6px",
               fontWeight: 400,
             }}
           >
@@ -234,21 +269,6 @@ export function ProductDetail({ product }: { product: Item }) {
               {description}
             </div>
           )}
-
-          <hr className="hr-hair" style={{ margin: "24px 0 18px" }} />
-
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", gap: 18 }}>
-            <div>
-              <div className="serif num" style={{ fontSize: 44, lineHeight: 1 }}>
-                {T(price)}
-              </div>
-              <div className="label" style={{ marginTop: 6 }}>
-                {t("product.installment", {
-                  price: T(Math.round(price / 12)),
-                })}
-              </div>
-            </div>
-          </div>
 
           {product.style_ids.length > 0 && (
             <div style={{ marginTop: 22 }}>
@@ -268,8 +288,23 @@ export function ProductDetail({ product }: { product: Item }) {
             </div>
           )}
 
-          <LikeRow productId={product.id} t={t} />
-          <div style={{ marginTop: 16, display: "flex", gap: 10 }}>
+          <hr className="hr-hair" style={{ margin: "24px 0 18px" }} />
+
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", gap: 18 }}>
+            <div>
+              <div className="serif num" style={{ fontSize: 44, lineHeight: 1 }}>
+                {T(price)}
+              </div>
+              <div className="label" style={{ marginTop: 6 }}>
+                {t("product.installment", {
+                  price: T(Math.round(price / 12)),
+                })}
+              </div>
+            </div>
+          </div>
+
+          <div style={{ marginTop: 16, display: "flex", gap: 10, alignItems: "stretch" }}>
+            <SaveButton productId={product.id} t={t} />
             <AddToCartButton
               itemId={product.id}
               variantId={defaultVariant?.id ?? null}
@@ -286,64 +321,7 @@ export function ProductDetail({ product }: { product: Item }) {
             />
           </div>
 
-          <div
-            style={{
-              marginTop: 22,
-              padding: 18,
-              background: "var(--color-cream)",
-              border: "1px solid var(--color-hair)",
-              display: "flex",
-              gap: 14,
-              alignItems: "center",
-            }}
-          >
-            <div
-              className="stripes-warm"
-              style={{
-                width: 56,
-                height: 56,
-                position: "relative",
-                flexShrink: 0,
-              }}
-            >
-              <div
-                style={{
-                  position: "absolute",
-                  inset: 0,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  fontFamily: "var(--font-serif)",
-                  fontSize: 24,
-                  color: "var(--color-ink)",
-                }}
-              >
-                {seller[0] ?? "·"}
-              </div>
-            </div>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
-                <span style={{ fontSize: 15 }}>{seller}</span>
-                <span className="label">{t("product.seller.verified")}</span>
-              </div>
-              <div className="label" style={{ marginTop: 4 }}>
-                {t("product.seller.location")}
-              </div>
-            </div>
-            {product.partner_id && (
-              <Link
-                href={`/showrooms`}
-                style={{
-                  fontFamily: "var(--font-serif)",
-                  fontSize: 20,
-                  color: "inherit",
-                  textDecoration: "none",
-                }}
-              >
-                →
-              </Link>
-            )}
-          </div>
+          <SellerCard seller={seller} partnerId={product.partner_id} t={t} />
         </div>
       </div>
 
@@ -380,7 +358,7 @@ function Cube3DIcon() {
   );
 }
 
-function LikeRow({
+function SaveButton({
   productId,
   t,
 }: {
@@ -392,6 +370,7 @@ function LikeRow({
   const isLiked = !!likes.data?.some(
     (l) => l.target_kind === "item" && l.target_id === productId,
   );
+  const label = isLiked ? t("product.liked") : t("product.like");
   return (
     <button
       type="button"
@@ -404,19 +383,82 @@ function LikeRow({
       }
       className="btn ghost"
       style={{
-        marginTop: 22,
-        padding: "12px 16px",
-        display: "inline-flex",
-        alignItems: "center",
-        gap: 10,
-        alignSelf: "flex-start",
+        flex: "0 0 auto",
+        width: 58,
+        padding: 0,
+        justifyContent: "center",
+        alignSelf: "stretch",
       }}
       aria-pressed={isLiked}
-      aria-label={isLiked ? t("product.liked") : t("product.like")}
+      aria-label={label}
+      title={label}
     >
       <Heart filled={isLiked} />
-      <span>{isLiked ? t("product.liked") : t("product.like")}</span>
     </button>
+  );
+}
+
+function SellerCard({
+  seller,
+  partnerId,
+  t,
+}: {
+  seller: string;
+  partnerId: string | null;
+  t: (k: string, params?: Record<string, string | number>) => string;
+}) {
+  const inner = (
+    <>
+      <div
+        className="stripes-warm"
+        style={{ width: 56, height: 56, position: "relative", flexShrink: 0 }}
+      >
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontFamily: "var(--font-serif)",
+            fontSize: 24,
+            color: "var(--color-ink)",
+          }}
+        >
+          {seller[0] ?? "·"}
+        </div>
+      </div>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
+          <span style={{ fontSize: 15 }}>{seller}</span>
+          <span className="label">{t("product.seller.verified")}</span>
+        </div>
+        <div className="label" style={{ marginTop: 4 }}>
+          {t("product.seller.location")}
+        </div>
+      </div>
+      {partnerId && (
+        <span
+          className="seller-arrow"
+          style={{ fontFamily: "var(--font-serif)", fontSize: 20 }}
+        >
+          →
+        </span>
+      )}
+    </>
+  );
+
+  if (partnerId) {
+    return (
+      <Link href="/showrooms" className="seller-card" style={{ marginTop: 22 }}>
+        {inner}
+      </Link>
+    );
+  }
+  return (
+    <div className="seller-card" style={{ marginTop: 22, cursor: "default" }}>
+      {inner}
+    </div>
   );
 }
 

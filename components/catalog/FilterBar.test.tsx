@@ -28,23 +28,16 @@ describe("FilterBar", () => {
     global.fetch = realFetch;
   });
 
-  test("category options come from /categories and style options are limited to curated", async () => {
+  test("category flyout walks department → category → subcategories", async () => {
     fetchMock.mockImplementation(async (url) => {
       const u = String(url);
       if (u.endsWith("/categories")) {
         return new Response(
           JSON.stringify([
-            { id: "1", slug: "coffee-table", name: { en: "coffee_table" } },
-            { id: "2", slug: "wardrobe", name: { en: "wardrobe" } },
-          ]),
-          { status: 200 },
-        );
-      }
-      if (u.endsWith("/styles")) {
-        return new Response(
-          JSON.stringify([
-            { id: "10", slug: "modern", name: { en: "modern" } },
-            { id: "11", slug: "accent-amber", name: { en: "accent-amber" } },
+            { id: "d1", slug: "seating", name: { kz: "Жұмсақ жиһаз", en: "Seating" }, parent_id: null, sort_order: 0 },
+            { id: "c1", slug: "sofas", name: { kz: "Дивандар", en: "Sofas" }, parent_id: "d1", sort_order: 0 },
+            { id: "s1", slug: "straight-sofas", name: { kz: "Тік дивандар", en: "Straight" }, parent_id: "c1", sort_order: 0 },
+            { id: "s2", slug: "corner-sofas", name: { kz: "Бұрыштық дивандар", en: "Corner" }, parent_id: "c1", sort_order: 1 },
           ]),
           { status: 200 },
         );
@@ -58,17 +51,35 @@ describe("FilterBar", () => {
       name: /Category|Санат|Категория/,
     });
     fireEvent.click(catChip);
-    await waitFor(() =>
-      expect(screen.getByText("Coffee Table")).toBeInTheDocument(),
-    );
-    expect(screen.getByText("Wardrobe")).toBeInTheDocument();
 
-    // Close the category menu before opening style
-    fireEvent.keyDown(document, { key: "Escape" });
+    // panes cascade to the first dept → first category → its subcategories
+    await waitFor(() => expect(screen.getByText("Тік дивандар")).toBeInTheDocument());
+    expect(screen.getByText("Бұрыштық дивандар")).toBeInTheDocument();
+    expect(screen.getAllByText("Жұмсақ жиһаз").length).toBeGreaterThan(0);
+  });
 
-    const styleChip = screen.getByRole("button", { name: /Style|Стиль/ });
+  test("style options are read live from /styles (no curated gating)", async () => {
+    fetchMock.mockImplementation(async (url) => {
+      const u = String(url);
+      if (u.endsWith("/styles")) {
+        return new Response(
+          JSON.stringify([
+            { id: "x1", slug: "modern", name: { kz: "Модерн", en: "Modern" } },
+            // 'boho' is NOT in the old curated list — it must still appear.
+            { id: "x2", slug: "boho", name: { kz: "Бохо", en: "Boho" } },
+          ]),
+          { status: 200 },
+        );
+      }
+      return new Response("[]", { status: 200 });
+    });
+
+    wrap(<FilterBar resultCount={0} />);
+
+    const styleChip = await screen.findByRole("button", { name: /Style|Стиль/ });
     fireEvent.click(styleChip);
-    await waitFor(() => expect(screen.getByText("Modern")).toBeInTheDocument());
-    expect(screen.queryByText(/accent-amber/i)).toBeNull();
+
+    await waitFor(() => expect(screen.getByText("Модерн")).toBeInTheDocument());
+    expect(screen.getByText("Бохо")).toBeInTheDocument();
   });
 });
