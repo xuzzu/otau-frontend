@@ -1,6 +1,11 @@
 import { Photo } from "../console/atoms";
 import { Section, Field, Input, Textarea, Select, Toggle, Tick, Pill, MiniStat } from "./atoms";
-import { SECTIONS, PHOTOS, MATERIALS, COLOR_VARIANTS, TAGS, DELIVERY_REGIONS } from "../_fixtures/item-edit";
+import { SECTIONS, PHOTOS, MATERIALS, COLOR_VARIANTS, DELIVERY_REGIONS } from "../_fixtures/item-edit";
+import { useItemEdit } from "./context";
+import { useLocale, pickText } from "@/lib/i18n";
+import { TextField, DeferredField } from "./fields";
+import { CategorySelect, TaxSelect } from "./pickers";
+import { useTaxonomy } from "@/lib/hooks/useTaxonomy";
 
 // ——— Left section rail ———
 export function SectionRail() {
@@ -69,30 +74,44 @@ export function PhotosSection() {
   );
 }
 
+// ——— Default variant SKU (read-only; editable SKU lives on the VariantCard) ———
+function DefaultVariantSku() {
+  const { item } = useItemEdit();
+  const sku = item?.variants.find((v) => v.is_default)?.sku ?? item?.variants[0]?.sku ?? null;
+  return (
+    <Field label="SKU · internal">
+      <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "11px 14px", background: "#FBF8F2", border: "1px solid #E8DFD0" }}>
+        <span style={{ flex: 1, fontSize: 13, color: sku ? "#1A1612" : "#9A8A72", letterSpacing: "-0.005em" }}>
+          {sku ?? "—"}
+        </span>
+        <span className="mono" style={{ fontSize: 9, letterSpacing: "0.08em", color: "#9A8A72", textTransform: "uppercase" }}>read-only</span>
+      </div>
+    </Field>
+  );
+}
+
 // ——— 02 · Basics ———
 export function BasicsSection() {
+  const { form, setField } = useItemEdit();
+  const locale = useLocale();
   return (
     <Section n="02" title="Basics" hint="Shown on the marketplace card">
       <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 24 }}>
-        <Field label="Title"><Input value="Klemo modular sofa, 3‑seat" hint="58 / 80" /></Field>
-        <Field label="Subtitle · optional"><Input value="Low frame, washable slipcover" /></Field>
+        <TextField label="Title" value={form.name} onChange={(v) => setField("name", v)} />
+        <DeferredField label="Subtitle · optional"><Input value="" placeholder /></DeferredField>
       </div>
 
-      <Field label="Description" sub="Markdown supported · 240 chars min for AI scene generation">
-        <Textarea>
-          A low, generous frame in solid oak with washed Belgian linen. The slipcover
-          comes off for the August dry‑clean and goes back on like a memory. Built in
-          Astana by hand, in editions of 24. We send it on a Tuesday, you sit on it
-          by the weekend.
-        </Textarea>
-        <div className="mono" style={{ fontSize: 9, letterSpacing: "0.10em", color: "#9A8A72", marginTop: 8, textTransform: "uppercase" }}>
-          312 characters · readability A · 2 sensory words · ✓ no banned phrases
-        </div>
-      </Field>
+      <TextField
+        label="Description"
+        sub="240+ chars helps AI scene generation"
+        value={form.description[locale] ?? ""}
+        onChange={(v) => setField("description", { ...form.description, [locale]: v })}
+      />
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 24 }}>
-        <Field label="URL handle"><Input value="klemo-modular-sofa-3-seat" prefix="otau.kz/i/" /></Field>
-        <Field label="SKU · internal"><Input value="OT‑3127" /></Field>
+        <TextField label="URL handle" prefix="otau.kz/i/" value={form.slug} onChange={(v) => setField("slug", v)} />
+        {/* SKU edits live on the default VariantCard; shown read-only here to avoid double-write paths */}
+        <DefaultVariantSku />
       </div>
     </Section>
   );
@@ -206,21 +225,39 @@ export function MaterialsColorsSection() {
 
 // ——— 06 · Category ———
 export function CategorySection() {
+  const { form, setField } = useItemEdit();
+  const locale = useLocale();
+  const { indexed } = useTaxonomy();
+  const cats = Object.values(indexed?.categories ?? {}).map((c) => ({
+    id: c.id, parent_id: c.parent_id ?? null, label: pickText(c.name, locale),
+  }));
+  const styleOpts = Object.values(indexed?.styles ?? {}).map((s) => ({ value: s.id, label: pickText(s.name, locale) }));
+  const roomOpts = Object.values(indexed?.roomTypes ?? {}).map((r) => ({ value: r.id, label: pickText(r.name, locale) }));
   return (
     <Section n="06" title="Category &amp; tags">
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 20 }}>
-        <Field label="Primary category"><Select value="Sofas · Modular" /></Field>
-        <Field label="Style"><Select value="Scandinavian · Soft" /></Field>
-        <Field label="Room"><Select value="Living room" /></Field>
+      <CategorySelect
+        categories={cats}
+        value={form.category_id}
+        onChange={(id) => setField("category_id", id)}
+        labels={{ dept: "Department", category: "Category", subcategory: "Subcategory" }}
+      />
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20, marginTop: 16 }}>
+        <TaxSelect
+          label="Style"
+          value={form.style_ids[0] ?? ""}
+          options={styleOpts}
+          onChange={(v) => setField("style_ids", v ? [v] : [])}
+        />
+        <TaxSelect
+          label="Room"
+          value={form.room_target_id ?? ""}
+          options={roomOpts}
+          onChange={(v) => setField("room_target_id", v || null)}
+        />
       </div>
-      <Field label="Tags · used for search and AI matching">
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 6, padding: "10px 12px", background: "#FBF8F2", border: "1px solid #E8DFD0" }}>
-          {TAGS.map((t) => (
-            <span key={t} className="chip" style={{ fontSize: 10, background: "#F4EFE6" }}>{t} ×</span>
-          ))}
-          <span style={{ fontSize: 12, color: "#9A8A72", padding: "6px 4px" }}>+ tag</span>
-        </div>
-      </Field>
+      <div style={{ marginTop: 16 }}>
+        <DeferredField label="Tags · search &amp; AI matching"><Input value="" placeholder /></DeferredField>
+      </div>
     </Section>
   );
 }
