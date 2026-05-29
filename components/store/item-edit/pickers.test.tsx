@@ -1,6 +1,6 @@
 import { describe, expect, test, vi } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
-import { CategorySelect, type CatNode } from "./pickers";
+import { CategorySelect, TaxSelect, TaxChips, type CatNode } from "./pickers";
 
 const CATS: CatNode[] = [
   { id: "seating", parent_id: null, label: "Seating" },
@@ -37,3 +37,20 @@ describe("CategorySelect", () => {
 });
 
 const L = { dept: "Department", category: "Category", subcategory: "Subcategory" };
+
+describe("Tax pickers", () => {
+  test("TaxSelect reports chosen id", () => {
+    const onChange = vi.fn();
+    render(<TaxSelect label="Style" value="" onChange={onChange}
+      options={[{ value: "scandi", label: "Scandinavian" }]} />);
+    fireEvent.change(screen.getByLabelText("Style"), { target: { value: "scandi" } });
+    expect(onChange).toHaveBeenCalledWith("scandi");
+  });
+  test("TaxChips toggles ids", () => {
+    const onToggle = vi.fn();
+    render(<TaxChips label="Finish" options={[{ value: "lacquer", label: "Lacquer" }]}
+      selected={[]} onToggle={onToggle} />);
+    fireEvent.click(screen.getByText("Lacquer"));
+    expect(onToggle).toHaveBeenCalledWith("lacquer");
+  });
+});
