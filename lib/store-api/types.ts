@@ -57,6 +57,7 @@ export type StoreItemImage = {
 
 export type StoreItem = {
   id: string; slug: string; partner_id: string; name: string;
+  brand: string | null;
   description: Record<string, string>;
   category_id: string;
   room_target_id: string | null;
@@ -69,6 +70,7 @@ export type StoreItem = {
   updated_at: string;
   style_ids: string[];
   material_ids: string[];
+  finish_material_ids: string[];
   color_ids: string[];
   main_image_url: string | null;
   variants: StoreVariant[];

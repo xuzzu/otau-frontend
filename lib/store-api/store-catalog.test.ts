@@ -35,4 +35,15 @@ describe("store-catalog client", () => {
     expect(opts.method).toBe("POST");
     expect(JSON.parse(opts.body as string).item_id).toBe("i1");
   });
+
+  test("createStoreItem serializes brand + finish_material_ids", async () => {
+    fetchMock.mockResolvedValueOnce(new Response(JSON.stringify({ id: "i1" }), { status: 201 }));
+    await api.createStoreItem({
+      slug: "s", name: "N", category_id: "c1",
+      brand: "Mebel Astana", material_ids: ["m1"], finish_material_ids: ["f1"],
+    });
+    const body = JSON.parse(String(fetchMock.mock.calls[0]![1]!.body));
+    expect(body.brand).toBe("Mebel Astana");
+    expect(body.finish_material_ids).toEqual(["f1"]);
+  });
 });

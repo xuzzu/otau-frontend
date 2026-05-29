@@ -38,12 +38,14 @@ export const getStoreItem = (id: string) =>
 
 export type StoreItemInput = {
   slug: string; name: string;
+  brand?: string | null;
   description?: Record<string, string>;
   category_id: string;
   room_target_id?: string;
   dims?: Record<string, unknown>;
   weight_kg?: number;
   style_ids?: string[]; material_ids?: string[]; color_ids?: string[];
+  finish_material_ids?: string[];
   default_variant_sku?: string; default_variant_price?: number;
 };
 export const createStoreItem = (body: StoreItemInput) =>
@@ -192,3 +194,5 @@ export const listActivity = (limit = 20) =>
 
 export const listStoreScenes = (limit = 20) =>
   apiFetch<StoreScene[]>(B, `/me/store/scenes?limit=${limit}`);
+
+export type PublishError = { missing: string[] };
