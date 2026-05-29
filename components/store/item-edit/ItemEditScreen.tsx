@@ -29,7 +29,7 @@ function HeaderContent({ onPublish }: { onPublish: () => void }) {
       )}
       <div style={{ height: 22, width: 1, background: "#E8DFD0" }} />
       <button className="btn ghost" style={{ padding: "10px 16px", fontSize: 12 }} disabled>{t("itemEdit.preview")}</button>
-      <button className="btn ghost" style={{ padding: "10px 16px", fontSize: 12 }}>{t("itemEdit.save_draft")}</button>
+      <button className="btn ghost" style={{ padding: "10px 16px", fontSize: 12 }} disabled>{t("itemEdit.save_draft")}</button>
       <button className="btn clay" style={{ padding: "11px 18px", fontSize: 12 }} onClick={onPublish}>
         {t("itemEdit.save_publish")} <span className="arrow">→</span>
       </button>

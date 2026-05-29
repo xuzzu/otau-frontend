@@ -762,6 +762,8 @@ const kz: Dict = {
   "itemEdit.label.notify_low": "Азайғанда хабарлау",
   "itemEdit.label.seat_height": "Отыру биіктігі",
   "itemEdit.label.volume_packed": "Орамдалған көлемі",
+  "itemEdit.label.brand": "Бренд",
+  "itemEdit.label.delete_confirm": "Бұл тауарды біржолата жою керек пе?",
   "itemEdit.crumb.sellers": "Сатушылар",
   "itemEdit.crumb.catalog": "Каталог",
 };
@@ -1528,6 +1530,8 @@ const ru: Dict = {
   "itemEdit.label.notify_low": "Уведомить при низком остатке",
   "itemEdit.label.seat_height": "Высота сиденья",
   "itemEdit.label.volume_packed": "Объём в упаковке",
+  "itemEdit.label.brand": "Бренд",
+  "itemEdit.label.delete_confirm": "Удалить этот товар навсегда?",
   "itemEdit.crumb.sellers": "Продавцы",
   "itemEdit.crumb.catalog": "Каталог",
 };

@@ -54,6 +54,9 @@ export function useItemEditForm(itemId?: string, opts?: { onCreated?: (id: strin
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const creating = useRef(false);
 
+  // Clear debounce timer on unmount to prevent state updates after teardown.
+  useEffect(() => () => { if (timer.current) clearTimeout(timer.current); }, []);
+
   // Seed once from the loaded item.
   useEffect(() => {
     if (itemId && query.data && !seeded.current) {

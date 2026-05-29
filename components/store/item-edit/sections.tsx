@@ -10,7 +10,7 @@ import { VariantCard, AddVariantButton } from "./VariantCard";
 import {
   useUploadImage, useDeleteImage, usePatchImage,
   usePatchVariant, useSetStock, useStoreInfo,
-  usePublishItem, useUnpublishItem, useArchiveItem, useDeleteItem,
+  useUnpublishItem, useArchiveItem, useDeleteItem,
 } from "@/lib/store-api/hooks";
 
 // ——— Left section rail ———
@@ -155,6 +155,10 @@ export function BasicsSection() {
         <DeferredField label={t("itemEdit.label.subtitle_optional")}><Input value="" placeholder /></DeferredField>
       </div>
 
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24 }}>
+        <TextField label={t("itemEdit.label.brand")} value={form.brand} onChange={(v) => setField("brand", v)} />
+      </div>
+
       <TextField
         label={t("itemEdit.description")}
         sub={t("itemEdit.hint.description_sub")}
@@ -260,6 +264,7 @@ export function MaterialsColorsSection() {
     setField(key, form[key].includes(id) ? form[key].filter((x) => x !== id) : [...form[key], id]);
   return (
     <Section n="05" title={t("itemEdit.materials_colors")}>
+      {/* Both base and finish chip groups intentionally use the same matOpts pool — finish is a role over the shared materials vocabulary, not a separate taxonomy. */}
       <TaxChips label={t("itemEdit.materials_base")} options={matOpts} selected={form.material_ids} onToggle={toggle("material_ids")} />
       <TaxChips label={t("itemEdit.finish")} options={matOpts} selected={form.finish_material_ids} onToggle={toggle("finish_material_ids")} />
       <Field label={t("itemEdit.colors", { n: item?.variants.length ?? 0 })}>
@@ -415,7 +420,7 @@ export function RightRail() {
   const status = item?.status ?? "draft";
   const archiveItem = useArchiveItem(item?.id ?? "");
   const deleteItem = useDeleteItem(item?.id ?? "");
-  const publishItem = usePublishItem(item?.id ?? "");
+  // publishItem is NOT used for the Live pill — route through context publish() to surface 422 {missing}
   const unpublishItem = useUnpublishItem(item?.id ?? "");
 
   return (
@@ -448,7 +453,7 @@ export function RightRail() {
       <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 6, marginTop: 10 }}>
         <button
           type="button"
-          onClick={() => publishItem.mutate()}
+          onClick={() => publish()}
           style={{ all: "unset", cursor: "pointer" }}
         >
           <Pill on={status === "active"}>{t("itemEdit.label.live")}</Pill>
@@ -516,7 +521,7 @@ export function RightRail() {
           </button>
           <button
             type="button"
-            onClick={() => { if (window.confirm("Permanently delete this item?")) deleteItem.mutate(); }}
+            onClick={() => { if (window.confirm(t("itemEdit.label.delete_confirm"))) deleteItem.mutate(); }}
             disabled={status !== "draft"}
             style={{ all: "unset", fontSize: 12, color: status === "draft" ? "#B5532E" : "#9A8A72", cursor: status === "draft" ? "pointer" : "not-allowed" }}
           >

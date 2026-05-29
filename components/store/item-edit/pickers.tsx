@@ -29,10 +29,11 @@ export function CategorySelect({ categories, value, onChange, labels }: {
   const [category, setCategory] = useState(seedChain[1] ?? "");
 
   // Re-seed when the external value changes (e.g. parent resets to a different leaf).
+  const [d0, d1] = seedChain;
   useEffect(() => {
-    setDept(seedChain[0] ?? "");
-    setCategory(seedChain[1] ?? "");
-  }, [seedChain[0], seedChain[1]]); // eslint-disable-line react-hooks/exhaustive-deps
+    setDept(d0 ?? "");
+    setCategory(d1 ?? "");
+  }, [d0, d1]);
 
   const depts = childrenOf(categories, null);
   const categoriesL2 = dept ? childrenOf(categories, dept) : [];
