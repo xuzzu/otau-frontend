@@ -3,8 +3,8 @@ import { Section, Field, Input, Textarea, Select, Toggle, Tick, Pill, MiniStat }
 import { SECTIONS, PHOTOS, MATERIALS, COLOR_VARIANTS, DELIVERY_REGIONS } from "../_fixtures/item-edit";
 import { useItemEdit } from "./context";
 import { useLocale, pickText } from "@/lib/i18n";
-import { TextField, DeferredField } from "./fields";
-import { CategorySelect, TaxSelect } from "./pickers";
+import { TextField, NumberField, DeferredField } from "./fields";
+import { CategorySelect, TaxSelect, TaxChips } from "./pickers";
 import { useTaxonomy } from "@/lib/hooks/useTaxonomy";
 import { VariantCard, AddVariantButton } from "./VariantCard";
 
@@ -141,61 +141,38 @@ export function PriceStockSection() {
 
 // ——— 04 · Dimensions ———
 export function DimensionsSection() {
+  const { form, setField } = useItemEdit();
+  const d = form.dims;
+  const set = (k: "width_cm" | "depth_cm" | "height_cm") => (v: number | null) =>
+    setField("dims", { ...d, [k]: v ?? undefined });
   return (
     <Section n="04" title="Dimensions &amp; weight" hint="Used for AR placement and delivery quotes">
       <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr) 1.2fr", gap: 16 }}>
-        <Field label="Width"><Input value="220" suffix="cm" /></Field>
-        <Field label="Depth"><Input value="92" suffix="cm" /></Field>
-        <Field label="Height"><Input value="78" suffix="cm" /></Field>
-        <Field label="Seat height"><Input value="44" suffix="cm" /></Field>
-        <Field label="Weight"><Input value="62" suffix="kg" /></Field>
-        <Field label="Volume packed"><Input value="0.84" suffix="m³" /></Field>
-      </div>
-
-      <div style={{ marginTop: 16, padding: "18px 22px", background: "#FBF8F2", border: "1px solid #E8DFD0", display: "flex", alignItems: "center", gap: 28 }}>
-        <DimDiagram />
-        <div style={{ flex: 1 }}>
-          <div className="label">Fits in</div>
-          <div style={{ display: "flex", gap: 8, marginTop: 8, flexWrap: "wrap" }}>
-            {["Living room", "Kitchen / dining", "Studio", "Office"].map((t, i) => (
-              <span key={t} className={i < 2 ? "chip solid" : "chip"} style={{ fontSize: 10 }}>{t}</span>
-            ))}
-          </div>
-          <div className="label" style={{ marginTop: 14 }}>Won&apos;t fit through</div>
-          <div className="mono" style={{ fontSize: 11, letterSpacing: "0.06em", color: "#B5532E", marginTop: 6, textTransform: "uppercase" }}>
-            ⚠ Standard doorway · 80 cm — needs disassembly
-          </div>
-        </div>
+        <NumberField label="Width" suffix="cm" value={d.width_cm ?? null} onChange={set("width_cm")} />
+        <NumberField label="Depth" suffix="cm" value={d.depth_cm ?? null} onChange={set("depth_cm")} />
+        <NumberField label="Height" suffix="cm" value={d.height_cm ?? null} onChange={set("height_cm")} />
+        <DeferredField label="Seat height"><Input value="" suffix="cm" placeholder /></DeferredField>
+        <NumberField label="Weight" suffix="kg" value={form.weight_kg} onChange={(v) => setField("weight_kg", v)} />
+        <DeferredField label="Volume packed"><Input value="" suffix="m³" placeholder /></DeferredField>
       </div>
     </Section>
   );
 }
 
-function DimDiagram() {
-  return (
-    <svg viewBox="0 0 220 110" style={{ width: 240, height: 120, display: "block" }}>
-      <rect x="20" y="30" width="160" height="60" fill="none" stroke="#1A1612" strokeWidth="1.2" />
-      <rect x="26" y="36" width="46" height="40" fill="none" stroke="#1A1612" strokeWidth="0.6" />
-      <rect x="76" y="36" width="46" height="40" fill="none" stroke="#1A1612" strokeWidth="0.6" />
-      <rect x="126" y="36" width="48" height="40" fill="none" stroke="#1A1612" strokeWidth="0.6" />
-      <line x1="20" y1="100" x2="180" y2="100" stroke="#9A8A72" strokeWidth="0.6" />
-      <line x1="20" y1="96" x2="20" y2="104" stroke="#9A8A72" strokeWidth="0.6" />
-      <line x1="180" y1="96" x2="180" y2="104" stroke="#9A8A72" strokeWidth="0.6" />
-      <text x="100" y="108" textAnchor="middle" fontSize="9" fontFamily="JetBrains Mono" fill="#5B5043">220 cm</text>
-      <line x1="190" y1="30" x2="190" y2="90" stroke="#9A8A72" strokeWidth="0.6" />
-      <line x1="186" y1="30" x2="194" y2="30" stroke="#9A8A72" strokeWidth="0.6" />
-      <line x1="186" y1="90" x2="194" y2="90" stroke="#9A8A72" strokeWidth="0.6" />
-      <text x="202" y="62" fontSize="9" fontFamily="JetBrains Mono" fill="#5B5043">78</text>
-      <text x="100" y="22" textAnchor="middle" fontSize="9" fontFamily="JetBrains Mono" fill="#9A8A72" letterSpacing="0.1em">FRONT ELEVATION</text>
-    </svg>
-  );
-}
-
 // ——— 05 · Materials & colors ———
 export function MaterialsColorsSection() {
-  const { item } = useItemEdit();
+  const { form, setField, item } = useItemEdit();
+  const locale = useLocale();
+  const { indexed } = useTaxonomy();
+  const matOpts = Object.values(indexed?.materials ?? {}).map((m) => ({
+    value: m.id, label: pickText(m.name, locale),
+  }));
+  const toggle = (key: "material_ids" | "finish_material_ids") => (id: string) =>
+    setField(key, form[key].includes(id) ? form[key].filter((x) => x !== id) : [...form[key], id]);
   return (
     <Section n="05" title="Materials &amp; colors">
+      <TaxChips label="Materials · base" options={matOpts} selected={form.material_ids} onToggle={toggle("material_ids")} />
+      <TaxChips label="Finish · optional" options={matOpts} selected={form.finish_material_ids} onToggle={toggle("finish_material_ids")} />
       <Field label={`Colors · ${item?.variants.length ?? 0} variant(s)`} sub="Each variant is a buyable color">
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, 220px)", gap: 16 }}>
           {(item?.variants ?? []).map((v) => <VariantCard key={v.id} variant={v} />)}
