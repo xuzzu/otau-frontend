@@ -7,6 +7,7 @@ import { TextField, NumberField, DeferredField } from "./fields";
 import { CategorySelect, TaxSelect, TaxChips } from "./pickers";
 import { useTaxonomy } from "@/lib/hooks/useTaxonomy";
 import { VariantCard, AddVariantButton } from "./VariantCard";
+import { useUploadImage, useDeleteImage, usePatchImage } from "@/lib/store-api/hooks";
 
 // ——— Left section rail ———
 export function SectionRail() {
@@ -41,27 +42,71 @@ export function SectionRail() {
 }
 
 // ——— 01 · Photos ———
+const MAX_ITEM_PHOTOS = 5;
+
 export function PhotosSection() {
+  const { item } = useItemEdit();
+  const itemId = item?.id;
+  const upload = useUploadImage(itemId ?? "");
+  const delImg = useDeleteImage(itemId ?? "");
+  const patchImg = usePatchImage(itemId ?? "");
+  const photos = (item?.images ?? []).filter((im) => im.variant_id == null);
+
+  if (!itemId) {
+    return (
+      <Section n="01" title="Photos">
+        <p className="mono" style={{ fontSize: 11, color: "#9A8A72", letterSpacing: "0.06em" }}>
+          Save the draft to add photos.
+        </p>
+      </Section>
+    );
+  }
+
   return (
-    <Section n="01" title="Photos" hint="7 of 12 · drag to reorder · first is hero">
+    <Section n="01" title="Photos" hint={`${photos.length} of ${MAX_ITEM_PHOTOS} · first is hero`}>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(8, 1fr)", gap: 10 }}>
-        {PHOTOS.map((src, i) => (
-          <div key={i} style={{ position: "relative", aspectRatio: "1", outline: i === 0 ? "2px solid #B5532E" : "none", outlineOffset: 2 }}>
-            <Photo src={src} style={{ position: "absolute", inset: 0 }} />
-            {i === 0 && (
+        {photos.map((p) => (
+          <div key={p.id} style={{ position: "relative", aspectRatio: "1", outline: p.is_main ? "2px solid #B5532E" : "none", outlineOffset: 2 }}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={p.url} alt="" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
+            {p.is_main && (
               <div className="mono" style={{ position: "absolute", top: 6, left: 6, padding: "3px 7px", background: "#B5532E", color: "#FBF8F2", fontSize: 9, letterSpacing: "0.12em", textTransform: "uppercase" }}>Hero</div>
             )}
-            <div className="mono" style={{ position: "absolute", bottom: 6, left: 6, padding: "2px 5px", background: "rgba(26,22,18,.7)", color: "#FBF8F2", fontSize: 9, letterSpacing: "0.08em" }}>0{i + 1}</div>
-            <span style={{ position: "absolute", top: 6, right: 6, width: 18, height: 18, background: "#FBF8F2", border: "1px solid #E8DFD0", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, color: "#1A1612" }}>⋯</span>
+            {!p.is_main && (
+              <button
+                type="button"
+                onClick={() => patchImg.mutate({ img_id: p.id, body: { is_main: true } })}
+                style={{ position: "absolute", bottom: 4, left: 4, padding: "2px 6px", fontSize: 9, background: "rgba(251,248,242,.88)", border: "1px solid #E8DFD0", cursor: "pointer" }}
+              >
+                Set hero
+              </button>
+            )}
+            <button
+              type="button"
+              aria-label="Delete photo"
+              onClick={() => delImg.mutate(p.id)}
+              style={{ position: "absolute", top: 6, right: 6, width: 18, height: 18, background: "#FBF8F2", border: "1px solid #E8DFD0", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, color: "#1A1612", cursor: "pointer" }}
+            >
+              ×
+            </button>
           </div>
         ))}
-        <div style={{ aspectRatio: "1", border: "1.5px dashed #B8A98F", background: "#FBF8F2", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 6, color: "#5B5043", cursor: "pointer" }}>
-          <span style={{ fontFamily: "Instrument Serif, serif", fontSize: 28, color: "#9A8A72" }}>+</span>
-          <span className="mono" style={{ fontSize: 9, letterSpacing: "0.10em", textTransform: "uppercase", color: "#5B5043" }}>Drop or browse</span>
-        </div>
+        {photos.length < MAX_ITEM_PHOTOS && (
+          <label style={{ aspectRatio: "1", border: "1.5px dashed #B8A98F", background: "#FBF8F2", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 6, color: "#5B5043", cursor: "pointer" }}>
+            <span style={{ fontFamily: "Instrument Serif, serif", fontSize: 28, color: "#9A8A72" }}>+</span>
+            <span className="mono" style={{ fontSize: 9, letterSpacing: "0.10em", textTransform: "uppercase", color: "#5B5043" }}>Drop or browse</span>
+            <input
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              style={{ display: "none" }}
+              onChange={(e) => { const f = e.target.files?.[0]; if (f) upload.mutate({ file: f }); }}
+            />
+          </label>
+        )}
       </div>
 
-      <div style={{ marginTop: 14, padding: 14, background: "#FBF8F2", border: "1px solid #E8DFD0", display: "flex", alignItems: "center", gap: 16 }}>
+      {/* "Generate scenes" CTA — coming soon, kept disabled */}
+      <div style={{ marginTop: 14, padding: 14, background: "#FBF8F2", border: "1px solid #E8DFD0", display: "flex", alignItems: "center", gap: 16, opacity: 0.5, pointerEvents: "none" }}>
         <span style={{ width: 28, height: 28, borderRadius: 999, background: "#1A1612", color: "#FBF8F2", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12 }}>◇</span>
         <div style={{ flex: 1 }}>
           <div style={{ fontSize: 13 }}>
@@ -69,7 +114,7 @@ export function PhotosSection() {
             <span style={{ color: "#5B5043" }}> Upload a hero photo and we&apos;ll generate 3 lifestyle scenes for free.</span>
           </div>
         </div>
-        <button className="btn ghost" style={{ padding: "8px 14px", fontSize: 11 }}>Generate scenes →</button>
+        <button className="btn ghost" style={{ padding: "8px 14px", fontSize: 11 }} disabled>Generate scenes →</button>
       </div>
     </Section>
   );
