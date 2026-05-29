@@ -6,6 +6,7 @@ import { useLocale, pickText } from "@/lib/i18n";
 import { TextField, DeferredField } from "./fields";
 import { CategorySelect, TaxSelect } from "./pickers";
 import { useTaxonomy } from "@/lib/hooks/useTaxonomy";
+import { VariantCard, AddVariantButton } from "./VariantCard";
 
 // ——— Left section rail ———
 export function SectionRail() {
@@ -192,31 +193,13 @@ function DimDiagram() {
 
 // ——— 05 · Materials & colors ———
 export function MaterialsColorsSection() {
+  const { item } = useItemEdit();
   return (
     <Section n="05" title="Materials &amp; colors">
-      <Field label="Materials · pick all that apply">
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-          {MATERIALS.map((m, i) => (
-            <span key={m} className={i < 3 ? "chip solid" : "chip"} style={{ fontSize: 11 }}>{m}</span>
-          ))}
-        </div>
-      </Field>
-
-      <Field label="Available colors · 6 variants" sub="Buyers can preview each in the studio">
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(7, max-content)", gap: 12, alignItems: "start" }}>
-          {COLOR_VARIANTS.map((s, i) => (
-            <div key={i} style={{ width: 88 }}>
-              <div style={{ width: 88, height: 88, background: s.c, border: "1px solid rgba(26,22,18,.15)" }} />
-              <div className="mono" style={{ fontSize: 10, letterSpacing: "0.08em", color: "#1A1612", marginTop: 6, textTransform: "uppercase" }}>{s.n}</div>
-              <div className="mono" style={{ fontSize: 9, letterSpacing: "0.06em", color: "#9A8A72", marginTop: 2 }}>
-                ₸685 000 · {i === 4 ? "0" : 5 - (i % 3)} in stock
-              </div>
-            </div>
-          ))}
-          <div style={{ width: 88, height: 88, border: "1.5px dashed #B8A98F", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", color: "#5B5043" }}>
-            <span style={{ fontFamily: "Instrument Serif, serif", fontSize: 24, color: "#9A8A72" }}>+</span>
-            <span className="mono" style={{ fontSize: 9, letterSpacing: "0.08em", color: "#5B5043", textTransform: "uppercase", marginTop: 2 }}>variant</span>
-          </div>
+      <Field label={`Colors · ${item?.variants.length ?? 0} variant(s)`} sub="Each variant is a buyable color">
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, 220px)", gap: 16 }}>
+          {(item?.variants ?? []).map((v) => <VariantCard key={v.id} variant={v} />)}
+          <AddVariantButton />
         </div>
       </Field>
     </Section>
