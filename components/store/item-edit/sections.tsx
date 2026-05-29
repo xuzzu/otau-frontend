@@ -2,7 +2,7 @@ import { Photo } from "../console/atoms";
 import { Section, Field, Input, Select, Toggle, Tick, Pill, MiniStat } from "./atoms";
 import { SECTIONS, DELIVERY_REGIONS } from "../_fixtures/item-edit";
 import { useItemEdit } from "./context";
-import { useLocale, pickText } from "@/lib/i18n";
+import { useLocale, pickText, useT } from "@/lib/i18n";
 import { TextField, NumberField, DeferredField } from "./fields";
 import { CategorySelect, TaxSelect, TaxChips } from "./pickers";
 import { useTaxonomy } from "@/lib/hooks/useTaxonomy";
@@ -15,9 +15,10 @@ import {
 
 // ——— Left section rail ———
 export function SectionRail() {
+  const { t } = useT();
   return (
     <aside style={{ width: 184, padding: "24px 18px", borderRight: "1px solid #E8DFD0", flexShrink: 0, background: "#F4EFE6", overflowY: "auto" }}>
-      <div className="label">Sections</div>
+      <div className="label">{t("itemEdit.label.sections")}</div>
       <div style={{ marginTop: 12, display: "flex", flexDirection: "column", gap: 2 }}>
         {SECTIONS.map((it) => (
           <a key={it.n} style={{
@@ -35,7 +36,7 @@ export function SectionRail() {
       </div>
 
       <hr className="hr-hair" style={{ margin: "22px 0 16px" }} />
-      <div className="label">History</div>
+      <div className="label">{t("itemEdit.label.history")}</div>
       <div style={{ fontSize: 11, color: "#5B5043", marginTop: 8, lineHeight: 1.5 }}>
         <div>v.14 · today, 14:08 <span className="it" style={{ color: "#9A8A72" }}>(you)</span></div>
         <div style={{ marginTop: 4 }}>v.13 · 26 May <span className="it" style={{ color: "#9A8A72" }}>price ₸685k</span></div>
@@ -50,6 +51,7 @@ const MAX_ITEM_PHOTOS = 5;
 
 export function PhotosSection() {
   const { item } = useItemEdit();
+  const { t } = useT();
   const itemId = item?.id;
   const upload = useUploadImage(itemId ?? "");
   const delImg = useDeleteImage(itemId ?? "");
@@ -58,23 +60,23 @@ export function PhotosSection() {
 
   if (!itemId) {
     return (
-      <Section n="01" title="Photos">
+      <Section n="01" title={t("itemEdit.photos")}>
         <p className="mono" style={{ fontSize: 11, color: "#9A8A72", letterSpacing: "0.06em" }}>
-          Save the draft to add photos.
+          {t("itemEdit.hint.save_draft")}
         </p>
       </Section>
     );
   }
 
   return (
-    <Section n="01" title="Photos" hint={`${photos.length} of ${MAX_ITEM_PHOTOS} · first is hero`}>
+    <Section n="01" title={t("itemEdit.photos")} hint={t("itemEdit.hint.photos_count", { n: photos.length, max: MAX_ITEM_PHOTOS })}>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(8, 1fr)", gap: 10 }}>
         {photos.map((p) => (
           <div key={p.id} style={{ position: "relative", aspectRatio: "1", outline: p.is_main ? "2px solid #B5532E" : "none", outlineOffset: 2 }}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={p.url} alt="" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
             {p.is_main && (
-              <div className="mono" style={{ position: "absolute", top: 6, left: 6, padding: "3px 7px", background: "#B5532E", color: "#FBF8F2", fontSize: 9, letterSpacing: "0.12em", textTransform: "uppercase" }}>Hero</div>
+              <div className="mono" style={{ position: "absolute", top: 6, left: 6, padding: "3px 7px", background: "#B5532E", color: "#FBF8F2", fontSize: 9, letterSpacing: "0.12em", textTransform: "uppercase" }}>{t("itemEdit.label.hero_badge")}</div>
             )}
             {!p.is_main && (
               <button
@@ -82,12 +84,12 @@ export function PhotosSection() {
                 onClick={() => patchImg.mutate({ img_id: p.id, body: { is_main: true } })}
                 style={{ position: "absolute", bottom: 4, left: 4, padding: "2px 6px", fontSize: 9, background: "rgba(251,248,242,.88)", border: "1px solid #E8DFD0", cursor: "pointer" }}
               >
-                Set hero
+                {t("itemEdit.set_hero")}
               </button>
             )}
             <button
               type="button"
-              aria-label="Delete photo"
+              aria-label={t("itemEdit.remove")}
               onClick={() => delImg.mutate(p.id)}
               style={{ position: "absolute", top: 6, right: 6, width: 18, height: 18, background: "#FBF8F2", border: "1px solid #E8DFD0", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, color: "#1A1612", cursor: "pointer" }}
             >
@@ -98,7 +100,7 @@ export function PhotosSection() {
         {photos.length < MAX_ITEM_PHOTOS && (
           <label style={{ aspectRatio: "1", border: "1.5px dashed #B8A98F", background: "#FBF8F2", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 6, color: "#5B5043", cursor: "pointer" }}>
             <span style={{ fontFamily: "Instrument Serif, serif", fontSize: 28, color: "#9A8A72" }}>+</span>
-            <span className="mono" style={{ fontSize: 9, letterSpacing: "0.10em", textTransform: "uppercase", color: "#5B5043" }}>Drop or browse</span>
+            <span className="mono" style={{ fontSize: 9, letterSpacing: "0.10em", textTransform: "uppercase", color: "#5B5043" }}>{t("itemEdit.label.drop_or_browse")}</span>
             <input
               type="file"
               accept="image/jpeg,image/png,image/webp"
@@ -118,7 +120,7 @@ export function PhotosSection() {
             <span style={{ color: "#5B5043" }}> Upload a hero photo and we&apos;ll generate 3 lifestyle scenes for free.</span>
           </div>
         </div>
-        <button className="btn ghost" style={{ padding: "8px 14px", fontSize: 11 }} disabled>Generate scenes →</button>
+        <button className="btn ghost" style={{ padding: "8px 14px", fontSize: 11 }} disabled>{t("itemEdit.label.generate_scenes")}</button>
       </div>
     </Section>
   );
@@ -127,14 +129,15 @@ export function PhotosSection() {
 // ——— Default variant SKU (read-only; editable SKU lives on the VariantCard) ———
 function DefaultVariantSku() {
   const { item } = useItemEdit();
+  const { t } = useT();
   const sku = item?.variants.find((v) => v.is_default)?.sku ?? item?.variants[0]?.sku ?? null;
   return (
-    <Field label="SKU · internal">
+    <Field label={t("itemEdit.sku")}>
       <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "11px 14px", background: "#FBF8F2", border: "1px solid #E8DFD0" }}>
         <span style={{ flex: 1, fontSize: 13, color: sku ? "#1A1612" : "#9A8A72", letterSpacing: "-0.005em" }}>
           {sku ?? "—"}
         </span>
-        <span className="mono" style={{ fontSize: 9, letterSpacing: "0.08em", color: "#9A8A72", textTransform: "uppercase" }}>read-only</span>
+        <span className="mono" style={{ fontSize: 9, letterSpacing: "0.08em", color: "#9A8A72", textTransform: "uppercase" }}>{t("itemEdit.hint.sku_readonly")}</span>
       </div>
     </Field>
   );
@@ -143,23 +146,24 @@ function DefaultVariantSku() {
 // ——— 02 · Basics ———
 export function BasicsSection() {
   const { form, setField } = useItemEdit();
+  const { t } = useT();
   const locale = useLocale();
   return (
-    <Section n="02" title="Basics" hint="Shown on the marketplace card">
+    <Section n="02" title={t("itemEdit.basics")} hint={t("itemEdit.hint.basics")}>
       <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 24 }}>
-        <TextField label="Title" value={form.name} onChange={(v) => setField("name", v)} />
-        <DeferredField label="Subtitle · optional"><Input value="" placeholder /></DeferredField>
+        <TextField label={t("itemEdit.title")} value={form.name} onChange={(v) => setField("name", v)} />
+        <DeferredField label={t("itemEdit.label.subtitle_optional")}><Input value="" placeholder /></DeferredField>
       </div>
 
       <TextField
-        label="Description"
-        sub="240+ chars helps AI scene generation"
+        label={t("itemEdit.description")}
+        sub={t("itemEdit.hint.description_sub")}
         value={form.description[locale] ?? ""}
         onChange={(v) => setField("description", { ...form.description, [locale]: v })}
       />
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 24 }}>
-        <TextField label="URL handle" prefix="otau.kz/i/" value={form.slug} onChange={(v) => setField("slug", v)} />
+        <TextField label={t("itemEdit.url_handle")} prefix="otau.kz/i/" value={form.slug} onChange={(v) => setField("slug", v)} />
         {/* SKU edits live on the default VariantCard; shown read-only here to avoid double-write paths */}
         <DefaultVariantSku />
       </div>
@@ -175,17 +179,18 @@ const inputBox: React.CSSProperties = {
 
 export function PriceStockSection() {
   const { item } = useItemEdit();
+  const { t } = useT();
   const def = item?.variants.find((v) => v.is_default) ?? item?.variants[0];
   const patchV = usePatchVariant(item?.id ?? "");
   const setStock = useSetStock(item?.id ?? "");
   return (
-    <Section n="03" title="Price &amp; stock">
+    <Section n="03" title={t("itemEdit.price_stock")}>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 20 }}>
-        <Field label="Price · KZT">
+        <Field label={t("itemEdit.price")}>
           <div style={inputBox}>
             <span style={{ fontSize: 13, color: "#9A8A72" }}>₸</span>
             <input
-              aria-label="Price"
+              aria-label={t("itemEdit.price")}
               inputMode="numeric"
               defaultValue={def?.price ?? 0}
               disabled={!def}
@@ -194,28 +199,28 @@ export function PriceStockSection() {
             />
           </div>
         </Field>
-        <DeferredField label="Compare at · KZT"><Input value="" prefix="₸" placeholder /></DeferredField>
-        <DeferredField label="Cost · internal"><Input value="" prefix="₸" placeholder /></DeferredField>
-        <DeferredField label="Tax class"><Select value="—" /></DeferredField>
+        <DeferredField label={t("itemEdit.label.compare_at")}><Input value="" prefix="₸" placeholder /></DeferredField>
+        <DeferredField label={t("itemEdit.label.cost_internal")}><Input value="" prefix="₸" placeholder /></DeferredField>
+        <DeferredField label={t("itemEdit.label.tax_class")}><Select value="—" /></DeferredField>
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 20, marginTop: 12 }}>
-        <Field label="In stock">
+        <Field label={t("itemEdit.in_stock")}>
           <div style={inputBox}>
             <input
-              aria-label="In stock"
+              aria-label={t("itemEdit.in_stock")}
               inputMode="numeric"
               defaultValue={def?.in_stock_current_shop ?? 0}
               disabled={!def}
               onBlur={(e) => def && setStock.mutate({ vid: def.id, in_stock: Number(e.target.value) })}
               style={{ flex: 1, fontSize: 13, color: "#1A1612", background: "transparent", border: "none", outline: "none" }}
             />
-            <span className="mono" style={{ fontSize: 10, letterSpacing: "0.10em", color: "#9A8A72", textTransform: "uppercase" }}>units</span>
+            <span className="mono" style={{ fontSize: 10, letterSpacing: "0.10em", color: "#9A8A72", textTransform: "uppercase" }}>{t("itemEdit.label.units")}</span>
           </div>
         </Field>
-        <DeferredField label="Build to order"><Toggle label="—" /></DeferredField>
-        <DeferredField label="Restock arriving"><Input value="" placeholder /></DeferredField>
-        <DeferredField label="Notify when low"><Input value="" placeholder /></DeferredField>
+        <DeferredField label={t("itemEdit.label.build_to_order")}><Toggle label="—" /></DeferredField>
+        <DeferredField label={t("itemEdit.label.restock_arriving")}><Input value="" placeholder /></DeferredField>
+        <DeferredField label={t("itemEdit.label.notify_low")}><Input value="" placeholder /></DeferredField>
       </div>
     </Section>
   );
@@ -224,18 +229,19 @@ export function PriceStockSection() {
 // ——— 04 · Dimensions ———
 export function DimensionsSection() {
   const { form, setField } = useItemEdit();
+  const { t } = useT();
   const d = form.dims;
   const set = (k: "width_cm" | "depth_cm" | "height_cm") => (v: number | null) =>
     setField("dims", { ...d, [k]: v ?? undefined });
   return (
-    <Section n="04" title="Dimensions &amp; weight" hint="Used for AR placement and delivery quotes">
+    <Section n="04" title={t("itemEdit.dimensions")} hint={t("itemEdit.hint.dimensions")}>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr) 1.2fr", gap: 16 }}>
-        <NumberField label="Width" suffix="cm" value={d.width_cm ?? null} onChange={set("width_cm")} />
-        <NumberField label="Depth" suffix="cm" value={d.depth_cm ?? null} onChange={set("depth_cm")} />
-        <NumberField label="Height" suffix="cm" value={d.height_cm ?? null} onChange={set("height_cm")} />
-        <DeferredField label="Seat height"><Input value="" suffix="cm" placeholder /></DeferredField>
-        <NumberField label="Weight" suffix="kg" value={form.weight_kg} onChange={(v) => setField("weight_kg", v)} />
-        <DeferredField label="Volume packed"><Input value="" suffix="m³" placeholder /></DeferredField>
+        <NumberField label={t("itemEdit.width")} suffix="cm" value={d.width_cm ?? null} onChange={set("width_cm")} />
+        <NumberField label={t("itemEdit.depth")} suffix="cm" value={d.depth_cm ?? null} onChange={set("depth_cm")} />
+        <NumberField label={t("itemEdit.height")} suffix="cm" value={d.height_cm ?? null} onChange={set("height_cm")} />
+        <DeferredField label={t("itemEdit.label.seat_height")}><Input value="" suffix="cm" placeholder /></DeferredField>
+        <NumberField label={t("itemEdit.weight")} suffix="kg" value={form.weight_kg} onChange={(v) => setField("weight_kg", v)} />
+        <DeferredField label={t("itemEdit.label.volume_packed")}><Input value="" suffix="m³" placeholder /></DeferredField>
       </div>
     </Section>
   );
@@ -244,6 +250,7 @@ export function DimensionsSection() {
 // ——— 05 · Materials & colors ———
 export function MaterialsColorsSection() {
   const { form, setField, item } = useItemEdit();
+  const { t } = useT();
   const locale = useLocale();
   const { indexed } = useTaxonomy();
   const matOpts = Object.values(indexed?.materials ?? {}).map((m) => ({
@@ -252,10 +259,10 @@ export function MaterialsColorsSection() {
   const toggle = (key: "material_ids" | "finish_material_ids") => (id: string) =>
     setField(key, form[key].includes(id) ? form[key].filter((x) => x !== id) : [...form[key], id]);
   return (
-    <Section n="05" title="Materials &amp; colors">
-      <TaxChips label="Materials · base" options={matOpts} selected={form.material_ids} onToggle={toggle("material_ids")} />
-      <TaxChips label="Finish · optional" options={matOpts} selected={form.finish_material_ids} onToggle={toggle("finish_material_ids")} />
-      <Field label={`Colors · ${item?.variants.length ?? 0} variant(s)`} sub="Each variant is a buyable color">
+    <Section n="05" title={t("itemEdit.materials_colors")}>
+      <TaxChips label={t("itemEdit.materials_base")} options={matOpts} selected={form.material_ids} onToggle={toggle("material_ids")} />
+      <TaxChips label={t("itemEdit.finish")} options={matOpts} selected={form.finish_material_ids} onToggle={toggle("finish_material_ids")} />
+      <Field label={t("itemEdit.colors", { n: item?.variants.length ?? 0 })}>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, 220px)", gap: 16 }}>
           {(item?.variants ?? []).map((v) => <VariantCard key={v.id} variant={v} />)}
           <AddVariantButton />
@@ -268,6 +275,7 @@ export function MaterialsColorsSection() {
 // ——— 06 · Category ———
 export function CategorySection() {
   const { form, setField } = useItemEdit();
+  const { t } = useT();
   const locale = useLocale();
   const { indexed } = useTaxonomy();
   const cats = Object.values(indexed?.categories ?? {}).map((c) => ({
@@ -276,29 +284,29 @@ export function CategorySection() {
   const styleOpts = Object.values(indexed?.styles ?? {}).map((s) => ({ value: s.id, label: pickText(s.name, locale) }));
   const roomOpts = Object.values(indexed?.roomTypes ?? {}).map((r) => ({ value: r.id, label: pickText(r.name, locale) }));
   return (
-    <Section n="06" title="Category &amp; tags">
+    <Section n="06" title={t("itemEdit.category")}>
       <CategorySelect
         categories={cats}
         value={form.category_id}
         onChange={(id) => setField("category_id", id)}
-        labels={{ dept: "Department", category: "Category", subcategory: "Subcategory" }}
+        labels={{ dept: t("itemEdit.department"), category: t("itemEdit.category_level"), subcategory: t("itemEdit.subcategory") }}
       />
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20, marginTop: 16 }}>
         <TaxSelect
-          label="Style"
+          label={t("itemEdit.style")}
           value={form.style_ids[0] ?? ""}
           options={styleOpts}
           onChange={(v) => setField("style_ids", v ? [v] : [])}
         />
         <TaxSelect
-          label="Room"
+          label={t("itemEdit.room")}
           value={form.room_target_id ?? ""}
           options={roomOpts}
           onChange={(v) => setField("room_target_id", v || null)}
         />
       </div>
       <div style={{ marginTop: 16 }}>
-        <DeferredField label="Tags · search &amp; AI matching"><Input value="" placeholder /></DeferredField>
+        <DeferredField label={t("itemEdit.label.tags")}><Input value="" placeholder /></DeferredField>
       </div>
     </Section>
   );
@@ -306,10 +314,11 @@ export function CategorySection() {
 
 // ——— 07 · Studio / AR ———
 export function StudioARSection() {
+  const { t } = useT();
   return (
-    <Section n="07" title="Studio &amp; AR" hint="Required for ◇ Try in room">
+    <Section n="07" title={t("itemEdit.studio_ar")} hint="Required for ◇ Try in room">
       <div style={{ opacity: 0.5, pointerEvents: "none" }}>
-        <div className="mono" style={{ fontSize: 10, letterSpacing: "0.10em", color: "#9A8A72", textTransform: "uppercase", marginBottom: 14 }}>Coming soon</div>
+        <div className="mono" style={{ fontSize: 10, letterSpacing: "0.10em", color: "#9A8A72", textTransform: "uppercase", marginBottom: 14 }}>{t("itemEdit.label.coming_soon")}</div>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
           <div style={{ padding: 16, background: "#FBF8F2", border: "1px solid #E8DFD0" }}>
             <div className="label">3D model · .glb</div>
@@ -352,10 +361,11 @@ export function StudioARSection() {
 
 // ——— 08 · Delivery ———
 export function DeliverySection() {
+  const { t } = useT();
   return (
-    <Section n="08" title="Delivery">
+    <Section n="08" title={t("itemEdit.delivery")}>
       <div style={{ opacity: 0.5, pointerEvents: "none" }}>
-        <div className="mono" style={{ fontSize: 10, letterSpacing: "0.10em", color: "#9A8A72", textTransform: "uppercase", marginBottom: 14 }}>Coming soon</div>
+        <div className="mono" style={{ fontSize: 10, letterSpacing: "0.10em", color: "#9A8A72", textTransform: "uppercase", marginBottom: 14 }}>{t("itemEdit.label.coming_soon")}</div>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 20 }}>
           <Field label="Ships from"><Select value="Astana · workshop" /></Field>
           <Field label="Handling time"><Select value="3–5 business days" /></Field>
@@ -382,6 +392,7 @@ export function DeliverySection() {
 // ——— Right rail ———
 export function RightRail() {
   const { form, item, publish, publishMissing } = useItemEdit();
+  const { t } = useT();
   const storeInfo = useStoreInfo();
   const shopName = storeInfo.data?.current_shop?.name ?? "";
 
@@ -394,11 +405,11 @@ export function RightRail() {
   const heroPhoto = (item?.images ?? []).find((im) => im.is_main && im.variant_id == null);
   const allVariantsPriced = (item?.variants ?? []).every((v) => v.price > 0 && v.sku);
   const checks = [
-    { label: "Title set", ok: form.name.trim().length > 0 },
-    { label: "Category selected", ok: !!form.category_id },
-    { label: "Dimensions (H / W / D)", ok: hasDims },
-    { label: "Hero photo", ok: !!heroPhoto },
-    { label: "Variant priced + SKU", ok: allVariantsPriced },
+    { label: t("itemEdit.label.title_set"), ok: form.name.trim().length > 0 },
+    { label: t("itemEdit.label.category_selected"), ok: !!form.category_id },
+    { label: t("itemEdit.label.dims_complete"), ok: hasDims },
+    { label: t("itemEdit.label.hero_photo"), ok: !!heroPhoto },
+    { label: t("itemEdit.label.variant_priced_sku"), ok: allVariantsPriced },
   ];
 
   const status = item?.status ?? "draft";
@@ -409,20 +420,20 @@ export function RightRail() {
 
   return (
     <aside style={{ width: 300, background: "#FBF8F2", borderLeft: "1px solid #E8DFD0", padding: "22px 22px", overflowY: "auto", flexShrink: 0 }}>
-      <div className="label">Marketplace preview</div>
+      <div className="label">{t("itemEdit.label.marketplace_preview")}</div>
 
       <div style={{ marginTop: 12 }}>
         <div style={{ position: "relative", height: 180, background: "#F4EFE6" }}>
           {heroImage
             ? <Photo src={heroImage} style={{ position: "absolute", inset: 0 }} />
             : <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                <span className="mono" style={{ fontSize: 9, letterSpacing: "0.10em", color: "#9A8A72", textTransform: "uppercase" }}>No photo yet</span>
+                <span className="mono" style={{ fontSize: 9, letterSpacing: "0.10em", color: "#9A8A72", textTransform: "uppercase" }}>{t("itemEdit.label.no_photo")}</span>
               </div>
           }
         </div>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginTop: 10 }}>
           <div>
-            <div style={{ fontSize: 13, lineHeight: 1.2 }}>{form.name || <span style={{ color: "#9A8A72" }}>Untitled item</span>}</div>
+            <div style={{ fontSize: 13, lineHeight: 1.2 }}>{form.name || <span style={{ color: "#9A8A72" }}>{t("itemEdit.label.untitled")}</span>}</div>
             {shopName && <div className="label" style={{ marginTop: 4, fontSize: 9 }}>{shopName}</div>}
           </div>
           {defPrice !== undefined && (
@@ -433,46 +444,46 @@ export function RightRail() {
 
       <hr className="hr-hair" style={{ margin: "20px 0" }} />
 
-      <div className="label">Visibility</div>
+      <div className="label">{t("itemEdit.label.visibility")}</div>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 6, marginTop: 10 }}>
         <button
           type="button"
           onClick={() => publishItem.mutate()}
           style={{ all: "unset", cursor: "pointer" }}
         >
-          <Pill on={status === "active"}>Live</Pill>
+          <Pill on={status === "active"}>{t("itemEdit.label.live")}</Pill>
         </button>
         <button
           type="button"
           onClick={() => unpublishItem.mutate()}
           style={{ all: "unset", cursor: "pointer" }}
         >
-          <Pill on={status === "draft"}>Draft</Pill>
+          <Pill on={status === "draft"}>{t("itemEdit.label.draft")}</Pill>
         </button>
         <button
           type="button"
           onClick={() => archiveItem.mutate()}
           style={{ all: "unset", cursor: "pointer" }}
         >
-          <Pill on={status === "archived"}>Hidden</Pill>
+          <Pill on={status === "archived"}>{t("itemEdit.label.hidden")}</Pill>
         </button>
       </div>
       {item?.published_at && status === "active" && (
         <div style={{ marginTop: 10, fontSize: 11, color: "#5B5043", lineHeight: 1.4 }}>
-          Live since {new Date(item.published_at).toLocaleDateString("ru-KZ", { day: "numeric", month: "short" })}.
+          {t("itemEdit.label.live_since", { date: new Date(item.published_at).toLocaleDateString("ru-KZ", { day: "numeric", month: "short" }) })}
         </div>
       )}
 
       {publishMissing.length > 0 && (
         <div style={{ marginTop: 10, padding: "8px 12px", background: "#FDF2EC", border: "1px solid #E8C4A8", fontSize: 11, color: "#B5532E", lineHeight: 1.5 }}>
-          <span className="mono" style={{ fontSize: 9, letterSpacing: "0.10em", textTransform: "uppercase", display: "block", marginBottom: 4 }}>Missing before publish:</span>
+          <span className="mono" style={{ fontSize: 9, letterSpacing: "0.10em", textTransform: "uppercase", display: "block", marginBottom: 4 }}>{t("itemEdit.label.missing_before_publish")}</span>
           {publishMissing.map((m) => <div key={m}>· {m}</div>)}
         </div>
       )}
 
       <hr className="hr-hair" style={{ margin: "20px 0" }} />
 
-      <div className="label">Checklist</div>
+      <div className="label">{t("itemEdit.label.checklist")}</div>
       <div style={{ marginTop: 10, display: "flex", flexDirection: "column", gap: 6 }}>
         {checks.map((c) => (
           <Tick key={c.label} on={c.ok}>{c.label}</Tick>
@@ -481,9 +492,9 @@ export function RightRail() {
 
       <hr className="hr-hair" style={{ margin: "20px 0" }} />
 
-      <div className="label">Performance · 30d</div>
+      <div className="label">{t("itemEdit.label.performance")}</div>
       <div style={{ marginTop: 10, opacity: 0.5, pointerEvents: "none" }}>
-        <div className="mono" style={{ fontSize: 9, letterSpacing: "0.10em", color: "#9A8A72", textTransform: "uppercase", marginBottom: 10 }}>Coming soon</div>
+        <div className="mono" style={{ fontSize: 9, letterSpacing: "0.10em", color: "#9A8A72", textTransform: "uppercase", marginBottom: 10 }}>{t("itemEdit.soon")}</div>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
           <MiniStat l="Views" v="—" />
           <MiniStat l="Adds" v="—" />
@@ -493,15 +504,15 @@ export function RightRail() {
       </div>
 
       <div style={{ marginTop: 28, paddingTop: 18, borderTop: "1px solid #E8DFD0" }}>
-        <div className="label" style={{ color: "#B5532E" }}>Danger zone</div>
+        <div className="label" style={{ color: "#B5532E" }}>{t("itemEdit.label.danger_zone")}</div>
         <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 10 }}>
-          <span style={{ fontSize: 12, color: "#9A8A72", opacity: 0.5 }}>↗ Duplicate listing</span>
+          <span style={{ fontSize: 12, color: "#9A8A72", opacity: 0.5 }}>{t("itemEdit.label.duplicate")}</span>
           <button
             type="button"
             onClick={() => archiveItem.mutate()}
             style={{ all: "unset", fontSize: 12, color: "#5B5043", cursor: "pointer" }}
           >
-            ⌧ Archive (keep history)
+            {t("itemEdit.label.archive")}
           </button>
           <button
             type="button"
@@ -509,7 +520,7 @@ export function RightRail() {
             disabled={status !== "draft"}
             style={{ all: "unset", fontSize: 12, color: status === "draft" ? "#B5532E" : "#9A8A72", cursor: status === "draft" ? "pointer" : "not-allowed" }}
           >
-            × Delete permanently
+            {t("itemEdit.label.delete")}
           </button>
         </div>
       </div>

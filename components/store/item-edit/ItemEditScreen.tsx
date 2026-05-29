@@ -2,6 +2,7 @@
 
 import { ItemEditProvider, useItemEdit } from "./context";
 import { SellerTopBar } from "../console/SellerTopBar";
+import { useT } from "@/lib/i18n";
 import {
   SectionRail, PhotosSection, BasicsSection, PriceStockSection, DimensionsSection,
   MaterialsColorsSection, CategorySection, StudioARSection, DeliverySection, RightRail,
@@ -11,10 +12,11 @@ import {
 // Must be a child of ItemEditProvider so it can call useItemEdit().
 function HeaderContent({ onPublish }: { onPublish: () => void }) {
   const { saveStatus } = useItemEdit();
+  const { t } = useT();
   const indicator =
-    saveStatus === "saving" ? { dot: "#D8A05B", label: "Saving…" }
-    : saveStatus === "saved" ? { dot: "#3F4A39", label: "All changes saved" }
-    : saveStatus === "error" ? { dot: "#B5532E", label: "Save error — retry" }
+    saveStatus === "saving" ? { dot: "#D8A05B", label: t("itemEdit.saving") }
+    : saveStatus === "saved" ? { dot: "#3F4A39", label: t("itemEdit.saved") }
+    : saveStatus === "error" ? { dot: "#B5532E", label: t("itemEdit.save_error") }
     : null;
 
   return (
@@ -26,10 +28,10 @@ function HeaderContent({ onPublish }: { onPublish: () => void }) {
         </span>
       )}
       <div style={{ height: 22, width: 1, background: "#E8DFD0" }} />
-      <button className="btn ghost" style={{ padding: "10px 16px", fontSize: 12 }} disabled>Preview</button>
-      <button className="btn ghost" style={{ padding: "10px 16px", fontSize: 12 }}>Save as draft</button>
+      <button className="btn ghost" style={{ padding: "10px 16px", fontSize: 12 }} disabled>{t("itemEdit.preview")}</button>
+      <button className="btn ghost" style={{ padding: "10px 16px", fontSize: 12 }}>{t("itemEdit.save_draft")}</button>
       <button className="btn clay" style={{ padding: "11px 18px", fontSize: 12 }} onClick={onPublish}>
-        Save &amp; publish <span className="arrow">→</span>
+        {t("itemEdit.save_publish")} <span className="arrow">→</span>
       </button>
     </>
   );
@@ -37,18 +39,20 @@ function HeaderContent({ onPublish }: { onPublish: () => void }) {
 
 function HeaderTitle() {
   const { form } = useItemEdit();
-  return <>{form.name || <span className="it" style={{ color: "#9A8A72" }}>New item</span>}</>;
+  const { t } = useT();
+  return <>{form.name || <span className="it" style={{ color: "#9A8A72" }}>{t("itemEdit.label.new_item")}</span>}</>;
 }
 
 function ItemEditBody({ onPublish }: { onPublish: () => void }) {
+  const { t } = useT();
   const right = <HeaderContent onPublish={onPublish} />;
 
   return (
     <>
       <SellerTopBar
-        crumbs={["Sellers", "Catalog"]}
+        crumbs={[t("itemEdit.crumb.sellers"), t("itemEdit.crumb.catalog")]}
         title={<HeaderTitle />}
-        subtitle="Editing"
+        subtitle={t("itemEdit.label.editing")}
         right={right}
       />
       <div style={{ display: "flex", flex: 1, minHeight: 0 }}>
