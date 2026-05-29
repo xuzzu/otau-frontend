@@ -1,13 +1,17 @@
 import { Photo } from "../console/atoms";
-import { Section, Field, Input, Textarea, Select, Toggle, Tick, Pill, MiniStat } from "./atoms";
-import { SECTIONS, PHOTOS, MATERIALS, COLOR_VARIANTS, DELIVERY_REGIONS } from "../_fixtures/item-edit";
+import { Section, Field, Input, Select, Toggle, Tick, Pill, MiniStat } from "./atoms";
+import { SECTIONS, DELIVERY_REGIONS } from "../_fixtures/item-edit";
 import { useItemEdit } from "./context";
 import { useLocale, pickText } from "@/lib/i18n";
 import { TextField, NumberField, DeferredField } from "./fields";
 import { CategorySelect, TaxSelect, TaxChips } from "./pickers";
 import { useTaxonomy } from "@/lib/hooks/useTaxonomy";
 import { VariantCard, AddVariantButton } from "./VariantCard";
-import { useUploadImage, useDeleteImage, usePatchImage } from "@/lib/store-api/hooks";
+import {
+  useUploadImage, useDeleteImage, usePatchImage,
+  usePatchVariant, useSetStock, useStoreInfo,
+  usePublishItem, useUnpublishItem, useArchiveItem, useDeleteItem,
+} from "@/lib/store-api/hooks";
 
 // ——— Left section rail ———
 export function SectionRail() {
@@ -164,21 +168,54 @@ export function BasicsSection() {
 }
 
 // ——— 03 · Price & stock ———
+const inputBox: React.CSSProperties = {
+  display: "flex", alignItems: "center", gap: 8, padding: "11px 14px",
+  background: "#FBF8F2", border: "1px solid #E8DFD0",
+};
+
 export function PriceStockSection() {
+  const { item } = useItemEdit();
+  const def = item?.variants.find((v) => v.is_default) ?? item?.variants[0];
+  const patchV = usePatchVariant(item?.id ?? "");
+  const setStock = useSetStock(item?.id ?? "");
   return (
     <Section n="03" title="Price &amp; stock">
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 20 }}>
-        <Field label="Price · KZT"><Input value="685 000" prefix="₸" /></Field>
-        <Field label="Compare at · KZT"><Input value="740 000" prefix="₸" placeholder /></Field>
-        <Field label="Cost · internal"><Input value="412 000" prefix="₸" hint="Margin 39.8%" /></Field>
-        <Field label="Tax class"><Select value="Furniture · 12% VAT" /></Field>
+        <Field label="Price · KZT">
+          <div style={inputBox}>
+            <span style={{ fontSize: 13, color: "#9A8A72" }}>₸</span>
+            <input
+              aria-label="Price"
+              inputMode="numeric"
+              defaultValue={def?.price ?? 0}
+              disabled={!def}
+              onBlur={(e) => def && patchV.mutate({ vid: def.id, body: { price: Number(e.target.value) } })}
+              style={{ flex: 1, fontSize: 13, color: "#1A1612", background: "transparent", border: "none", outline: "none" }}
+            />
+          </div>
+        </Field>
+        <DeferredField label="Compare at · KZT"><Input value="" prefix="₸" placeholder /></DeferredField>
+        <DeferredField label="Cost · internal"><Input value="" prefix="₸" placeholder /></DeferredField>
+        <DeferredField label="Tax class"><Select value="—" /></DeferredField>
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 20, marginTop: 12 }}>
-        <Field label="In stock"><Input value="5" suffix="units" /></Field>
-        <Field label="Build to order"><Toggle on label="On · 6 wk lead" /></Field>
-        <Field label="Restock arriving"><Input value="14 Jun 2026" suffix="cal" /></Field>
-        <Field label="Notify when low"><Input value="3" suffix="units" /></Field>
+        <Field label="In stock">
+          <div style={inputBox}>
+            <input
+              aria-label="In stock"
+              inputMode="numeric"
+              defaultValue={def?.in_stock_current_shop ?? 0}
+              disabled={!def}
+              onBlur={(e) => def && setStock.mutate({ vid: def.id, in_stock: Number(e.target.value) })}
+              style={{ flex: 1, fontSize: 13, color: "#1A1612", background: "transparent", border: "none", outline: "none" }}
+            />
+            <span className="mono" style={{ fontSize: 10, letterSpacing: "0.10em", color: "#9A8A72", textTransform: "uppercase" }}>units</span>
+          </div>
+        </Field>
+        <DeferredField label="Build to order"><Toggle label="—" /></DeferredField>
+        <DeferredField label="Restock arriving"><Input value="" placeholder /></DeferredField>
+        <DeferredField label="Notify when low"><Input value="" placeholder /></DeferredField>
       </div>
     </Section>
   );
@@ -271,38 +308,41 @@ export function CategorySection() {
 export function StudioARSection() {
   return (
     <Section n="07" title="Studio &amp; AR" hint="Required for ◇ Try in room">
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
-        <div style={{ padding: 16, background: "#FBF8F2", border: "1px solid #E8DFD0" }}>
-          <div className="label">3D model · .glb</div>
-          <div style={{ display: "flex", alignItems: "center", gap: 14, marginTop: 12 }}>
-            <div style={{ width: 72, height: 72, background: "#F4EFE6", border: "1px solid #E8DFD0", display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <svg viewBox="0 0 60 60" width="44" height="44" fill="none" stroke="#1A1612" strokeWidth="1">
-                <path d="M30 6 L54 18 L54 42 L30 54 L6 42 L6 18 Z" />
-                <path d="M30 6 L30 54 M6 18 L54 42 M6 42 L54 18" />
-              </svg>
-            </div>
-            <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 13 }}>klemo-3seat-v3.glb</div>
-              <div className="mono" style={{ fontSize: 10, letterSpacing: "0.08em", color: "#9A8A72", marginTop: 4 }}>14.2 MB · 28k tris · uploaded 12 May</div>
-              <div style={{ display: "flex", gap: 12, marginTop: 8 }}>
-                <span className="mono" style={{ fontSize: 10, letterSpacing: "0.08em", color: "#B5532E", textTransform: "uppercase" }}>Replace</span>
-                <span className="mono" style={{ fontSize: 10, letterSpacing: "0.08em", color: "#9A8A72", textTransform: "uppercase" }}>Preview ↗</span>
+      <div style={{ opacity: 0.5, pointerEvents: "none" }}>
+        <div className="mono" style={{ fontSize: 10, letterSpacing: "0.10em", color: "#9A8A72", textTransform: "uppercase", marginBottom: 14 }}>Coming soon</div>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
+          <div style={{ padding: 16, background: "#FBF8F2", border: "1px solid #E8DFD0" }}>
+            <div className="label">3D model · .glb</div>
+            <div style={{ display: "flex", alignItems: "center", gap: 14, marginTop: 12 }}>
+              <div style={{ width: 72, height: 72, background: "#F4EFE6", border: "1px solid #E8DFD0", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <svg viewBox="0 0 60 60" width="44" height="44" fill="none" stroke="#1A1612" strokeWidth="1">
+                  <path d="M30 6 L54 18 L54 42 L30 54 L6 42 L6 18 Z" />
+                  <path d="M30 6 L30 54 M6 18 L54 42 M6 42 L54 18" />
+                </svg>
+              </div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 13 }}>klemo-3seat-v3.glb</div>
+                <div className="mono" style={{ fontSize: 10, letterSpacing: "0.08em", color: "#9A8A72", marginTop: 4 }}>14.2 MB · 28k tris · uploaded 12 May</div>
+                <div style={{ display: "flex", gap: 12, marginTop: 8 }}>
+                  <span className="mono" style={{ fontSize: 10, letterSpacing: "0.08em", color: "#B5532E", textTransform: "uppercase" }}>Replace</span>
+                  <span className="mono" style={{ fontSize: 10, letterSpacing: "0.08em", color: "#9A8A72", textTransform: "uppercase" }}>Preview ↗</span>
+                </div>
               </div>
             </div>
           </div>
-        </div>
 
-        <div style={{ padding: 16, background: "#FBF8F2", border: "1px solid #E8DFD0" }}>
-          <div className="label">AR readiness</div>
-          <div style={{ marginTop: 12, display: "flex", flexDirection: "column", gap: 6 }}>
-            <Tick on>Hero photo on white</Tick>
-            <Tick on>3D model uploaded</Tick>
-            <Tick on>Dimensions verified</Tick>
-            <Tick warn>Lighting probe missing</Tick>
-            <Tick on>Anchor points set · floor</Tick>
-          </div>
-          <div className="mono" style={{ fontSize: 10, letterSpacing: "0.10em", color: "#D8A05B", marginTop: 12, textTransform: "uppercase" }}>
-            ● 4 of 5 — fix lighting to enable AR
+          <div style={{ padding: 16, background: "#FBF8F2", border: "1px solid #E8DFD0" }}>
+            <div className="label">AR readiness</div>
+            <div style={{ marginTop: 12, display: "flex", flexDirection: "column", gap: 6 }}>
+              <Tick on>Hero photo on white</Tick>
+              <Tick on>3D model uploaded</Tick>
+              <Tick on>Dimensions verified</Tick>
+              <Tick warn>Lighting probe missing</Tick>
+              <Tick on>Anchor points set · floor</Tick>
+            </div>
+            <div className="mono" style={{ fontSize: 10, letterSpacing: "0.10em", color: "#D8A05B", marginTop: 12, textTransform: "uppercase" }}>
+              ● 4 of 5 — fix lighting to enable AR
+            </div>
           </div>
         </div>
       </div>
@@ -314,45 +354,80 @@ export function StudioARSection() {
 export function DeliverySection() {
   return (
     <Section n="08" title="Delivery">
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 20 }}>
-        <Field label="Ships from"><Select value="Astana · workshop" /></Field>
-        <Field label="Handling time"><Select value="3–5 business days" /></Field>
-        <Field label="Assembly"><Select value="White-glove included" /></Field>
-      </div>
-      <Field label="Regions & rates">
-        <div style={{ background: "#FBF8F2", border: "1px solid #E8DFD0" }}>
-          {DELIVERY_REGIONS.map((r, i, a) => (
-            <div key={r.r} style={{ display: "flex", alignItems: "center", padding: "12px 16px", borderBottom: i < a.length - 1 ? "1px solid #E8DFD0" : "none", gap: 12 }}>
-              <span style={{ width: 30, height: 16, borderRadius: 999, background: r.on ? "#3F4A39" : "#E8DFD0", position: "relative", flexShrink: 0 }}>
-                <span style={{ position: "absolute", top: 2, left: r.on ? 16 : 2, width: 12, height: 12, borderRadius: 999, background: "#FBF8F2" }} />
-              </span>
-              <span style={{ flex: 1, fontSize: 13 }}>{r.r}</span>
-              <span className="mono" style={{ fontSize: 11, letterSpacing: "0.06em", color: "#5B5043" }}>{r.t}</span>
-            </div>
-          ))}
+      <div style={{ opacity: 0.5, pointerEvents: "none" }}>
+        <div className="mono" style={{ fontSize: 10, letterSpacing: "0.10em", color: "#9A8A72", textTransform: "uppercase", marginBottom: 14 }}>Coming soon</div>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 20 }}>
+          <Field label="Ships from"><Select value="Astana · workshop" /></Field>
+          <Field label="Handling time"><Select value="3–5 business days" /></Field>
+          <Field label="Assembly"><Select value="White-glove included" /></Field>
         </div>
-      </Field>
+        <Field label="Regions &amp; rates">
+          <div style={{ background: "#FBF8F2", border: "1px solid #E8DFD0" }}>
+            {DELIVERY_REGIONS.map((r, i, a) => (
+              <div key={r.r} style={{ display: "flex", alignItems: "center", padding: "12px 16px", borderBottom: i < a.length - 1 ? "1px solid #E8DFD0" : "none", gap: 12 }}>
+                <span style={{ width: 30, height: 16, borderRadius: 999, background: r.on ? "#3F4A39" : "#E8DFD0", position: "relative", flexShrink: 0 }}>
+                  <span style={{ position: "absolute", top: 2, left: r.on ? 16 : 2, width: 12, height: 12, borderRadius: 999, background: "#FBF8F2" }} />
+                </span>
+                <span style={{ flex: 1, fontSize: 13 }}>{r.r}</span>
+                <span className="mono" style={{ fontSize: 11, letterSpacing: "0.06em", color: "#5B5043" }}>{r.t}</span>
+              </div>
+            ))}
+          </div>
+        </Field>
+      </div>
     </Section>
   );
 }
 
 // ——— Right rail ———
 export function RightRail() {
+  const { form, item, publish, publishMissing } = useItemEdit();
+  const storeInfo = useStoreInfo();
+  const shopName = storeInfo.data?.current_shop?.name ?? "";
+
+  const def = item?.variants.find((v) => v.is_default) ?? item?.variants[0];
+  const defPrice = def?.price;
+  const heroImage = item?.main_image_url;
+
+  // Checklist: derived from publish gate
+  const hasDims = !!(form.dims.width_cm && form.dims.depth_cm && form.dims.height_cm);
+  const heroPhoto = (item?.images ?? []).find((im) => im.is_main && im.variant_id == null);
+  const allVariantsPriced = (item?.variants ?? []).every((v) => v.price > 0 && v.sku);
+  const checks = [
+    { label: "Title set", ok: form.name.trim().length > 0 },
+    { label: "Category selected", ok: !!form.category_id },
+    { label: "Dimensions (H / W / D)", ok: hasDims },
+    { label: "Hero photo", ok: !!heroPhoto },
+    { label: "Variant priced + SKU", ok: allVariantsPriced },
+  ];
+
+  const status = item?.status ?? "draft";
+  const archiveItem = useArchiveItem(item?.id ?? "");
+  const deleteItem = useDeleteItem(item?.id ?? "");
+  const publishItem = usePublishItem(item?.id ?? "");
+  const unpublishItem = useUnpublishItem(item?.id ?? "");
+
   return (
     <aside style={{ width: 300, background: "#FBF8F2", borderLeft: "1px solid #E8DFD0", padding: "22px 22px", overflowY: "auto", flexShrink: 0 }}>
       <div className="label">Marketplace preview</div>
 
       <div style={{ marginTop: 12 }}>
-        <div style={{ position: "relative", height: 180 }}>
-          <Photo src="https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=600&q=70" style={{ position: "absolute", inset: 0 }} />
-          <div className="mono" style={{ position: "absolute", top: 10, left: 10, padding: "4px 8px", background: "rgba(251,248,242,.92)", fontSize: 9, letterSpacing: "0.12em", textTransform: "uppercase" }}>Editor&apos;s pick</div>
+        <div style={{ position: "relative", height: 180, background: "#F4EFE6" }}>
+          {heroImage
+            ? <Photo src={heroImage} style={{ position: "absolute", inset: 0 }} />
+            : <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <span className="mono" style={{ fontSize: 9, letterSpacing: "0.10em", color: "#9A8A72", textTransform: "uppercase" }}>No photo yet</span>
+              </div>
+          }
         </div>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginTop: 10 }}>
           <div>
-            <div style={{ fontSize: 13, lineHeight: 1.2 }}>Klemo modular sofa, 3‑seat</div>
-            <div className="label" style={{ marginTop: 4, fontSize: 9 }}>Mebel Astana · 220 × 92 cm</div>
+            <div style={{ fontSize: 13, lineHeight: 1.2 }}>{form.name || <span style={{ color: "#9A8A72" }}>Untitled item</span>}</div>
+            {shopName && <div className="label" style={{ marginTop: 4, fontSize: 9 }}>{shopName}</div>}
           </div>
-          <div className="num" style={{ fontSize: 13 }}>₸685 000</div>
+          {defPrice !== undefined && (
+            <div className="num" style={{ fontSize: 13 }}>₸{defPrice.toLocaleString("ru-KZ")}</div>
+          )}
         </div>
       </div>
 
@@ -360,41 +435,82 @@ export function RightRail() {
 
       <div className="label">Visibility</div>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 6, marginTop: 10 }}>
-        <Pill on>Live</Pill>
-        <Pill>Draft</Pill>
-        <Pill>Hidden</Pill>
+        <button
+          type="button"
+          onClick={() => publishItem.mutate()}
+          style={{ all: "unset", cursor: "pointer" }}
+        >
+          <Pill on={status === "active"}>Live</Pill>
+        </button>
+        <button
+          type="button"
+          onClick={() => unpublishItem.mutate()}
+          style={{ all: "unset", cursor: "pointer" }}
+        >
+          <Pill on={status === "draft"}>Draft</Pill>
+        </button>
+        <button
+          type="button"
+          onClick={() => archiveItem.mutate()}
+          style={{ all: "unset", cursor: "pointer" }}
+        >
+          <Pill on={status === "archived"}>Hidden</Pill>
+        </button>
       </div>
-      <div style={{ marginTop: 10, fontSize: 11, color: "#5B5043", lineHeight: 1.4 }}>
-        Live since 12 Apr. Indexed in <span className="it">Sofas</span>, <span className="it">Modular</span>, and the May <span className="it">Soft scandinavian</span> scene.
-      </div>
+      {item?.published_at && status === "active" && (
+        <div style={{ marginTop: 10, fontSize: 11, color: "#5B5043", lineHeight: 1.4 }}>
+          Live since {new Date(item.published_at).toLocaleDateString("ru-KZ", { day: "numeric", month: "short" })}.
+        </div>
+      )}
+
+      {publishMissing.length > 0 && (
+        <div style={{ marginTop: 10, padding: "8px 12px", background: "#FDF2EC", border: "1px solid #E8C4A8", fontSize: 11, color: "#B5532E", lineHeight: 1.5 }}>
+          <span className="mono" style={{ fontSize: 9, letterSpacing: "0.10em", textTransform: "uppercase", display: "block", marginBottom: 4 }}>Missing before publish:</span>
+          {publishMissing.map((m) => <div key={m}>· {m}</div>)}
+        </div>
+      )}
 
       <hr className="hr-hair" style={{ margin: "20px 0" }} />
 
       <div className="label">Checklist</div>
       <div style={{ marginTop: 10, display: "flex", flexDirection: "column", gap: 6 }}>
-        <Tick on>Photos · 7 / 12</Tick>
-        <Tick on>Description · A‑readable</Tick>
-        <Tick on>Dimensions complete</Tick>
-        <Tick warn>AR · lighting missing</Tick>
-        <Tick on>Delivery rates · 3 regions</Tick>
+        {checks.map((c) => (
+          <Tick key={c.label} on={c.ok}>{c.label}</Tick>
+        ))}
       </div>
 
       <hr className="hr-hair" style={{ margin: "20px 0" }} />
 
       <div className="label">Performance · 30d</div>
-      <div style={{ marginTop: 10, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-        <MiniStat l="Views" v="4 281" />
-        <MiniStat l="Adds" v="118" />
-        <MiniStat l="Inquiries" v="32" />
-        <MiniStat l="Sold" v="14" />
+      <div style={{ marginTop: 10, opacity: 0.5, pointerEvents: "none" }}>
+        <div className="mono" style={{ fontSize: 9, letterSpacing: "0.10em", color: "#9A8A72", textTransform: "uppercase", marginBottom: 10 }}>Coming soon</div>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+          <MiniStat l="Views" v="—" />
+          <MiniStat l="Adds" v="—" />
+          <MiniStat l="Inquiries" v="—" />
+          <MiniStat l="Sold" v="—" />
+        </div>
       </div>
 
       <div style={{ marginTop: 28, paddingTop: 18, borderTop: "1px solid #E8DFD0" }}>
         <div className="label" style={{ color: "#B5532E" }}>Danger zone</div>
         <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 10 }}>
-          <span style={{ fontSize: 12, color: "#5B5043", cursor: "pointer" }}>↗ Duplicate listing</span>
-          <span style={{ fontSize: 12, color: "#5B5043", cursor: "pointer" }}>⌧ Archive (keep history)</span>
-          <span style={{ fontSize: 12, color: "#B5532E", cursor: "pointer" }}>× Delete permanently</span>
+          <span style={{ fontSize: 12, color: "#9A8A72", opacity: 0.5 }}>↗ Duplicate listing</span>
+          <button
+            type="button"
+            onClick={() => archiveItem.mutate()}
+            style={{ all: "unset", fontSize: 12, color: "#5B5043", cursor: "pointer" }}
+          >
+            ⌧ Archive (keep history)
+          </button>
+          <button
+            type="button"
+            onClick={() => { if (window.confirm("Permanently delete this item?")) deleteItem.mutate(); }}
+            disabled={status !== "draft"}
+            style={{ all: "unset", fontSize: 12, color: status === "draft" ? "#B5532E" : "#9A8A72", cursor: status === "draft" ? "pointer" : "not-allowed" }}
+          >
+            × Delete permanently
+          </button>
         </div>
       </div>
     </aside>
