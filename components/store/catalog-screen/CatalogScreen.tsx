@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { SellerTopBar } from "../console/SellerTopBar";
 import { SellerSearch } from "../console/atoms";
 import { CatalogFilterRail, CatalogToolbar, CatalogTable, CatalogFooter } from "./parts";
@@ -9,9 +10,9 @@ export function CatalogScreen() {
     <>
       <SellerSearch placeholder="Search 218 listings…" width={300} />
       <button className="btn ghost" style={{ padding: "10px 16px", fontSize: 12 }}>↑ Import CSV</button>
-      <button className="btn clay" style={{ padding: "11px 18px", fontSize: 12 }}>
+      <Link href="/store/catalog/new" className="btn clay" style={{ padding: "11px 18px", fontSize: 12, textDecoration: "none" }}>
         <span style={{ fontSize: 14 }}>+</span> New listing
-      </button>
+      </Link>
     </>
   );
 
